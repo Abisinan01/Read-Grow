@@ -1,0 +1,158 @@
+<div class="fixed top-0 left-0 w-[16%] h-screen bg-gray-400 py-5 shadow-lg flex flex-col" id="sidebar">
+    <!-- Logo/Title -->
+    <div class="px-5 text-2xl font-bold text-gray-700 pb-6">REad & GroW</div>
+
+    <!-- Navigation buttons -->
+    <div class="flex flex-col flex-grow">
+        <button data-path="/admin/dashboard"
+            class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Dashboard
+        </button>
+        <button data-path="/admin/products"
+            class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Product
+        </button>
+        <button data-path="/admin/users"
+            class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            User
+        </button>
+        <button class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Orders
+        </button>
+        <button data-path="/admin/category"
+            class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Category
+        </button>
+        <button class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Offers
+        </button>
+        <button class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Coupons
+        </button>
+        <button class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Banner
+        </button>
+    </div>
+
+    <!-- Logout button at bottom -->
+    <button id="logoutButton"
+        class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 mt-auto border-t border-gray-500 transition duration-200">
+        Logout
+    </button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const buttons = document.querySelectorAll('.nav-button');
+        const currentPath = window.location.pathname;
+
+        // Set active button on page load
+        buttons.forEach(button => {
+            if (button.dataset.path && currentPath.startsWith(button.dataset.path)) {
+                button.classList.add("bg-black", "text-white");
+                button.classList.remove("hover:bg-gray-300");
+            }
+
+            // Attach click event to navigate
+            if (button.dataset.path) {
+                button.addEventListener('click', () => {
+                    window.location.href = button.dataset.path;
+                });
+            }
+        });
+
+        // Logout functionality
+        document.getElementById("logoutButton").addEventListener('click', async () => {
+            const { value: confirmed } = await Swal.fire({
+                title: 'Are you sure you want to log out?',
+                text: "You won't be able to log in again unless you provide credentials.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, log me out',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            });
+
+            if (confirmed) {
+                try {
+                    const response = await fetch("http://localhost:3999/admin/logout", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" }
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        Swal.fire("Logged out", "You are successfully logged out", "success");
+                        setTimeout(() => { window.location.href = "/admin/login"; }, 1500);
+                    } else {
+                        Swal.fire("Logout Failed", "There was a problem in logout. Please try again later", "error");
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    Swal.fire("Error!", "An error occurred. Please try again later.", "error");
+                }
+            }
+        });
+    });
+</script>
+
+
+
+
+<!-- =============================designed admin panel -->
+<!-- Sidebar
+        <div class="fixed top-0 left-0 w-64 h-screen bg-gray-800 text-white py-5 shadow-lg" id="sidebar">
+            <div class="px-6 mb-8">
+                <h1 class="text-2xl font-bold">Read & Grow</h1>
+                <p class="text-gray-400 text-sm">Admin Panel</p>
+            </div>
+            
+            <div class="space-y-1">
+                <a href="/admin/dashboard" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/products" class="nav-link flex items-center px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 transition duration-150">
+                    <i class="fas fa-book w-5 mr-3"></i>
+                    <span>Products</span>
+                </a>
+                <a href="/admin/users" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    <span>Users</span>
+                </a>
+                <a href="/admin/orders" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-shopping-cart w-5 mr-3"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="/admin/category" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-tags w-5 mr-3"></i>
+                    <span>Categories</span>
+                </a>
+                <a href="/admin/offers" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-percentage w-5 mr-3"></i>
+                    <span>Offers</span>
+                </a>
+                <a href="/admin/coupons" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-ticket-alt w-5 mr-3"></i>
+                    <span>Coupons</span>
+                </a>
+                <a href="/admin/banners" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-image w-5 mr-3"></i>
+                    <span>Banners</span>
+                </a>
+                <a href="/admin/reset-password" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150">
+                    <i class="fas fa-key w-5 mr-3"></i>
+                    <span>Reset Password</span>
+                </a>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 w-full px-6 py-4 border-t border-gray-700">
+                <button id="logoutButton" class="flex items-center text-gray-300 hover:text-white transition duration-150">
+                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div> -->

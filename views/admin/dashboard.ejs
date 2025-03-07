@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REad & GroW</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
+</head>
+
+<body class="font-sans bg-gray-100">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <%- include("../partials/admin/adminSideBar.ejs") %>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-52 p-6 bg-gray-50">
+            <!-- Header -->
+            <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6 ">
+                <h1 class="text-2xl font-semibold text-gray-800">Sales Details</h1>
+                <!-- <div class="w-10 h-10 bg-gray-300 rounded-full"></div> -->
+            </div>
+
+            <!-- Sales Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-700">Monthly Sales</h2>
+                    <select class="px-3 py-1 border border-gray-300 rounded-md">
+                        <option>October</option>
+                    </select>
+                </div>
+                <div class="h-64 flex items-center justify-center text-gray-500">
+                    <!-- Placeholder for Chart -->
+                    <span>Chart will be implemented here.</span>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl font-semibold text-gray-700">Order Details</h2>
+                    <div class="flex gap-4">
+                        <select class="px-3 py-1 border border-gray-300 rounded-md">
+                            <option>October</option>
+                        </select>
+                        <button class="px-5 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
+                            PRINT
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700">
+                                <th class="py-3 px-4 text-left border-b">Product Name</th>
+                                <th class="py-3 px-4 text-left border-b">Location</th>
+                                <th class="py-3 px-4 text-left border-b">Date - Time</th>
+                                <th class="py-3 px-4 text-left border-b">Piece</th>
+                                <th class="py-3 px-4 text-left border-b">Amount</th>
+                                <th class="py-3 px-4 text-left border-b">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-3 px-4 border-b">Atomic Habit</td>
+                                <td class="py-3 px-4 border-b">673637 Calicut, kinfra</td>
+                                <td class="py-3 px-4 border-b">12.09.2019 - 12:53 PM</td>
+                                <td class="py-3 px-4 border-b">423</td>
+                                <td class="py-3 px-4 border-b">$39.9</td>
+                                <td class="py-3 px-4 border-b">
+                                    <span class="px-3 py-1 bg-teal-500 text-white rounded-full text-sm">
+                                        Delivered
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-3 px-4 border-b">Rich dad poor dad</td>
+                                <td class="py-3 px-4 border-b">832093 Hyderabad, X</td>
+                                <td class="py-3 px-4 border-b">12.09.2019 - 12:53 PM</td>
+                                <td class="py-3 px-4 border-b">423</td>
+                                <td class="py-3 px-4 border-b">$34</td>
+                                <td class="py-3 px-4 border-b">
+                                    <span class="px-3 py-1 bg-yellow-400 text-gray-700 rounded-full text-sm">
+                                        Pending
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>

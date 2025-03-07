@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-96 text-center">
+        <!-- Title -->
+        <h2 class="text-xl font-semibold italic mb-6">Verify Email</h2>
+
+        <!-- Input Field -->
+        <form id="formData">
+            <div class="mb-6">
+                <input type="email" placeholder="Enter your email" id="email"
+                    class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <small id="error-message" class="text-red-500 mt-2 hidden">Please enter a valid email.</small>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                class="w-full bg-red-600 text-white py-2 rounded-[20px] hover:bg-red-700 transition duration-300">
+                Submit
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('formData').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const emailInput = document.getElementById('email');
+            const errorMessage = document.getElementById('error-message');
+            const email = emailInput.value.trim();
+
+            // Basic email validation
+            if (!email || !email.includes('@')) {
+                errorMessage.classList.remove('hidden'); // Show error message
+                showToast("Please enter a valid email", "error");
+                return;
+            } else {
+                errorMessage.classList.add('hidden'); // Hide error message
+            }
+
+            try {
+                const response = await fetch('/requestPasswordReset', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    showToast(result.message);
+                    return;
+                }
+
+                if (result.success) {
+                    showToast("Confirmation has been sented!", "success");
+                }
+            } catch (error) {
+                console.error("Error: ", error);
+                showToast("Something went wrong. Please try again.", "error");
+            }
+        });
+
+        // Toastify function
+        function showToast(message, type) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top", // top or bottom
+                position: "center", // left, center, right
+                backgroundColor: type === "success" ? "green" : "red",
+                stopOnFocus: true,
+            }).showToast();
+        }
+    </script>
+
+</body>
+
+</html>

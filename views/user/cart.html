@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inria+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .font-Inria { font-family: 'Inria Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center">
+                    <h1 class="text-2xl font-bold text-gray-900">REad & GroW</h1>
+                </a>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-2xl px-6">
+                    <div class="relative">
+                        <input type="search" 
+                               placeholder="Search for books..." 
+                               class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               aria-label="Search">
+                        <button type="submit" 
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                aria-label="Submit search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation Icons -->
+                <div class="flex items-center space-x-6">
+                    <a href="/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                        <i class="fas fa-shop text-xl"></i>
+                    </a>
+                    <a href="/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                        <i class="fas fa-heart text-xl"></i>
+                    </a>
+                    <a href="/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <h1 class="font-semibold font-Inria px-10 text-2xl pt-6">
+        Shopping Cart
+    </h1>
+
+    <main class="w-full h-[1000px] flex lg:gap-8 gap-3 lg:px-10 px-4 pt-10 relative">
+        <!-- Left Cart Items Section -->
+        <div class="border-[1px] flex-[60%] flex h-[300px]">
+            <div class="w-[40%] h-[300px] border-r-[1px] flex justify-center items-center">
+                <a href="#" class="flex justify-center">
+                    <img src="https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1655988385i/40121378.jpg"
+                        alt="Rich Dad Poor Dad" class="w-[140px] h-full object-cover rounded-md">
+                </a>
+            </div>
+            <div class="w-[60%] h-[300px] flex flex-col px-4 py-10">
+                <h2 class="font-Inria">ATOMIC HABITS</h2>
+                <p class="text-[13px] py-4">Stock: Available</p>
+                <p class="text-[13px] py-2">Price: 39.9$</p>
+                <p class="text-[13px] py-2">Quantity:</p>
+
+                <!-- Quantity Selector -->
+                <div class="flex items-center space-x-2 mt-2">
+                    <button onclick="decreaseQuantity()" class="px-3 py-1 border rounded">-</button>
+                    <input type="number" id="quantity" value="1" min="1" class="w-12 text-center border rounded" readonly>
+                    <button onclick="increaseQuantity()" class="px-3 py-1 border rounded">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Summary Section -->
+        <div class="border-[1px] flex-[40%] h-[400px] right-0 sticky top-[80px] px-12 py-[70px] flex-col">
+            <div class="">
+                <p class="">1. Atomic Habit </p>
+                <p class="">2. Think and grow rich </p>
+
+                <p class="text-[12px] font-[#505050]"> PRICE DETAILS </p>
+            </div>  
+            <div class=" flex-col items-center">
+                <h2 class="text-lg font-bold">Order Summary</h2>
+                <p class="flex">Total:  <span class="px-[200px]" id="total-price">$39.9</span></p>
+
+                <button class="w-[55%] bg-[#148510] text-[white] h-10 rounded-[3px] relative top-[100px]" >PROCEED CHECKOUT</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function increaseQuantity() {
+            let qty = document.getElementById("quantity");
+            let totalPrice = document.getElementById("total-price");
+            qty.value = parseInt(qty.value) + 1;
+            totalPrice.innerText = `$${(qty.value * 39.9).toFixed(2)}`;
+        }
+
+        function decreaseQuantity() {
+            let qty = document.getElementById("quantity");
+            let totalPrice = document.getElementById("total-price");
+            if (parseInt(qty.value) > 1) {
+                qty.value = parseInt(qty.value) - 1;
+                totalPrice.innerText = `$${(qty.value * 39.9).toFixed(2)}`;
+            }
+        }
+    </script>
+
+</body>
+</html>

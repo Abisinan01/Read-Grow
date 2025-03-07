@@ -1,0 +1,136 @@
+<!-- Sidebar -->
+<div class="w-1/3 border-r pr-4">
+    <ul class="space-y-3">
+        <li>
+            <button data-section="change-password"
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
+                onclick="window.location.href = '/profile/<%= user._id %>'">
+                Profile
+            </button>
+        </li>
+        <li>
+            <button data-section="orders"
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+                Orders
+            </button>
+        </li>
+        <li>
+            <button data-section="address"
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+                Address
+            </button>
+        </li>
+        <li>
+            <button data-section="wishlist"
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+                Wishlist
+            </button>
+        </li>
+        <li>
+            <button data-section="wallet"
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+                Wallet
+            </button>
+        </li>
+        <li>
+            <button data-section="change-password"
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
+                onclick="window.location.href = '/change-password/<%= user._id %>'">
+                Change Password
+            </button>
+        </li>
+        <li>
+            <button 
+                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 flex items-center"
+                id="logoutButton">
+                <span class="mr-2">↩</span> Logout
+            </button>
+        </li>
+    </ul>
+    <!-- <p class="mt-6 text-sm text-gray-500 cursor-pointer">← Go Back to shop</p> -->
+</div>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Get all sidebar buttons
+    const sidebarButtons = document.querySelectorAll('.sidebar-btn');
+
+    // Function to reset all button styles
+    function resetButtonStyles() {
+        sidebarButtons.forEach(btn => {
+            btn.classList.remove('bg-black', 'text-white');
+            btn.classList.add('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+        });
+    }
+
+    // Function to set active button style
+    function setActiveButton(button) {
+        resetButtonStyles();
+        button.classList.remove('bg-gray-200', 'text-gray-600', 'hover:bg-gray-300');
+        button.classList.add('bg-black', 'text-white');
+    }
+
+    // Add click event listeners to each button
+    sidebarButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setActiveButton(button);
+            // Navigation via onclick will still work if present
+        });
+    });
+
+    // Set initial active button (default to Profile)
+    const currentPath = window.location.pathname;
+    sidebarButtons.forEach(button => {
+        const href = button.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+        if (href === currentPath || (!href && button.getAttribute('data-section') === 'profile')) {
+            setActiveButton(button);
+        }
+    });
+
+    //logout
+document.getElementById("logoutButton").addEventListener("click", async () => {
+    const { value: confirmed } = await Swal.fire({
+        title: "Are you sure you want to log out?",
+        text: "You won't be able to log in again unless you provide credentials.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, log me out",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
+    });
+
+    if (confirmed) {
+        const url = "/logout"; // Ensure correct API route
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include", // Allow cookies to be sent
+            });
+            
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(`Error occurred. HTTP status ${response.status}`);
+            }
+
+
+            if (result.success) {
+                Swal.fire("Logged out", "You are successfully logged out", "success");
+                setTimeout(() => {
+                    window.location.href = "/login";
+                }, 2000);
+            } else {
+                Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+            Swal.fire("Error!", "An error occurred. Please try again later.", "error");
+        }
+    }
+});
+
+</script> 

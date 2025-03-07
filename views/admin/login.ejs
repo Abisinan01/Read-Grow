@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+
+    <!-- jQuery Validation Plugin -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+</head>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script  src="/js/admin/adminLogin.js" defer></script>
+<style>
+
+</style>
+
+<body id="" class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-[30px] shadow-lg w-96">
+        <h2 class="text-2xl font-semibold text-center mb-6">Admin Login</h2>
+
+        <form id="form" class="space-y-4" action="/admin/login" method="post">
+            <div>
+                <div id="errorMessage"></div>
+                <input type="text"  placeholder="Username or email" value="abisinan"
+                    id="username"
+                    class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+                <input type="password"      
+                value="admin123"
+                 id="password" 
+                 placeholder="Password"
+                 class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+
+            <div class="flex justify-between text-[12px] text-gray-600">
+                <p>
+                    If you are a Admin you can login here
+                    <a href="#" class="text-red-600 hover:underline"> </a>
+                </p>
+                <a href="#" class="text-red-600 hover:underline">Forgot password?</a>
+            </div>
+
+            <button type="submit"  id="loginButton"
+                class="w-[150px] bg-red-600 text-white py-2 rounded-[20px] ml-[80px] hover:bg-black transition duration-300">
+                Login
+            </button>
+
+        </form>
+
+        <div class="flex justify-center mt-4">
+            <img src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000" alt="Google Logo" class="h-6">
+        </div>
+    </div>
+
+
+</body>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+
+
+</html>

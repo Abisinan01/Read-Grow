@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/user/userLogin.js" defer></script>
+
+        <!-- jQuery Validation Plugin -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-[30px] shadow-lg w-96">
+        <h2 class="text-2xl font-semibold text-center mb-6">Login</h2>
+
+        <form class="space-y-4" id="form">
+            <div>
+                <input type="text" placeholder="Username or email" id="username"
+                    class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+
+            <div>
+                <input type="password" placeholder="Password" id="password"
+                    class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+
+            <div class="flex justify-between text-[12px] text-gray-600">
+                <p>
+                    If you don't have an account?
+                    <a href="/signup" class="text-red-600 hover:underline">Signup</a>
+                </p>
+                <a href="/email-verify" class="text-red-600 hover:underline">Forgot password?</a>
+            </div>
+
+            <button type="submit" id="loginButton"
+               class="w-full bg-red-600 text-white py-2 rounded-[20px]  hover:bg-red-700 transition duration-300">
+                Login
+            </button>
+
+        </form>
+
+        <div class="flex justify-center mt-2 ">
+            <a href="/auth/google" 
+               class="w-full border-[1px] border-gray-300 text-white py-2 rounded-[20px] hover:bg-gray-300 transition duration-300 flex items-center justify-center gap-2">
+                <img src="https://img.icons8.com/?size=100&id=17949&format=png&color=ffffff" alt="Google Logo" class="h-6">
+                <span class=" text-black">Sign up with Google</span>
+            </a>
+        </div> 
+    </div>
+
+</body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js"
+        integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+</html>
