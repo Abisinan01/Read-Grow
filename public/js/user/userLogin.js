@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return
         }
 
-        const url = "/login"
+        const url = "/read-and-grow/login"
         try {
             const res = await fetch(`http://localhost:3999${url}`, {
                 method: "POST",
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
             notyf.success(result.message || "Login successful");
     
             setTimeout(() => {
-                window.location.href = result.redirect || "/home";
+                window.location.href = result.redirect || "/read-and-grow/home";
             }, 1000);
     
         } catch (error) {

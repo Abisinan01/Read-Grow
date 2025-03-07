@@ -2,50 +2,50 @@ import express from "express"
 const router = express.Router()
 import userAuth from "../middlewares/userAuth.js"
 import {
-
-    productDetails,
-    userLoginGet,
-    userLoginPost,
-    userSignUpGet,
-    userSignUpPost,
-    homePage,
-    shop, 
-    emailVerify,
+ 
     resetPassword,
     requestPasswordReset,
-    resetPasswordGet,
-    profile,
-    changePassword,
     logout,
     changePasswordRequest,
+    handleLoginPage,
+    renderLoginPage,
+    renderSignPage,
+    handleSignupPage,
+    renderEmailVerify,
+    renderResetPassword,
+    renderHomePage,
+    renderProductDetails,
+    renderShopPage,
+    renderProfilePage,
+    renderChangePassword,
+
 
 } from "../controllers/userController.js"
 import passport from "passport"
 import jwt from "jsonwebtoken"
  
-
-
-router.get('/login', userLoginGet)
-router.post('/login', userLoginPost)
  
-router.get("/signup", userSignUpGet)
-router.post('/signup', userSignUpPost)
+router.get('/login', renderLoginPage)
+router.post('/login', handleLoginPage)
+ 
+router.get("/signup", renderSignPage )
+router.post('/signup', handleSignupPage)
 
-router.get('/email-verify',emailVerify)
+router.get('/email-verify',renderEmailVerify)
 router.post('/requestPasswordReset',requestPasswordReset)
-router.get('/resetPassword',resetPasswordGet)
+router.get('/resetPassword',renderResetPassword)
 router.post('/resetPassword',resetPassword)
 
-router.get('/home', userAuth, homePage)
+router.get('/home', userAuth, renderHomePage)
 
-router.get('/product-details/:id',userAuth,productDetails)
+router.get('/product-details/:id',userAuth,renderProductDetails)
 
-router.get("/shop",userAuth,shop)
+router.get("/shop",userAuth,renderShopPage)
 
-router.get('/profile/:id',userAuth,profile)
+router.get('/profile/:id',userAuth,renderProfilePage)
 
 
-router.get('/change-password/:id',userAuth,changePassword)
+router.get('/change-password/:id',userAuth,renderChangePassword)
 router.post('/change-password',userAuth,changePasswordRequest)
  
 
@@ -57,12 +57,12 @@ router.post('/logout',logout)
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/signup' }),
+    passport.authenticate('google', { failureRedirect: '/read-and-grow/signup' }),
     (req, res) => {
 
         if (!req.user) {
             console.error("Google OAuth failed: No user found");
-            return res.redirect('/signup');
+            return res.redirect('/read-and-grow/signup');
         }else if(req.user.googleId)
 
         req.session.user = req.user._id;
@@ -70,7 +70,7 @@ router.get('/auth/google/callback',
         req.session.save((err) => {
             if (err) {
                 console.error('Session save error:', err);
-                return res.redirect('/signup');
+                return res.redirect('/read-and-grow/signup');
             }
         });
 
@@ -87,7 +87,7 @@ router.get('/auth/google/callback',
 
         console.log(`Google signup done`);
 
-        return res.redirect('/home');
+        return res.redirect('/read-and-grow/home');
     }
 );
 
@@ -99,5 +99,5 @@ router.get('/auth/google/callback',
 //     res.status(404).redirect("/notFound")
 // })
 
-//export routes
+// export routes
 export default router

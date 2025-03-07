@@ -18,7 +18,35 @@
 
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- Navbar -->
-    <%- include("../partials/user/navBar.ejs") %>
+    <!-- Navbar -->
+<!-- Navigation Icons -->
+<div class="flex items-center space-x-6">
+    <a href="/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+        <i class="fas fa-store text-xl"></i>
+    </a>
+
+    <% if (user) { %> 
+        <!-- Show only if logged in -->
+        <a href="/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+            <i class="fas fa-heart text-xl"></i>
+        </a>
+        <a href="/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+            <i class="fas fa-shopping-cart text-xl"></i>
+        </a>
+        <a href="/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+            <i class="fas fa-user text-xl"></i>
+        </a>
+    <% } else { %> 
+        <!-- Show only if NOT logged in -->
+        <a href="/login" class="text-gray-600 hover:text-gray-900 font-semibold text-lg">
+            Login
+        </a>
+        <a href="/signup" class="bg-black text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            Sign Up
+        </a>
+    <% } %>
+</div>
+
 
         <!-- Hero Section -->
         <section class="relative bg-gray-900">
@@ -48,7 +76,7 @@
                         <article
                             class="bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:scale-105">
                             <div class="bg-gray-100 relative">
-                                <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center">
+                                <a href="/product-details/<%= product._id %>" class="flex justify-center">
                                     <img src="<%= product.images[0] %>" alt="<%= product.name %>"
                                         class="w-auto h-52 md:h-64 object-cover rounded-md">
                                 </a>
@@ -93,7 +121,7 @@
                 </div>
 
                 <div class="text-center mt-12">
-                    <a href="/read-and-grow/shop"
+                    <a href="/shop"
                         class="inline-flex items-center text-lg font-semibold text-black hover:text-blue-700">
                         Shop All Books
                         <i class="fas fa-arrow-right ml-2"></i>

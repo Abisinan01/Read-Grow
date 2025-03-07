@@ -5,7 +5,7 @@ import {
     otpVerifyPost
 
  } from "../controllers/otpController.js"
-import { emailVerify } from "../controllers/userController.js"
+import { renderEmailVerify } from "../controllers/userController.js"
 import  jwt  from "jsonwebtoken"
 
 const router = express.Router()

@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isValid) return // if not valid
         
  
-        const url = "/signup"
+        const url = "/read-and-grow/signup"
 
         try {
             const response = await fetch(url, {

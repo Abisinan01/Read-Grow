@@ -43,13 +43,13 @@
                                 const searchInput = document.querySelector('input[name="query"]').value.trim();
 
                                 if (searchInput) {
-                                    window.location.href = `/shop?search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
+                                    window.location.href = `/read-and-grow/shop?search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
                                 }
                             });
                         </script>
                     </div>
                 </div>
-                <button class="relative right-[100px]" onclick="window.location.href = '/shop?page=1&limit-6'">
+                <button class="relative right-[100px]" onclick="window.location.href = '/read-and-grow/shop?page=1&limit-6'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#666666">
                         <path d="M20.944 12.979c-.489 4.509-4.306
                      8.021-8.944 8.021-2.698 0-5.112-1.194-6.763-3.075l1.245-1.633c1.283 1.645 3.276 2.708 5.518 
@@ -60,7 +60,7 @@
                 </button>
 
                 <div class="flex items-center space-x-6">
-                    <a href="/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                    <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
                         <i class="fas fa-shop text-xl"></i>
                     </a>
                     <a href="" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
@@ -71,7 +71,7 @@
                         <span
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">2</span>
                     </a>
-                    <a href="/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                    <a href="/read-and-grow/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
                         <i class="fas fa-user text-xl"></i>
                     </a>
                 </div>
@@ -88,13 +88,13 @@
                     <h2 class="text-lg font-semibold mb-3">Categories</h2>
                     <ul class="space-y-2">
                         <li>
-                            <a href="/shop" class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
+                            <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
                                 All Categories
                             </a>
                         </li>
                         <% categories.forEach(cat => { %>
                             <li>
-                                <a href="/shop/?category=<%= encodeURIComponent(cat.categoryName) %>&search=<%= search || '' %>" 
+                                <a href="/read-and-grow/shop/?category=<%= encodeURIComponent(cat.categoryName) %>&search=<%= search || '' %>" 
                                    class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
                                     <%= cat.categoryName %>
                                 </a>
@@ -114,7 +114,7 @@
                         
                         <% authorSet.forEach(author => { %>
                             <li>
-                                <a href="/shop/?search=<%= encodeURIComponent(author) %>" 
+                                <a href="/read-and-grow/shop/?search=<%= encodeURIComponent(author) %>" 
                                    class="text-gray-600 hover:text-gray-900">
                                     <%= author %>
                                 </a>
@@ -129,19 +129,19 @@
                     <h2 class="text-lg font-semibold mb-3">Price</h2>
                     <ul class="space-y-2">
                         <li>
-                            <a href="/shop?price=<%= encodeURIComponent('under-20') %>" class="text-gray-600 hover:text-gray-900">
+                            <a href="/read-and-grow/shop?price=<%= encodeURIComponent('under-20') %>" class="text-gray-600 hover:text-gray-900">
                                 Under $20
                             </a>
                         </li>
                         <li>
-                            <a href="/shop?price=<%= encodeURIComponent('20-50') %>" class="text-gray-600 hover:text-gray-900">
-                                $20 - $50
+                            <a href="/read-and-grow/shop?price=<%= encodeURIComponent('20-30') %>" class="text-gray-600 hover:text-gray-900">
+                                $20 - $30
                             </a>
                         </li>
 
                         <li>
-                            <a href="/shop?price=<%= encodeURIComponent('above-100') %>" class="text-gray-600 hover:text-gray-900">
-                                Above $100
+                            <a href="/read-and-grow/shop?price=<%= encodeURIComponent('above-30') %>" class="text-gray-600 hover:text-gray-900">
+                                Above $30
                             </a>
                         </li>
                     </ul>
@@ -162,7 +162,7 @@
                                 <article
                                     class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
                                     <div class="relative h-64 bg-gray-50">
-                                        <a href="/product-details/<%= product._id %>" class="flex justify-center">
+                                        <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center">
                                             <img src="<%= product.images[0] %>" alt="Rich Dad Poor Dad"
                                                 class="w-auto h-52 md:h-64 object-cover rounded-md">
                                         </a>
@@ -203,7 +203,7 @@
                 <!-- Pagination -->
                 <div class="flex justify-center mt-8 space-x-2">
                     <% if(page>1) {%>
-                        <a href="/shop?page=<%= page-1 %>?limit=<%= limit  %>"
+                        <a href="/read-and-grow/shop?page=<%= page-1 %>?limit=<%= limit  %>"
                             class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-left"></i>
                         </a>
@@ -214,13 +214,13 @@
                             </a>
                         <% } %>
                         <% for(let i=1; i<=totalPages; i++){ %>
-                            <a href="/shop?page=<%= i %>&limit=<%= limit %>"
+                            <a href="/read-and-grow/shop?page=<%= i %>&limit=<%= limit %>"
                                 class="w-10 h-10 flex items-center justify-center rounded bg-black text-white">
                                 <%= i %>
                             </a>
                         <% } %>
                         <% if(page<totalPages) {%>
-                            <a href="/shop?page=<%= page+1 %>?limit=<%= limit %>"
+                            <a href="/read-and-grow/shop?page=<%= page+1 %>?limit=<%= limit %>"
                                 class="w-10 h-10 flex items-center justify-center rounded border border-gray-400 hover:bg-gray-200">
                                 <i class="fas fa-chevron-right"></i>
                             </a>

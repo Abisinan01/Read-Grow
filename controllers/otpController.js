@@ -59,7 +59,7 @@ export const otpVerifyGet = async (req, res, next) => {
         if (req.session.temp) {
             return res.render("user/otp")
         }
-        res.redirect("/login")
+        res.redirect("/read-and-grow/login")
     } catch (error) {
         console.log(error.message)
     }
@@ -121,7 +121,7 @@ export const otpVerifyPost = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "Account created successfully",
-            redirect: "/home"
+            redirect: "/read-and-grow/home"
         })
 
     } catch (error) {

@@ -31,7 +31,7 @@
                             const searchInput = document.querySelector('input[name="query"]').value.trim();
                             
                             if (searchInput) {
-                                window.location.href = `/shop?search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
+                                window.location.href = `/read-and-grow/shop?search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
                             }
                         });
                     </script>
@@ -41,16 +41,16 @@
             
             <!-- Navigation Icons -->
             <div class="flex items-center space-x-6">
-                <a href="/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
                     <i class="fas fa-store text-xl"></i>
                 </a>
-                <a href="/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
                     <i class="fas fa-heart text-xl"></i>
                 </a>
-                <a href="/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+                <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
                     <i class="fas fa-shopping-cart text-xl"></i>
                 </a>
-                <a href="/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                <a href="/read-and-grow/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
                     <i class="fas fa-user text-gray-500"></i>
                 </a>
             </div>

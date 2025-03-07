@@ -4,7 +4,7 @@
         <li>
             <button data-section="change-password"
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
-                onclick="window.location.href = '/profile/<%= user._id %>'">
+                onclick="window.location.href = '/read-and-grow/profile/<%= user._id %>'">
                 Profile
             </button>
         </li>
@@ -35,7 +35,7 @@
         <li>
             <button data-section="change-password"
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
-                onclick="window.location.href = '/change-password/<%= user._id %>'">
+                onclick="window.location.href = '/read-and-grow/change-password/<%= user._id %>'">
                 Change Password
             </button>
         </li>
@@ -100,7 +100,7 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
     });
 
     if (confirmed) {
-        const url = "/logout"; // Ensure correct API route
+        const url = "/read-and-grow/logout"; // Ensure correct API route
 
         try {
             const response = await fetch(url, {
@@ -121,7 +121,7 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
             if (result.success) {
                 Swal.fire("Logged out", "You are successfully logged out", "success");
                 setTimeout(() => {
-                    window.location.href = "/login";
+                    window.location.href = "/read-and-grow/login";
                 }, 2000);
             } else {
                 Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");

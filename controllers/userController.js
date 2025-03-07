@@ -10,10 +10,12 @@ import Product from "../models/productSchema.js"
 import nodemailer from "nodemailer"
 import Category from "../models/categorySchema.js"
 
-export const userSignUpGet = async (req, res, next) => {
+
+
+export const renderSignPage = async (req, res, next) => {
     try {
         if (req.cookies.jwt) {
-            return res.redirect("/home")
+            return res.redirect("/read-and-grow/home")
         }
         return res.render("user/signup.ejs")
 
@@ -22,7 +24,7 @@ export const userSignUpGet = async (req, res, next) => {
     }
 }
 
-export const userSignUpPost = async (req, res, next) => {
+export const handleSignupPage = async (req, res, next) => {
     try {
         const { username, password, confirmPassword, email, phoneNumber } = req.body
         // console.log(req.body)
@@ -97,10 +99,10 @@ export const userSignUpPost = async (req, res, next) => {
 }
 
 
-export const userLoginGet = async (req, res, next) => {
+export const renderLoginPage = async (req, res, next) => {
     try {
         if (req.cookies.jwt) {
-            return res.redirect('/home')
+            return res.redirect('/read-and-grow/home')
         }
         return res.render("user/login")
     } catch (error) {
@@ -109,7 +111,7 @@ export const userLoginGet = async (req, res, next) => {
 }
 
 
-export const userLoginPost = async (req, res, next) => {
+export const handleLoginPage = async (req, res, next) => {
     try {
         let { username, password } = req.body
 
@@ -148,7 +150,7 @@ export const userLoginPost = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "successfully logged",
-            redirect: "/home"
+            redirect: "/read-and-grow/home"
         })
 
     } catch (error) {
@@ -158,7 +160,7 @@ export const userLoginPost = async (req, res, next) => {
 }
 
 
-export const homePage = async (req, res, next) => {
+export const renderHomePage = async (req, res, next) => {
     try {
 
         const user = req.user
@@ -173,7 +175,7 @@ export const homePage = async (req, res, next) => {
         const isUser = await User.findOne({_id:user.id})
         if(isUser.isBlocked==true){
             res.clearCookie("jwt")
-            return res.redirect('/login')      
+            return res.redirect('/read-and-grow/login')      
         }
 
         res.render('user/home', { products, user })
@@ -183,7 +185,7 @@ export const homePage = async (req, res, next) => {
 }
 
 
-export const productDetails = async (req, res, next) => {
+export const renderProductDetails = async (req, res, next) => {
     try {
         const { id } = req.params;
         console.log("Product ID: ", id);
@@ -207,9 +209,9 @@ export const productDetails = async (req, res, next) => {
 
 
 //==================shoping page =====================
-export const shop = async (req, res, next) => {
+export const renderShopPage = async (req, res, next) => {
     try {
-        let { search, category, page, limit } = req.query;
+        let { search, category, page, limit , price} = req.query;
         page = parseInt(page) || 1
         limit = parseInt(limit) || 6
         let skip = (page - 1) * limit
@@ -226,6 +228,16 @@ export const shop = async (req, res, next) => {
 
         if (category) {
             query.category = category;
+        }
+
+        if (price) {
+            if (price === 'under-20') {
+                query.price = { $lt: 20 };
+            } else if (price === '20-30') {
+                query.price = { $gte: 20, $lte: 30 };
+            } else if (price === '30') {
+                query.price = { $gte: 30, $lte: 50 };
+            }
         }
 
         let products = await Product.find(query)
@@ -248,6 +260,7 @@ export const shop = async (req, res, next) => {
                 totalPages: 1,
                 page,
                 limit,
+                price,
                 errorMessage: "No products found.",
                 user:req.user,
                 categories
@@ -277,7 +290,7 @@ export const shop = async (req, res, next) => {
 
 //==================forgot password==================
 
-export const emailVerify = async (req, res, next) => {
+export const renderEmailVerify = async (req, res, next) => {
     try {
         return res.render('user/emailVerify')
     } catch (error) {
@@ -332,11 +345,11 @@ export const requestPasswordReset = async (req, res, next) => {
     }
 }
 
-export const resetPasswordGet = async (req, res, next) => {
+export const renderResetPassword = async (req, res, next) => {
     try {
         return res.render('user/forgot')
     } catch (error) {
-        next(new AppError(``))
+        next(new AppError(`Forgot password failed : ${error},500`))
     }
 }
 
@@ -379,7 +392,7 @@ export const resetPassword = async (req, res, next) => {
 
 //========User profile===============
 
-export const profile = async (req, res, next) => {
+export const renderProfilePage = async (req, res, next) => {
     try {
         const { id } = req.params
         console.log(req.query)
@@ -397,7 +410,7 @@ export const profile = async (req, res, next) => {
     }
 }
 
-export const changePassword = async (req, res, next) => {
+export const renderChangePassword = async (req, res, next) => {
     try {
         const { id } = req.params
         const user = await User.findOne({ _id: id })

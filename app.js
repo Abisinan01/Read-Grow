@@ -61,7 +61,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.use("/admin", adminRoutes)
-app.use("/", userRoute)
+app.use("/read-and-grow", userRoute)
 app.use("/otp",otpRoute)
 app.use(methodOverride('_method'))
 
@@ -84,6 +84,6 @@ process.on('SIGINT', () => {
 
  
 app.get('/',(req,res)=>{
-    res.redirect('/login')
+    res.redirect('/read-and-grow/login')
 })
 app.listen(PORT, () => console.log(`Server started running with ${PORT}`));//Listening the port

@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken"
         const token = req.cookies.jwt // take data from login post
 
         if(!token){
-            return res.redirect("/login")
+            return res.redirect("/read-and-grow/login")
         }
         
         const decodeToken = jwt.verify(token,process.env.JWT_SECRET)
