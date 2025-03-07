@@ -63,7 +63,7 @@ export const userSignUpPost = async (req, res, next) => {
 
             }
         }
-
+        req.session.temp=email
         const otpResult = await sendOTP(email)
         console.log("Send Otp response :", otpResult)
 
@@ -79,13 +79,15 @@ export const userSignUpPost = async (req, res, next) => {
             password: hashPassword,
             phoneNumber
         }
+        const token = jwt.sign({email:email }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
 
-        console.log('sign up Temp session :', req.session.temp)
+        console.log('sign up Temp session :', req.session.temp,token)
 
         return res.status(200).json({
-            success: true,
+            success: true, 
             message: otpResult.message,
             redirect: '/otp/otp-verify',
+            token
         })
 
     } catch (error) {
@@ -207,9 +209,7 @@ export const productDetails = async (req, res, next) => {
 //==================shoping page =====================
 export const shop = async (req, res, next) => {
     try {
-        const {search}=req.query || ""
-        const {category}=req.category||""
-        let { page, limit } = req.query
+        let { search, category, page, limit } = req.query;
         page = parseInt(page) || 1
         limit = parseInt(limit) || 6
         let skip = (page - 1) * limit
@@ -220,7 +220,12 @@ export const shop = async (req, res, next) => {
             query.$or = [
                 { name: { $regex: search, $options: "i" } },
                 { category: { $regex: search, $options: "i" } },
+                {authorName:{$regex:search,$options:'i'}}
             ];
+        }
+
+        if (category) {
+            query.category = category;
         }
 
         let products = await Product.find(query)
@@ -249,29 +254,25 @@ export const shop = async (req, res, next) => {
             });
         }
 
-        return res.render('user/shop', {
+        return res.render("user/shop", {
             products,
             totalProducts,
             totalPages,
             page,
             limit,
-            errorMessage:null,
-            user:req.user,
+            search, 
+            category,
+            errorMessage: products.length === 0 ? "No products found." : null,
+            user: req.user,
             categories
+
         })
     } catch (error) {
         next(new AppError(`Shop product : ${error}`, 500))
     }
 }
 
-//===============filter products============
-export const filterProduct = async (req,res,next)=>{
-    try {
-        
-    } catch (error) {
-        next (new AppError(`Product filted faield : ${error}`,500))
-    }
-}
+
 
 
 //==================forgot password==================

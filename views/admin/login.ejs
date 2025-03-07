@@ -28,12 +28,12 @@
                     id="username"
                     class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
-            <div>
-                <input type="password"      
-                value="admin123"
-                 id="password" 
-                 placeholder="Password"
-                 class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <div class="relative">
+                <input type="password" placeholder="Password" id="password" required
+                    class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 pr-10">
+                <span class="password-toggle-icon absolute inset-y-0 right-3 flex items-center cursor-pointer">
+                    <i class="fas fa-eye"></i>
+                </span>
             </div>
 
             <div class="flex justify-between text-[12px] text-gray-600">
@@ -45,15 +45,15 @@
             </div>
 
             <button type="submit"  id="loginButton"
-                class="w-[150px] bg-red-600 text-white py-2 rounded-[20px] ml-[80px] hover:bg-black transition duration-300">
+                class="w-full bg-red-600 text-white py-2 rounded-[20px] hover:bg-black transition duration-300">
                 Login
             </button>
 
         </form>
 
-        <div class="flex justify-center mt-4">
+        <!-- <div class="flex justify-center mt-4">
             <img src="https://img.icons8.com/?size=100&id=17949&format=png&color=000000" alt="Google Logo" class="h-6">
-        </div>
+        </div> -->
     </div>
 
 

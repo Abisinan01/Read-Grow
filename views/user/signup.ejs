@@ -44,13 +44,16 @@
                 <input type="password" placeholder="Password" id="password" required
                     class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 pr-10">
                 <span class="password-toggle-icon absolute inset-y-0 right-3 flex items-center cursor-pointer">
-                    <i class="fas fa-eye"></i>
+                    <i class="fas fa-eye" data-target="password"></i>
                 </span>
             </div>
 
-            <div>
+            <div class="relative">
                 <input type="password" placeholder="Confirm Password" id="confirmPassword" required
-                    class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    class="w-full px-4 py-2 rounded-[15px] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 pr-10">
+                <span class="password-toggle-icon absolute inset-y-0 right-3 flex items-center cursor-pointer">
+                    <i class="fas fa-eye" data-target="confirmPassword"></i>
+                </span>
             </div>
 
             <div class="flex justify-between text-[12px] text-gray-600">
@@ -62,40 +65,41 @@
             </div>
 
             <button type="submit"
-                class="w-full bg-red-600 text-white py-2 rounded-[20px]  hover:bg-red-700 transition duration-300">
+                class="w-full bg-red-600 text-white py-2 rounded-[20px] hover:bg-red-700 transition duration-300">
                 Signup
             </button>
         </form>
 
         <!-- Google Authentication Button -->
-        <div class="flex justify-center mt-2 ">
+        <div class="flex justify-center mt-2">
             <a href="/auth/google" 
                class="w-full border-[1px] border-gray-300 text-white py-2 rounded-[20px] hover:bg-gray-300 transition duration-300 flex items-center justify-center gap-2">
                 <img src="https://img.icons8.com/?size=100&id=17949&format=png&color=ffffff" alt="Google Logo" class="h-6">
-                <span class=" text-black">Sign up with Google</span>
+                <span class="text-black">Sign up with Google</span>
             </a>
         </div> 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script>
-        const passwordField = document.getElementById("password");
-        const togglePassword = document.querySelector(".password-toggle-icon i");
+        // Single script to handle both password toggles
+        document.querySelectorAll('.password-toggle-icon i').forEach(toggle => {
+            toggle.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const inputField = document.getElementById(targetId);
 
-        togglePassword.addEventListener("click", function () {
-            if (passwordField.type === "password") {
-                passwordField.type = "text";
-                togglePassword.classList.remove("fa-eye");
-                togglePassword.classList.add("fa-eye-slash");
-            } else {
-                passwordField.type = "password";
-                togglePassword.classList.remove("fa-eye-slash");
-                togglePassword.classList.add("fa-eye");
-            }
+                if (inputField.type === 'password') {
+                    inputField.type = 'text';
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                } else {
+                    inputField.type = 'password';
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+            });
         });
     </script>
-
 </body>
-
-<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 
 </html>

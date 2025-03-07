@@ -9,7 +9,7 @@ import {
     userSignUpGet,
     userSignUpPost,
     homePage,
-    shop,
+    shop, 
     emailVerify,
     resetPassword,
     requestPasswordReset,
@@ -18,7 +18,7 @@ import {
     changePassword,
     logout,
     changePasswordRequest,
-    // searchProduct
+
 } from "../controllers/userController.js"
 import passport from "passport"
 import jwt from "jsonwebtoken"
@@ -48,7 +48,7 @@ router.get('/profile/:id',userAuth,profile)
 router.get('/change-password/:id',userAuth,changePassword)
 router.post('/change-password',userAuth,changePasswordRequest)
  
-  
+
 router.post('/logout',logout)
 
  

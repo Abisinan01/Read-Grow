@@ -29,11 +29,11 @@
 
                 <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
                     <form id="addProductForm" class="space-y-6" enctype="multipart/form-data">
-                        <!-- <div>
-                            <label for="productId" class="block text-sm font-medium text-gray-700">Product ID</label>
-                            <input type="text" id="productId" required readonly value=" productId "
+                        <!-- <div> -->
+                            <!-- <label for="productId" class="block text-sm font-medium text-gray-700">Product ID</label> -->
+                            <input type="text" id="productId" hidden required readonly value="<%= product._id %>"
                                 class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
-                        </div> -->
+                        <!-- </div> -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
                             <input type="text" id="name" required value="<%= product.name %>"
@@ -306,11 +306,11 @@
                     }
                 }
 
-                if (!hasImages) return notyf.error('Upload at least one image');
+                // if (!hasImages) return notyf.error('Upload at least one image');
 
                 try {
                     Swal.fire({ title: 'Saving...', text: 'Please wait', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    const response = await fetch(`/admin/product/${_id}`,
+                    const response = await fetch(`/admin/product/${document.getElementById('productId').value}`,
                         {
                             method: 'PATCH',
                             body: formData

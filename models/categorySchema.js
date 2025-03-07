@@ -13,12 +13,7 @@ const categorySchema = new Schema({
     status:{    
         type:String,
         default:"Active"
-    },
-    categoryId:{
-        type: String, 
-        required:true,
-        unique:true
-    }   
+    }  
 },{timestamps:true})
 
 const Category= mongoose.model('category',categorySchema)

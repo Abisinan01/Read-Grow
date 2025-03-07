@@ -1,102 +1,142 @@
-<!DOCTYPE html>
-<html lang="en">
+    <!DOCTYPE html>
+    <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- notyf -->
-    <script src="
-    https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.js
-    "></script>
-    <link href="
-    https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.css
-    " rel="stylesheet">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>OTP Verification</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- notyf -->
+        <script src="https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.css" rel="stylesheet">
+    </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-    <div class="bg-white p-8 rounded-2xl shadow-lg w-96 relative text-center">
-        <!-- Back Icon -->
-        <div class="absolute left-4 top-4 cursor-pointer">
+        <div class="bg-white p-8 rounded-2xl shadow-lg w-96 relative text-center">
+            <!-- OTP Verification Title -->
+            <h2 class="text-xl font-semibold italic mb-6">OTP Verification</h2>
 
+            <!-- OTP Inputs -->
+            <form id="otpForm">
+                <div class="flex justify-center space-x-4 mb-4">
+                    <input type="text" id="otp1" maxlength="1"
+                        class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
+                    <input type="text" id="otp2" maxlength="1"
+                        class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
+                    <input type="text" id="otp3" maxlength="1"
+                        class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
+                    <input type="text" id="otp4" maxlength="1"
+                        class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
+                </div>
+
+                <!-- Resend and Timer -->
+                <div class="flex justify-between text-sm text-gray-600 mb-6">
+                    <button type="button" class="text-gray-600 hover:text-red-500" disabled id="resendOtp">Resend</button>
+                    <span id="Timer">OTP expires in 00:59</span>
+                </div>
+
+                <button type="submit"
+                    class="bg-red-600 text-white px-8 py-2 rounded-full text-lg hover:bg-red-700 transition duration-300">
+                    Verify
+                </button>
+            </form>
         </div>
 
-        <!-- OTP Verification Title -->
-        <h2 class="text-xl font-semibold italic mb-6">OTP Verification</h2>
+        <script>
+            const notyf = new Notyf({
+                duration: 3000,
+                position: { x: 'center', y: 'top' }
+            });
 
-        <!-- OTP Inputs -->
-        <form id="otpForm">
-            <div class="flex justify-center space-x-4 mb-4">
-                <input type="text" id="otp1" maxlength="1"
-                    class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
-                <input type="text" id="otp2" maxlength="1"
-                    class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
-                <input type="text" id="otp3" maxlength="1"
-                    class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
-                <input type="text" id="otp4" maxlength="1"
-                    class="w-12 h-12 border border-gray-400 text-center text-xl focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md">
-            </div>
-            <!-- Resend and Timer -->
-            <div class="flex justify-between text-sm text-gray-600 mb-6">
-                <!-- <button class="text-gray-600 hover:text-red-500">Resend</button> -->
-                <!-- <span>59 sec</span> -->
-            </div>
+            document.getElementById('otpForm').addEventListener("submit", async function (event) {
+                event.preventDefault();
 
-            <!-- Verify Button -->
-            <button
-                class="bg-red-600 text-white px-8 py-2 rounded-full text-lg hover:bg-red-700 transition duration-300">Verify</button>
-        </form>
-    </div>
-    <script>
-        const notyf = new Notyf({
-            duration: 3000,
-            position: {
-                x: 'center',
-                y: 'top',
-            }
-        })
-        const otp = [
-            document.getElementById("otp1").value,
-            document.getElementById("otp2").value,
-            document.getElementById("otp3").value,
-            document.getElementById("otp4").value,
-        ].join("")
-        console.log(otp)
+                // Get OTP input values dynamically
+                const otp = [
+                    document.getElementById("otp1").value,
+                    document.getElementById("otp2").value,
+                    document.getElementById("otp3").value,
+                    document.getElementById("otp4").value,
+                ].join("");
 
-        document.getElementById('otpForm').addEventListener("submit", async function (event) {
+                try {
+                    const response = await fetch('/otp/otp-verify', {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ otp })
+                    });
 
-            event.preventDefault()
+                    const result = await response.json();
 
-            try {
-                const response = await fetch('/otp/otp-verify', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ otp })
-                })
-                console.log(1)
-                const result = await response.json()
-                console.log(result)
-                if (!response.ok) {
-                    notyf.error(result.message)
-                    return
+                    if (!response.ok) {
+                        notyf.error(result.message);
+                        return;
+                    }
+
+                    if (result.success) {
+                        notyf.success(result.message);
+                        setTimeout(() => {
+                            window.location.href = result.redirect;
+                        }, 1000);
+                    }
+
+                } catch (error) {
+                    console.log(`Otp verification error: ${error.message}`);
                 }
+            });
 
-                if (result.success) {
-                    notyf.success(result.message)
+            document.getElementById('resendOtp').addEventListener('click', async (event) => {
+                event.preventDefault(); 
+                const token= localStorage.getItem('otpToken')
+                try {
+                    const response = await fetch('/otp/send-otp', { 
+                        method: "POST",
+                        headers:{"Content-Type":"application/json"},
+                        body: JSON.stringify({ token: localStorage.getItem('otpToken') })
+
+                    });
+
+                    if (!response.ok) {
+                        notyf.error("Failed to send OTP");
+                        return;
+                    }
+
+                    notyf.success("OTP Sent Successfully"); 
+                    otpTimer(30);  
+
+                } catch (error) {
+                    console.log(`Resend OTP error: ${error.message}`);
                 }
+            });
 
-                setTimeout(() => {
-                    window.location.href = result.redirect
+            function otpTimer(duration) {
+                let time = duration;
+                let timer = document.getElementById('Timer');
+                let resendOtp = document.getElementById('resendOtp');
+
+                resendOtp.disabled = true;
+
+                const interval = setInterval(() => {
+                    let minutes = Math.floor(time / 60);
+                    let seconds = time % 60;
+
+                    timer.innerHTML = `OTP expires in ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                    if (time <= 0) {
+                        clearInterval(interval);
+                        timer.innerHTML = `OTP expired`;
+                        resendOtp.disabled = false;
+                    }
+                    time--;
+
                 }, 1000);
-
-            } catch (error) {
-                console.log(`Otp verification error ${error.message}`)
             }
-        })
-    </script>
-</body>
 
+            otpTimer(30); 
 
-</html>
+        </script>
+
+    </body>
+
+    </html>

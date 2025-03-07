@@ -3,56 +3,55 @@ import OTP from '../models/otpSchema.js';
 import User from '../models/userSchema.js';
 import jwt from "jsonwebtoken"
 
-export const sendOTP = async (email) => {
-    try {
+    export const sendOTP = async (email) => {
+        try {
+            const checkUserPresent = await User.findOne({ email });
 
-        const checkUserPresent = await User.findOne({ email });
+            if (checkUserPresent) {
+                return {
+                    success: false,
+                    message: "User already exists"
+                }
+            }
 
-        if (checkUserPresent) {
+            let otp = otpGenerator.generate(4, {
+                lowerCaseAlphabets: false,
+                upperCaseAlphabets: false,
+                specialChars: false
+            })
+
+            let result = await OTP.findOne({ otp: otp })
+
+            while (result) {
+                otp = otpGenerator.generate(4, {
+                    upperCaseAlphabets: false
+                })
+                result = await OTP.findOne({ otp: otp })
+            }
+
+            const otpPayload = { email, otp }
+            //for store otp in db
+            await OTP.create(otpPayload)
+
+
+            return {
+                success: true,
+                message: "OTP sent successfully",
+                // redirect : we need to define next process
+            }
+
+
+
+        } catch (error) {
+
+            console.log(error.message)
             return {
                 success: false,
-                message: "User already exists"
+                message: "failed to send OTP",
+                error: error.message
             }
         }
-
-        let otp = otpGenerator.generate(4, {
-            lowerCaseAlphabets: false,
-            upperCaseAlphabets: false,
-            specialChars: false
-        })
-
-        let result = await OTP.findOne({ otp: otp })
-
-        while (result) {
-            otp = otpGenerator.generate(4, {
-                upperCaseAlphabets: false
-            })
-            result = await OTP.findOne({ otp: otp })
-        }
-
-        const otpPayload = { email, otp }
-        //for store otp in db
-        await OTP.create(otpPayload)
-
-
-        return {
-            success: true,
-            message: "OTP sent successfully",
-            // redirect : we need to define next process
-        }
-
-
-
-    } catch (error) {
-
-        console.log(error.message)
-        return {
-            success: false,
-            message: "failed to send OTP",
-            error: error.message
-        }
     }
-}
 
 
 export const otpVerifyGet = async (req, res, next) => {

@@ -227,9 +227,7 @@ export const categoryManagment = async (req, res, next) => {
 //===================Add category====================
 export const addCategoryGet = async (req, res, next) => {
     try {
-
         return res.render('admin/categoryAdd')
-
     } catch (error) {
         console.log(`add category getting failed ${error.message}`)
         return next(new AppError(`admin category add ${req.method} method failed `, 500))
@@ -242,12 +240,23 @@ export const addCategory = async (req, res, next) => {
     try {
         const { categoryId, categoryName, categoryDescription, status } = req.body
         console.log("addCategroy", req.body)
+        
+        const existCategory = await Category.findOne({categoryName})
+        console.log(existCategory)
+        if(existCategory){
+            return res.status(400).json({
+                success:false,
+                message:"category already exists"
+            })
+        }
         const newCatogory = new Category({
             categoryId: categoryId,
             categoryName: categoryName,
             description: categoryDescription,
             status: status
         })
+
+        
         await newCatogory.save()
 
         return res.status(201).json({
@@ -309,7 +318,7 @@ export const editCategoryPatch = async (req, res, next) => {
         console.log("editCategory Patch :", categoryDescription)
 
         const updatedCategory = await Category.findOneAndUpdate(
-            { categoryId },
+            { _id:categoryId },
             {
                 $set: {
                     categoryName,
@@ -418,7 +427,7 @@ export const addProductsPost = async (req, res, next) => {
         console.log("body", req.body)
         console.log("files", req.files)
         const {
-            name,
+            name,  
             description,
             author,
             price,
@@ -468,9 +477,8 @@ export const editProductsGet = async (req, res, next) => {
         console.log('edit product :', id)
 
         const product = await Product.findById(req.params.id);
-        console.log("Product:", product); // Check if it's null
+        // console.log("Product:", product);
 
-        // console.log(product)
         return res.render('admin/editProduct', { product })
 
     } catch (error) {
@@ -496,16 +504,17 @@ export const editProduct = async (req, res, next) => {
 
         const basePath = `${req.protocol}://${req.get("host")}/temp/uploads`;// this for getting image file path
         const files = req.files
-        let imagesPaths = []
+
+        let existProduct = await Product.findById(id)
+        let imagesPaths = existProduct.images
 
         if (files && files.length > 0) {
             imagesPaths = files.map(file => `${basePath}/${path.basename(file.path)}`);
-        } else {
-            return res.status(400).json({ success: false, message: "At least one image is required." });
         }
 
-        const x = await Product.findOneAndUpdate(
-            { productId: id },
+        // console.log(imagesPaths,"images path") 
+         await Product.findOneAndUpdate(
+            { _id : id },
             {
                 $set: {
                     name: name,
@@ -518,7 +527,7 @@ export const editProduct = async (req, res, next) => {
                 }
             }
         )
-        console.log(x)
+
         return res.json({
             success: true,
             message: "Product updated successfully",
@@ -530,7 +539,7 @@ export const editProduct = async (req, res, next) => {
     }
 }
 
-//==========delete Product
+//==========delete Product========
 export const deleteProduct = async (req, res, next) => {
     try {
         const productId = req.params.id
@@ -552,7 +561,7 @@ export const deleteProduct = async (req, res, next) => {
     }
 }
 
-//===block procuct
+//======block procuct
 export const blockProduct = async (req, res, next) => {
     try {
         const productId = req.params.id

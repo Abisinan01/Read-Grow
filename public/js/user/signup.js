@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(result, 'result fetch')
 
             if (result.success) {
+                localStorage.setItem("otpToken",result?.token)
                 notyf.success(result.message)
             }
             setTimeout(() => {

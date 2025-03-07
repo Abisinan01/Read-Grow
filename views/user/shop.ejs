@@ -87,45 +87,66 @@
                 <div>
                     <h2 class="text-lg font-semibold mb-3">Categories</h2>
                     <ul class="space-y-2">
-                        <% categories.forEach(category => { %>
+                        <li>
+                            <a href="/shop" class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
+                                All Categories
+                            </a>
+                        </li>
+                        <% categories.forEach(cat => { %>
                             <li>
-                                <a href="/shop/?search=<%= category.categoryName %>" 
-                                   class="text-gray-600 hover:text-gray-900">
-                                    <%= category.categoryName %>
+                                <a href="/shop/?category=<%= encodeURIComponent(cat.categoryName) %>&search=<%= search || '' %>" 
+                                   class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
+                                    <%= cat.categoryName %>
                                 </a>
                             </li>
                         <% }) %>
                     </ul>
                 </div>
+                
                 
 
                 <!-- Authors -->
                 <div>
                     <h2 class="text-lg font-semibold mb-3">Authors</h2>
                     <ul class="space-y-2">
-                    <% let set = new Set(products) %>
-                        <% set.forEach(product => { %>
+                        <% let authorSet = new Set(); %>
+                        <% products.forEach(product => authorSet.add(product.authorName)); %>
+                        
+                        <% authorSet.forEach(author => { %>
                             <li>
-                                <a href="/shop/?search=<%= product.authorName%>" 
+                                <a href="/shop/?search=<%= encodeURIComponent(author) %>" 
                                    class="text-gray-600 hover:text-gray-900">
-                                    <%= product.authorName %>
+                                    <%= author %>
                                 </a>
                             </li>
                         <% }) %>
                     </ul>
                 </div>
+                
 
                 <!-- Price Range -->
-                <!-- <div>
+                <div>
                     <h2 class="text-lg font-semibold mb-3">Price</h2>
                     <ul class="space-y-2">
-                     
                         <li>
-                            <a href="/shop?filter= " class="text-gray-600 hover:text-gray-900">Under $20</a>
+                            <a href="/shop?price=<%= encodeURIComponent('under-20') %>" class="text-gray-600 hover:text-gray-900">
+                                Under $20
+                            </a>
                         </li>
-                
+                        <li>
+                            <a href="/shop?price=<%= encodeURIComponent('20-50') %>" class="text-gray-600 hover:text-gray-900">
+                                $20 - $50
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/shop?price=<%= encodeURIComponent('above-100') %>" class="text-gray-600 hover:text-gray-900">
+                                Above $100
+                            </a>
+                        </li>
                     </ul>
-                </div> -->
+                </div>
+                
             </aside>
 
             <!-- Book Grid -->
