@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,169 +8,202 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            overscroll-behavior: none;
+            margin: 0;
+        }
+
+        .container-fluid {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-    <div class="flex min-h-screen">
+
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+    <div class="container-fluid">
+        <!-- Sidebar -->
         <%- include("../partials/admin/adminSideBar.ejs") %>
 
-        <div class="flex-1 ml-64">
-            <header class="bg-white shadow-sm sticky top-0 z-10">
-                <div class="flex justify-between items-center px-6 py-4">
-                    <h1 class="text-2xl font-semibold text-gray-800">Product Management</h1>
-                    <div class="flex items-center space-x-6">
-                        <!-- Add notification or profile here if needed -->
+            <div class="flex-1 main-content w-full" style="margin-left: calc(0% + 0px);">
+                <header class="bg-white shadow-sm sticky top-0 z-10">
+                    <div class="flex justify-between items-center px-4 sm:px-6 py-4">
+                        <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">Product Management</h1>
+                        <div class="flex items-center space-x-4 sm:space-x-6"></div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <main class="p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow"> -->
-                        <!-- <div class="flex items-center">
-                            <div class="p-3 bg-blue-100 rounded-full">
-                                <i class="fas fa-book text-blue-500 text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <h3 class="text-sm font-medium text-gray-500">Total Products</h3>
-                                <p class="text-2xl font-semibold text-gray-800">152</p>
-                            </div>
-                        </div> -->
-                    <!-- </div> -->
-                    <!-- Other stat cards remain the same -->
-                </div>
-
-                <div class="bg-white rounded-lg shadow-md">
-                    <div class="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between border-b border-gray-200">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4 lg:mb-0">Product List</h2>
-                        <div class="flex flex-col sm:flex-row items-center w-full sm:w-auto gap-4">
-                            <form id="searchForm" class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                                <div class="relative w-full sm:w-64">
-                                    <input type="text" placeholder="Search products..." name="searchInput" required
-                                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                </div>
-                                <button id="searchBtn" type="button"
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition duration-150">
-                                    Search
+                <main class="p-4 sm:p-6">
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div
+                            class="p-4 sm:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between border-b border-gray-200">
+                            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4 lg:mb-0">Product List</h2>
+                            <div class="flex flex-col sm:flex-row items-center w-full sm:w-auto gap-4">
+                                <form id="searchForm"
+                                    class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                                    <div class="relative w-full sm:w-64">
+                                        <input type="text" placeholder="Search products..." name="searchInput" required
+                                            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <i
+                                            class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    </div>
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition duration-150 w-full sm:w-auto">Search</button>
+                                </form>
+                                <button
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition duration-150 w-full sm:w-auto"
+                                    onclick="window.location.href='/admin/products'">Reset</button>
+                                <button onclick="window.location.href='/admin/add-products'"
+                                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-black flex items-center transition duration-150 w-full sm:w-auto">
+                                    <i class="fas fa-plus mr-2"></i> Add Product
                                 </button>
-                            </form>
-                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition duration-150"
-                                onclick="location.reload()">
-                                Reset
-                            </button>
-                            <button onclick="window.location.href = '/admin/add-products'"
-                                class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-black flex items-center transition duration-150">
-                                <i class="fas fa-plus mr-2"></i> Add Product
-                            </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full table-auto">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-600 uppercase text-xs font-semibold tracking-wider">
-                                    <th class="px-6 py-4 text-left">Product</th>
-                                    <th class="px-6 py-4 text-left">Category</th>
-                                    <th class="px-6 py-4 text-left">Stock</th>
-                                    <th class="px-6 py-4 text-left">Price</th>
-                                    <th class="px-6 py-4 text-left">Status</th>
-                                    <th class="px-6 py-4 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                <% allProducts.forEach(product => { %>
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <img src="<%= product.images[0] || '/default-image.jpg' %>" alt="Book cover"
-                                                    class="h-14 w-14 rounded-md object-cover shadow-sm">
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900"><%= product.name %></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                <%= product.category %>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <%= product.stock %> copies
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">$<%= product.price %></div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full <%= product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %>">
-                                                <%= product.stock === 0 ? 'Out of Stock' : 'In Stock' %>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <div class="flex space-x-3">
-                                                <button class="text-blue-600 hover:text-blue-800" title="Edit">
-                                                    <i onclick="window.location.href='/admin/product/<%= product._id %>'" class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="text-red-600 hover:text-red-900" title="Delete">
-                                                    <i onclick="deleteConfirm('<%= product._id %>')" class="fas fa-trash-alt"></i>
-                                                </button>
-                                                <button class="text-gray-600 hover:text-gray-900 text-xs p-1 w-6 h-6 rounded" title="View"
-                                                    onclick="isBlocked('/admin/block-product/<%= product._id %>', this)">
-                                                    <i class="fas <%= product.isBlocked ? 'fa-eye-slash' : 'fa-eye' %>"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                        <div class="table-container overflow-x-auto">
+                            <table class="w-full table-auto min-w-[600px]">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-100 text-gray-600 uppercase text-xs font-semibold tracking-wider">
+                                        <th class="px-2 sm:px-6 py-3 sm:py-4 text-left">Product</th>
+                                        <th class="px-2 sm:px-6 py-3 sm:py-4 text-left">Category</th>
+                                        <th class="px-2 sm:px-6 py-3 sm:py-4 text-left">Stock</th>
+                                        <th class="px-2 sm:px-6 py-3 sm:py-4 text-left">Price</th>
+                                        <th class="px-2 sm:px-6 py-3 sm:py-4 text-left">Status</th>
+                                        <th class="px-2 sm:px-6 py-3 sm:py-4 text-left">Actions</th>
                                     </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <% allProducts.forEach(product=> { %>
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <img src="<%= product.images[0] || '/default-image.jpg' %>"
+                                                        alt="Book cover"
+                                                        class="h-10 w-10 sm:h-14 sm:w-14 rounded-md object-cover shadow-sm">
+                                                    <div class="ml-2 sm:ml-4">
+                                                        <div class="text-xs sm:text-sm font-medium text-gray-900">
+                                                            <%= product.name %>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                    <%= product.category %>
+                                                </span>
+                                            </td>
+                                            <td
+                                                class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                <%= product.stock %> copies
+                                            </td>
+                                            <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                                <div class="text-xs sm:text-sm text-gray-900">$<%= product.price %>
+                                                </div>
+                                            </td>
+                                            <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 py-1 text-xs font-semibold rounded-full <%= product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %>">
+                                                    <%= product.stock===0 ? 'Out of Stock' : 'In Stock' %>
+                                                </span>
+                                            </td>
+                                            <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                <div class="flex space-x-2 sm:space-x-3">
+                                                    <button class="text-blue-600 hover:text-blue-800" title="Edit"><i
+                                                            onclick="window.location.href='/admin/product/<%= product._id %>'"
+                                                            class="fas fa-edit"></i></button>
+                                                    <button class="text-red-600 hover:text-red-900" title="Delete"><i
+                                                            onclick="deleteConfirm('<%= product._id %>')"
+                                                            class="fas fa-trash-alt"></i></button>
+                                                    <button class="text-gray-600 hover:text-gray-900 p-1 w-5 h-5 sm:w-6 sm:h-6 rounded"
+                                                            title="View"
+                                                            onclick="isBlocked(event, '/admin/block-product/<%= product._id %>')">
+                                                            <i class="fas <%= product.isBlocked ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+                                                    </button>
+                                                        
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <div class="px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
-                        <div class="flex space-x-2">
-                            <% if (page > 1) { %>
-                                <a href="/admin/products/?page=<%= page - 1 %>&limit=<%= limit %>"
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-                                    Previous
-                                </a>
-                            <% } else { %>
-                                <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 bg-gray-100 cursor-not-allowed">
-                                    Previous
-                                </span>
-                            <% } %>
+                        <div
+                            class="px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
+                            <div class="flex space-x-2">
+                            <% if (page> 1) { %>
+                                    <a href="/admin/products/?page=<%= page - 1 %>&limit=<%= limit %><%= query ? '&query=' + query : '' %>"
+                                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Previous</a>
+                                <% } else { %>
+                                    <span
+                                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>
+                                <% } %>
 
-                            <% for (let i = 1; i <= totalPages; i++) { %>
-                                <a href="/admin/products/?page=<%= i %>&limit=<%= limit %>"
-                                    class="px-3 py-1 rounded-md text-sm <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50' %>">
-                                    <%= i %>
-                                </a>
-                            <% } %>
+                                <% for (let i=1; i <=totalPages; i++) { %>
+                                    <a href="/admin/products/?page=<%= i %>&limit=<%= limit %><%= query ? '&query=' + query : '' %>"
+                                        class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50' %>">
+                                        <%= i %>
+                                    </a>
+                                    <% } %>
 
-                            <% if (page < totalPages) { %>
-                                <a href="/admin/products/?page=<%= page + 1 %>&limit=<%= limit %>"
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-                                    Next
-                                </a>
-                            <% } else { %>
-                                <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 bg-gray-100 cursor-not-allowed">
-                                    Next
-                                </span>
-                            <% } %>
+                                <% if (page < totalPages) { %>
+                                    <a href="/admin/products/?page=<%= page + 1 %>&limit=<%= limit %><%= query ? '&query=' + query : '' %>"
+                                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Next</a>
+                                    <% } else { %>
+                                        <span
+                                         class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>
+                             <% } %>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </main>
-        </div>
+                </main>
+            </div>
     </div>
 
     <script>
-        const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
 
+        // Initialize Toastify
+        const toastifyOptions = {
+            duration: 3000,
+            position: "right",
+            style: { background: "red" } // Red background for errors
+        };
+
+        // Delete Confirmation
         function deleteConfirm(productId) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "You won't be able to revert this!",
+                text: "This action cannot be undone!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -182,164 +216,200 @@
             });
         }
 
+        // Delete Product
         async function deleteProduct(productId) {
             try {
                 const response = await fetch(`/admin/product/${productId}`, { method: 'DELETE' });
                 const result = await response.json();
+
                 if (!response.ok) {
-                    return notyf.error(result.message || 'Something went wrong');
+                    Toastify({ text: result.message || "Something went wrong", ...toastifyOptions }).showToast();
+                    return;
                 }
-                if (result.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Updated!',
-                        text: 'Product status updated',
-                        confirmButtonColor: '#3085d6',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }); 
-                    location.reload();
-                }
-            } catch (error) {
-                console.error("Delete product error:", error);
-                notyf.error('Failed to delete product');
-            }
-        }
-
-        async function isBlocked(url, button) {
-        try {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: "Do you want to change this product's status?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'No'
-        });
-
-        if (result.isConfirmed) {
-            const response = await fetch(url, { method: 'PUT' });
-            const data = await response.json();
-
-            console.log('API Response:', data); // Debug API response
-
-            if (response.ok && data.success) {
-                const icon = button.querySelector('i');
-                
-                console.log('Before Toggle:', icon.classList); // Log before update
-
-                if (data.isBlocked) {
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
-
-                console.log('After Toggle:', icon.classList); // Log after update
 
                 Swal.fire({
                     icon: 'success',
-                    title: 'Updated!',
-                    text: 'Product status updated',
-                    confirmButtonColor: '#3085d6',
+                    title: 'Deleted!',
+                    text: 'Product deleted successfully',
                     timer: 1500,
                     showConfirmButton: false
                 });
-
-            } else {
-                notyf.error('Failed to update product status');
+                location.reload();
+            } catch (error) {
+                console.error("Delete error:", error);
+                Toastify({ text: "Failed to delete product", ...toastifyOptions }).showToast();
             }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        notyf.error('Something went wrong');
-    }
-}
 
-
-        document.getElementById('searchForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const searchInput = document.querySelector('input[name="searchInput"]');
-            const value = searchInput.value.trim();
-
-            try {
-                const query = value ? `?q=${encodeURIComponent(value)}` : '';
-                const response = await fetch(`/admin/search-product${query}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                });
-                const result = await response.json();
-
-                if (!response.ok) {
-                    const tbody = document.querySelector("tbody");
-                    tbody.innerHTML = `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td colspan="6" class="px-6 py-4 text-center">
-                            <div class="text-bold text-red-600">
-                                No products found
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                 return;
-                } 
-                console.log(1)
-                if(result.success){
-                    console.log(2)
-                    updateTable(result.products);
-                } 
-            } catch (error) {
-                console.log("Search product failed:", error.message);
-                notyf.error('Search failed');
+        // Toggle Product Status
+        async function isBlocked(event, url) {
+            const result = await Swal.fire({
+                title: 'Change status?',
+                text: "Do you want to update this product's status?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes'
+            });
+        
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(url, { method: 'PUT' });
+        
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+        
+                    const data = await response.json();
+                    console.log("API Response:", data); // Debugging
+        
+                    if (data.success) {
+                        // Get the button element from the event
+                        const button = event.target.closest('button'); // Ensure it selects the correct button
+        
+                        if (button) {
+                            const icon = button.querySelector('i'); // Find the <i> tag inside the button
+        
+                            if (icon) {
+                                icon.classList.toggle('fa-eye', !data.isBlocked);
+                                icon.classList.toggle('fa-eye-slash', data.isBlocked);
+                            } else {
+                                console.error("Icon element not found inside the button.");
+                            }
+                        } else {
+                            console.error("Button element not found.");
+                        }
+        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: 'Status changed',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Toastify({ text: "Failed to update status", ...toastifyOptions }).showToast();
+                    }
+                } catch (error) {
+                    console.error("Status error:", error);
+                    Toastify({ text: "Something went wrong", ...toastifyOptions }).showToast();
+                }
             }
+        }
+
+
+
+        // Search Form Submission
+        document.getElementById('searchForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const searchInput = document.querySelector('input[name="searchInput"]').value.trim();
+            const url = new URL(window.location.href);
+            url.pathname = '/admin/products';
+            url.searchParams.set('query', searchInput);
+            url.searchParams.set('page', '1');
+            url.searchParams.set('limit', '<%= limit %>');
+            window.location.href = url.toString();
         });
 
-        function updateTable(products) {
-            const tbody = document.querySelector("tbody");
-            tbody.innerHTML = "";
+        // Fetch Products (Simplified)
+        async function fetchProducts(query = '', page = 1, limit = <%= limit %>) {
+            try {
+                const url = `/admin/products?page=${page}&limit=${limit}${query ? `&query=${encodeURIComponent(query)}` : ''}`;
+                const response = await fetch(url, {
+                        method: 'GET',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' } // Indicate AJAX request
+                    });
+                const data = await response.json();
+ 
 
-            products?.forEach((product) => {
+                if (response.ok && data.success) {
+                       console.log(2)
+                        updateTable(data.allProducts);
+                        updatePagination(data.totalPages, data.page);
+                        history.pushState({}, '', url); // Update URL without reload
+                } else {
+                        document.querySelector('tbody').innerHTML = `
+                            <tr class="hover:bg-gray-50 transition">
+                                <td colspan="5" class="px-6 py-4 text-center">
+                                    <div class="text-bold text-red-600 text-sm">
+                                        Not found products
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                Toastify({ text: "Failed to load products", ...toastifyOptions }).showToast();
+            }
+        }
+
+        // Update Table
+        function updateTable(products) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            if (products.length === 0 || !products) {
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-red-600">No products found</td>
+            </tr>`;
+                return;
+            }
+
+            products.forEach(product => {
                 tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <img src="${product.images?.[0] || '/default-image.jpg'}" alt="Book cover"
-                                    class="h-14 w-14 rounded-md object-cover shadow-sm">
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">${product.name}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${product.category}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.stock} copies</td>
-                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900">$${product.price}</div></td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                                ${product.stock === 0 ? 'Out of Stock' : 'In Stock'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <div class="flex space-x-3">
-                                <button class="text-blue-600 hover:text-blue-800" title="Edit">
-                                    <i onclick="window.location.href='/admin/product/${product._id}'" class="fas fa-edit"></i>
-                                </button>
-                                <button class="text-red-600 hover:text-red-900" title="Delete">
-                                    <i onclick="deleteConfirm('${product._id}')" class="fas fa-trash-alt"></i>
-                                </button>
-                                <button class="text-gray-600 hover:text-gray-900 text-xs p-1 w-6 h-6 rounded" title="View"
-                                    onclick="isBlocked('/admin/block-product/${product._id}', this)">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>`;
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <img src="${product.images?.[0] || '/default-image.jpg'}" alt="Book cover" class="h-14 w-14 rounded-md">
+                        <div class="ml-4">${product.name}</div>
+                    </div>
+                </td>
+                <td class="px-6 py-4"><span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${product.category}</span></td>
+                <td class="px-6 py-4">${product.stock} copies</td>
+                <td class="px-6 py-4">$${product.price}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-full ${product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                        ${product.stock === 0 ? 'Out of Stock' : 'In Stock'}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-3">
+                        <button class="text-blue-600" onclick="window.location.href='/admin/product/${product._id}'"><i class="fas fa-edit"></i></button>
+                        <button class="text-red-600" onclick="deleteConfirm('${product._id}')"><i class="fas fa-trash-alt"></i></button>
+                        <button class="text-gray-600" onclick="isBlocked('/admin/block-product/${product._id}', this)">
+                            <i class="fas ${product.isBlocked ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
             });
+        }
+
+        // Update Pagination
+        function updatePagination(currentPage, totalPages) {
+            const nav = document.querySelector('.flex.space-x-2');
+            nav.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            nav.innerHTML += currentPage > 1
+                ? `<a href="/admin/products/?page=${currentPage - 1}&limit=<%= limit %><%= query ? '&query=' + query : '' %>" class="px-3 py-1 border rounded-md text-gray-500 hover:bg-gray-50">Previous</a>`
+                : `<span class="px-3 py-1 border rounded-md text-gray-400 bg-gray-100">Previous</span>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                nav.innerHTML += `
+            <a href="/admin/products/?page=${i}&limit=<%= limit %><%= query ? '&query=' + query : '' %>" 
+               class="px-3 py-1 rounded-md ${i === currentPage ? 'bg-blue-600 text-white' : 'border text-gray-500 hover:bg-gray-50'}">${i}</a>`;
+            }
+
+            nav.innerHTML += currentPage < totalPages
+                ? `<a href="/admin/products/?page=${currentPage + 1}&limit=<%= limit %><%= query ? '&query=' + query : '' %>" class="px-3 py-1 border rounded-md text-gray-500 hover:bg-gray-50">Next</a>`
+                : `<span class="px-3 py-1 border rounded-md text-gray-400 bg-gray-100">Next</span>`;
         }
     </script>
 </body>
+
 </html>

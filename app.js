@@ -23,7 +23,8 @@ import { error } from "console";
 import AppError from "./utils/errorHandler.js";
 import cookieParser from "cookie-parser";
 import methodOverride from "method-override"
-
+import User from "./models/userSchema.js";
+ 
  
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,7 +33,7 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 4000 
 connectDb().catch((error) => {
     console.log(`Database connection failed : ${error.message}`)
-    process.exit(1) 
+    process.exit(1)  
 })  
 
 const app = express()//express
@@ -42,7 +43,7 @@ app.use(express.static(path.join(__dirname, "public")))
  
 app.use(cookieParser())
 app.use(express.json())//parsing json data
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true })) 
 app.use(nocache())
 app.use(session({
     secret: process.env.SESSION_SCERET,
@@ -72,18 +73,20 @@ app.use((err, req, res, next) => {
 
     console.error(`Error: ${message}, statusCode :${statusCode}`);
     
-    return res.status(statusCode).json({ message:'Something went wrong' }); 
+    return res.status(statusCode).json({success:false, message:'Something went wrong' }); 
     // return res.status(500).json("Internal Server Error")
 }); 
    
 // console.log("process Id ",process.pid)
 process.on('SIGINT', () => {
-    console.log("Closing server...");
+    console.log("Closing server..."); 
     process.exit();
 });
 
- 
+
+
 app.get('/',(req,res)=>{
+    
     res.redirect('/read-and-grow/login')
 })
 app.listen(PORT, () => console.log(`Server started running with ${PORT}`));//Listening the port

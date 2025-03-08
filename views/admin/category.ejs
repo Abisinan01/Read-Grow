@@ -1,210 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Category Management - Read & Grow Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <!-- SweetAlert2 JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
-
-    <!-- Notyf CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
-    <!-- Notyf JS -->
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-
-    <script src="/js/admin/category.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem;
+            }
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            overscroll-behavior: none;
+            margin: 0;
+        }
+        .container-fluid {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100">
-    <div class="flex">
-        <!--sidebar ejs partials link-->
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="container-fluid">
+        
+        <!-- Sidebar -->
         <%- include("../partials/admin/adminSideBar.ejs") %>
 
-        <!-- Main content -->
-        <div class="ml-[15%] w-[85%] p-8">
+        <!-- Main Content -->
+        <div class="flex-1 main-content p-6" style="margin-left: calc(5% + 0px);">
+            <header class="bg-white shadow-sm sticky top-0 z-10 mb-6">
+                <div class="flex justify-between items-center px-6 py-4">
+                    <h1 class="text-2xl font-semibold text-gray-800">Category Management</h1>
+                </div>
+            </header>
+
             <div class="bg-white rounded-lg shadow-md">
                 <!-- Header -->
                 <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-800">Categories</h1>
+                            <h2 class="text-xl font-semibold text-gray-800">Categories</h2>
                             <p class="text-gray-600 mt-1">Manage your book categories</p>
                         </div>
                         <button onclick="window.location.href='/admin/add-category'"
-                            class="bg-black hover:bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Add Category
+                            class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition w-full sm:w-auto">
+                            <i class="fas fa-plus"></i> Add Category
                         </button>
                     </div>
 
                     <!-- Search and Filter -->
                     <div class="mt-4">
-                        <div class="flex gap-4 items-center">
-                            <div class="flex-1 max-w-lg">
-                                <form id="formData" class="flex gap-2 items-center" onsubmit="event.preventDefault();">
-                                    <div class="relative flex-1">
-                                        <input type="text" 
-                                               id="searchInput" 
-                                               placeholder="Search categories..." 
-                                               name="searchInput"
-                                               class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                        <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
-                                             fill="none"
-                                             stroke="currentColor" 
-                                             viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" 
-                                                  stroke-linejoin="round" 
-                                                  stroke-width="2"
-                                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <button type="submit" 
-                                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-150 h-full"
-                                            id="searchBtn">
-                                        Search
-                                    </button>
-                                </form>
-                            </div>
-                            <button id="resetButton" 
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-150 h-10">
+                        <div class="flex flex-col sm:flex-row gap-4 items-center">
+                            <form id="formData" class="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
+                                <div class="relative w-full sm:w-64">
+                                    <input type="text" id="searchInput" name="searchInput" placeholder="Search categories..."
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <button type="submit" id="searchBtn"
+                                    class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition w-full sm:w-auto">
+                                    Search
+                                </button>
+                            </form>
+                            <button id="resetButton"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition w-full sm:w-auto">
                                 Reset
                             </button>
-                            <script>
-                                    document.getElementById("resetButton").addEventListener("click", function () {
-                                    document.getElementById("searchInput").value = ""; // Clear search input
-                                    document.getElementById("searchResults").innerHTML = ""; // Clear results
-                                });
-                            </script>
                         </div>
                     </div>
                 </div>
 
                 <!-- Table -->
-                <div class="overflow-x-auto">
-                    <div class="min-w-full overflow-hidden">
-                        <table class="w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50 hidden md:table-header-group">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Category Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Description</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Books</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
+                <div class="table-container">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100 text-gray-700 uppercase text-xs font-semibold tracking-wider">
+                            <tr>
+                                <th class="px-6 py-3 text-left">Category Name</th>
+                                <th class="px-6 py-3 text-left">Description</th>
+                                <th class="px-6 py-3 text-left">Total Books</th>
+                                <th class="px-6 py-3 text-left">Status</th>
+                                <th class="px-6 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <% categories.forEach(category => { %>
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap"><%= category.categoryName %></td>
+                                    <td class="px-6 py-4"><%= category.description %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <% const product = products.find(p => p._id === category.categoryName); %>
+                                        <%= product ? product.count : 0 %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <%= category.status %>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex gap-2">
+                                            <a href="/admin/edit-category/<%= category._id %>"
+                                                class="text-blue-600 hover:text-blue-800 transition">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button onclick="deleteConfirm('<%= category._id %>')"
+                                                class="text-red-600 hover:text-red-800 transition">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 flex flex-col md:table-row-group">
-                                <% categories.forEach(category=>{ %>
-                                    <tr class="flex flex-col md:table-row mb-4 md:mb-0">
-                                        <td class="px-6 py-4 md:whitespace-nowrap">
-                                            <span class="md:hidden font-bold">Name: </span>
-                                            <%= category.categoryName %>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="md:hidden font-bold">Description: </span>
-                                            <%= category.description %>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <% products.forEach(product=>{ %>
-                                            <% if(category.categoryName == product._id){ %>
-                                            <span class="md:hidden font-bold">Total Books: </span>
-                                                <%= product.count %>
-                                            <% } %>
-                                            <% }) %>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="md:hidden font-bold">Status: </span>
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                <%= category.status %>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="md:hidden font-bold">Actions: </span>
-                                            <div class="flex gap-2">
-                                                <a class="text-blue-600 hover:text-blue-800" 
-                                                    name="editButton"
-                                                    href="/admin/edit-category/<%= category._id %>">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                                        </path>
-                                                    </svg>
-                                                </a>
-                                                <button onclick="deleteConfirm('<%= category._id %>')"
-                                                    class="text-red-600 hover:text-red-800">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                                        </path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
+                            <% }) %>
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- Pagination -->
-                <div class="px-6 py-4 flex items-center justify-between border-t border-gray-200">
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <!-- Results Count -->
-                        <!-- <div>
-                            <p class="text-sm text-gray-700">
-                                Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of
-                                <span class="font-medium">20</span> results
-                            </p>
-                        </div> -->
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                <% if(page > 1) { %>
-                                    <a href="/admin/category/?page=<%= page-1 %>&limit=<%= limit %>"  
-                                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                        Previous
-                                    </a>
-                                <% } else { %>
-                                    <button disabled
-                                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
-                                        Previous
-                                    </button>
-                                <% } %>
-                                <% for(let i = 1; i <= totalPages; i++) { %>
-                                    <a href="/admin/category/?page=<%= i %>&limit=<%= limit %>"
-                                        class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-600 text-white text-sm font-medium">
-                                        <%= i %>
-                                    </a>
-                                <% } %>                              
-                                <% if(page < totalPages) { %>
-                                    <a href="/admin/category/?page=<%= page+1 %>&limit=<%= limit %>"
-                                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                        Next
-                                    </a>
-                                <% } else { %>
-                                    <button disabled
-                                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
-                                        Next
-                                    </button>
-                                <% } %>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
+                <nav class="flex items-center justify-center gap-4 p-6 border-t border-gray-200">
+                    <% if (page > 1) { %>
+                        <a href="/admin/category/?page=<%= page - 1 %>&limit=<%= limit %>"
+                            class="px-3 py-1 rounded-md text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-500 hover:text-gray-700 flex items-center gap-1 transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    <% } else { %>
+                        <span class="px-3 py-1 rounded-md text-sm bg-white border border-gray-300 text-gray-300 flex items-center gap-1 cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    <% } %>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="/admin/category/?page=<%= i %>&limit=<%= limit %>"
+                            class="px-3 py-1 rounded-md text-sm <%= i === page ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900' %> transition">
+                            <%= i %>
+                        </a>
+                    <% } %>
+                    <% if (page < totalPages) { %>
+                        <a href="/admin/category/?page=<%= page + 1 %>&limit=<%= limit %>"
+                            class="px-3 py-1 rounded-md text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-500 hover:text-gray-700 flex items-center gap-1 transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } else { %>
+                        <span class="px-3 py-1 rounded-md text-sm bg-white border border-gray-300 text-gray-300 flex items-center gap-1 cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    <% } %>
+                </nav>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Reset button functionality
+            document.getElementById("resetButton").addEventListener("click", function () {
+                document.getElementById("searchInput").value = "";
+                location.reload(); // Reload to show all categories
+            });
+
+            // Search form submission
+            document.getElementById('formData').addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const searchInput = document.querySelector('input[name="searchInput"]');
+                const value = searchInput.value.trim();
+
+                try {
+                    const query = value ? `?q=${encodeURIComponent(value)}` : '';
+                    const response = await fetch(`/admin/search-category${query}`, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.category?.length) {
+                        const tbody = document.querySelector("tbody");
+                        tbody.innerHTML = `
+                            <tr class="hover:bg-gray-50 transition">
+                                <td colspan="5" class="px-6 py-4 text-center">
+                                    <div class="text-bold text-red-600 text-sm">
+                                        No categories found
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    updateTable(result.category);
+                } catch (error) {
+                    console.error("Search failed:", error.message);
+                    Toastify({
+                        text: "Failed to search categories",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f44336"
+                    }).showToast();
+                }
+            });
+
+            // Delete confirmation
+            window.deleteConfirm = function (categoryId) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteCategory(categoryId);
+                    }
+                });
+            };
+
+            // Delete category
+            async function deleteCategory(categoryId) {
+                try {
+                    const response = await fetch(`/admin/category/${categoryId}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Something went wrong');
+                    }
+
+                    if (result.success) {
+                        Toastify({
+                            text: "Category deleted successfully",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#4CAF50"
+                        }).showToast();
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                } catch (error) {
+                    console.error("Delete category error:", error);
+                    Toastify({
+                        text: error.message || "Failed to delete category",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f44336"
+                    }).showToast();
+                }
+            }
+
+            // Update table with search results
+            function updateTable(categories) {
+                const tbody = document.querySelector('tbody');
+                tbody.innerHTML = "";
+
+                categories.forEach(category => {
+                    const product = <%- JSON.stringify(products) %>.find(p => p._id === category.categoryName);
+                    const bookCount = product ? product.count : 0;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 whitespace-nowrap">${category.categoryName}</td>
+                            <td class="px-6 py-4">${category.description}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${bookCount}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    ${category.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex gap-2">
+                                    <a href="/admin/edit-category/${category._id}" class="text-blue-600 hover:text-blue-800 transition">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button onclick="deleteConfirm('${category._id}')" class="text-red-600 hover:text-red-800 transition">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        });
+    </script>
 </body>
-</html>
+</html> 

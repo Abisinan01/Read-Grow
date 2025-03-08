@@ -109,7 +109,7 @@ export const renderLoginPage = async (req, res, next) => {
         return next(new AppError(`User login failed : ${error}`, 500))
     }
 }
-
+ 
 
 export const handleLoginPage = async (req, res, next) => {
     try {
@@ -169,7 +169,7 @@ export const renderHomePage = async (req, res, next) => {
             $and: [
                 { rating: { $gte: 4.0 } },
                 { isBlocked: { $ne: true } }
-            ]
+            ]   
         }).limit(3);
 
         const isUser = await User.findOne({_id:user.id})
@@ -462,40 +462,6 @@ export const changePasswordRequest = async (req, res, next) => {
         next(new AppError(`Change password : ${error}`, 500))
     }
 }
-
-//=========search products========== 
-// export const searchProduct = async (req,res,next)=>{
-//     try {
-//         // const {query}=req.query || ""
-//         // const page = req.query || 1
-//         const limit = 5
-//         const skip = (page-1)*limit
-//         let products = await Product.find({
-//             $or: [
-//                 { name: { $regex: query, $options: "i" } },
-//                 { category: { $regex: query, $options: "i" } },
-//             ]
-//         })
-//         .sort({createdAt:-1})
-//         .skip(skip)
-//         .limit(limit)
-
-//         const totalProducts = await Product.find().countDocuments()
-//         const totalPages = Math.ceil(totalProducts/limit)
-
-//         return res.status(200).json({
-//             success:true,
-//             products,
-//             totalPages,
-//             totalProducts,
-//             limit,
-//             page         
-//         })
-        
-//     } catch (error) {
-//         next(new AppError(`Product search failed :${error}`,500))
-//     }
-// }
 
 
 

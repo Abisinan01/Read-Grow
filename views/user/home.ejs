@@ -18,8 +18,11 @@
 
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- Navbar -->
-    <%- include("../partials/user/navBar.ejs") %>
-
+        <% if(user){%>
+            <%- include("../partials/user/navBar.ejs") %>
+        <% }%>
+            
+       
         <!-- Hero Section -->
         <section class="relative bg-gray-900">
             <img src="/images/stephen-andrews-u0zTce7KNlY-unsplash.jpg" alt=""

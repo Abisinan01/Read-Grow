@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,61 +7,89 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0 !important; /* Override margin on mobile */
+                padding: 1rem;
+            }
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            overscroll-behavior: none;
+            margin: 0; /* Remove default body margin */
+        }
+        /* Ensure sidebar and content fit perfectly */
+        .container-fluid {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 
 <body class="font-sans bg-gray-100">
-    <div class="flex min-h-screen">
+    <div class="container-fluid">
         <!-- Sidebar -->
         <%- include("../partials/admin/adminSideBar.ejs") %>
 
         <!-- Main Content -->
-        <div class="flex-1 ml-52 p-6 bg-gray-50">
-            <!-- Header -->
-            <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6 ">
+        <div class="flex-1 main-content p-6 bg-gray-50" style="margin-left: calc(5% + 0px);">
+            <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6">
                 <h1 class="text-2xl font-semibold text-gray-800">Sales Details</h1>
-                <!-- <div class="w-10 h-10 bg-gray-300 rounded-full"></div> -->
             </div>
 
             <!-- Sales Chart -->
             <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                     <h2 class="text-lg font-semibold text-gray-700">Monthly Sales</h2>
-                    <select class="px-3 py-1 border border-gray-300 rounded-md">
+                    <select class="px-3 py-1 border border-gray-300 rounded-md w-full sm:w-auto">
                         <option>October</option>
                     </select>
                 </div>
                 <div class="h-64 flex items-center justify-center text-gray-500">
-                    <!-- Placeholder for Chart -->
                     <span>Chart will be implemented here.</span>
                 </div>
             </div>
 
             <!-- Order Details -->
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <div class="flex justify-between items-center mb-5">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4">
                     <h2 class="text-xl font-semibold text-gray-700">Order Details</h2>
-                    <div class="flex gap-4">
-                        <select class="px-3 py-1 border border-gray-300 rounded-md">
+                    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                        <select class="px-3 py-1 border border-gray-300 rounded-md w-full sm:w-auto">
                             <option>October</option>
                         </select>
-                        <button class="px-5 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
+                        <button class="px-5 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition w-full sm:w-auto">
                             PRINT
                         </button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="table-container">
+                    <table class="w-full bg-white border border-gray-200 rounded-lg overflow-hidden min-w-[600px]">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700">
-                                <th class="py-3 px-4 text-left border-b">Product Name</th>
-                                <th class="py-3 px-4 text-left border-b">Location</th>
-                                <th class="py-3 px-4 text-left border-b">Date - Time</th>
-                                <th class="py-3 px-4 text-left border-b">Piece</th>
-                                <th class="py-3 px-4 text-left border-b">Amount</th>
-                                <th class="py-3 px-4 text-left border-b">Status</th>
+                                <th class="py-3 px-4 text-left border-b whitespace-nowrap">Product Name</th>
+                                <th class="py-3 px-4 text-left border-b whitespace-nowrap">Location</th>
+                                <th class="py-3 px-4 text-left border-b whitespace-nowrap">Date - Time</th>
+                                <th class="py-3 px-4 text-left border-b whitespace-nowrap">Piece</th>
+                                <th class="py-3 px-4 text-left border-b whitespace-nowrap">Amount</th>
+                                <th class="py-3 px-4 text-left border-b whitespace-nowrap">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,7 +100,7 @@
                                 <td class="py-3 px-4 border-b">423</td>
                                 <td class="py-3 px-4 border-b">$39.9</td>
                                 <td class="py-3 px-4 border-b">
-                                    <span class="px-3 py-1 bg-teal-500 text-white rounded-full text-sm">
+                                    <span class="px-3 py-1 bg-teal-500 text-white rounded-full text-sm inline-block">
                                         Delivered
                                     </span>
                                 </td>
@@ -85,7 +112,7 @@
                                 <td class="py-3 px-4 border-b">423</td>
                                 <td class="py-3 px-4 border-b">$34</td>
                                 <td class="py-3 px-4 border-b">
-                                    <span class="px-3 py-1 bg-yellow-400 text-gray-700 rounded-full text-sm">
+                                    <span class="px-3 py-1 bg-yellow-400 text-gray-700 rounded-full text-sm inline-block">
                                         Pending
                                     </span>
                                 </td>
@@ -94,9 +121,34 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
-</body>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You will be logged out!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, logout!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Toastify({
+                        text: "Logged out successfully!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#4CAF50",
+                    }).showToast();
+                }
+            });
+        });
+    </script>
+</body>
 </html>

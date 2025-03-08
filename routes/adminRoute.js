@@ -10,7 +10,6 @@ import {
     adminLoginGet,
     adminLoginPost,
     adminLogout,
-    adminUserGet,
     blockProduct,
     blockUser,
     categoryManagment,
@@ -20,25 +19,22 @@ import {
     editCategoryPatch,
     editProduct,
     editProductsGet,
-    productManagment,
+    renderProductPage,
+    renderUserPanel,
     searchCategory,
-    searchProduct,
-    searchUser,
-
+ 
 } from "../controllers/adminController.js"
 import upload from '../utils/multer.js';
 
 //========Login
 router.get('/login', adminLoginGet) 
-router.post('/login', adminLoginPost)  
+router.post('/login', adminLoginPost)   
 //=========Dashboard
 router.get('/dashboard', adminAuth, adminDashboardGet)
 
 //======users
-router.get('/users', adminAuth, adminUserGet)
+router.get('/users', adminAuth, renderUserPanel)
 
-// router.get('/search', adminAuth, searchUser)
-router.get('/search', adminAuth, searchUser)
 router.put('/blockUser/:id', adminAuth, blockUser)
 
 //========category 
@@ -53,14 +49,14 @@ router.patch('/category/:id',adminAuth, editCategoryPatch)
 router.delete('/category/:id',adminAuth, deleteCategory)
 router.get('/search-category',adminAuth,searchCategory)
 //===========ProductMangment
-router.get("/products",adminAuth,productManagment)
+router.get("/products",adminAuth,renderProductPage)
 router.get("/add-products",adminAuth,addProducts)
 router.post("/add-products",upload.array('images',3),addProductsPost)
 router.get('/product/:id',adminAuth,editProductsGet)
 router.patch("/product/:id",upload.array('images',3),editProduct)
 router.delete('/product/:id',adminAuth ,deleteProduct)
 router.put('/block-product/:id',adminAuth,blockProduct)
-router.get('/search-product',adminAuth,searchProduct)
+
  
 //======logout=============
 router.post("/logout", adminLogout)

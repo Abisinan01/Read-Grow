@@ -1,135 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Products - Read & Grow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://unpkg.com/cropperjs/dist/cropper.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs@2.0.0/dist/cropper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <style>
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem;
+            }
+        }
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            overscroll-behavior: none;
+            margin: 0;
+        }
+        .container-fluid {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans">
-    <div class="flex min-h-screen">
+    <div class="container-fluid">
+        <!-- Sidebar -->
         <%- include("../partials/admin/adminSideBar.ejs") %>
-            <div class="flex-1 ml-64 p-6">
-                <header class="bg-white shadow-sm sticky top-0 z-10 mb-6">
-                    <div class="flex justify-between items-center px-6 py-4">
-                        <h1 class="text-2xl font-semibold text-gray-800">Add Products</h1>
-                    </div>
-                </header>
 
-                <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
-                    <form id="addProductForm" class="space-y-6" enctype="multipart/form-data">
-                        <div>
-                            <!-- <label for="productId" class="block text-sm font-medium text-gray-700">Product ID</label>
-                            <input type="text" id="productId" required readonly
-                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"> -->
-                        </div>
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
-                            <input type="text" id="name" required
-                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="description" required
-                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg h-32 focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                        <div>
-                            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-                            <input type="text" id="category" required
-                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label for="author" class="block text-sm font-medium text-gray-700">Author</label>
-                            <input type="text" id="author" required
-                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="price" class="block text-sm font-medium text-gray-700">Price ($)</label>
-                                <input type="number" id="price" step="0.01" min="0" required
-                                    class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
-                                <input type="number" id="stock" min="0" required
-                                    class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Images (up to 3)</label>
-                            <div class="flex flex-col space-y-6">
-                                <!-- Image Upload 1 -->
-                                <div
-                                    class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
-                                    <input type="file" id="image1" name="images" accept="image/*" class="hidden"
-                                        onchange="previewImage(event, 1)">
-                                    <button type="button" onclick="document.getElementById('image1').click()"
-                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                                        <i class="fas fa-upload mr-2"></i>Choose Image 1
-                                    </button>
-                                    <div id="preview1" class="mt-4 w-full max-w-xs relative hidden">
-                                        <img id="img-preview1" class="max-w-full rounded">
-                                        <button type="button" onclick="startCrop(1)"
-                                            class="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Crop</button>
-                                        <button type="button" onclick="removeImage(1)"
-                                            class="absolute bottom-2 left-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
-                                    </div>
-                                </div>
-                                <!-- Image Upload 2 -->
-                                <div
-                                    class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
-                                    <input type="file" id="image2" name="images" accept="image/*" class="hidden"
-                                        onchange="previewImage(event, 2)">
-                                    <button type="button" onclick="document.getElementById('image2').click()"
-                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                                        <i class="fas fa-upload mr-2"></i>Choose Image 2
-                                    </button>
-                                    <div id="preview2" class="mt-4 w-full max-w-xs relative hidden">
-                                        <img id="img-preview2" class="max-w-full rounded">
-                                        <button type="button" onclick="startCrop(2)"
-                                            class="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Crop</button>
-                                        <button type="button" onclick="removeImage(2)"
-                                            class="absolute bottom-2 left-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
-                                    </div>
-                                </div>
-                                <!-- Image Upload 3 -->
-                                <div
-                                    class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
-                                    <input type="file" id="image3" name="images" accept="image/*" class="hidden"
-                                        onchange="previewImage(event, 3)">
-                                    <button type="button" onclick="document.getElementById('image3').click()"
-                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                                        <i class="fas fa-upload mr-2"></i>Choose Image 3
-                                    </button>
-                                    <div id="preview3" class="mt-4 w-full max-w-xs relative hidden">
-                                        <img id="img-preview3" class="max-w-full rounded">
-                                        <button type="button" onclick="startCrop(3)"
-                                            class="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Crop</button>
-                                        <button type="button" onclick="removeImage(3)"
-                                            class="absolute bottom-2 left-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Remove</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button type="submit"
-                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Save
-                                Product</button>
-                        </div>
-                    </form>
+        <!-- Main Content -->
+        <div class="flex-1 main-content p-6" style="margin-left: calc(5% + 0px);">
+            <header class="bg-white shadow-sm sticky top-0 z-10 mb-6">
+                <div class="flex justify-between items-center px-6 py-4">
+                    <h1 class="text-2xl font-semibold text-gray-800">Add Products</h1>
                 </div>
+            </header>
+
+            <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+                <form id="addProductForm" class="space-y-6" enctype="multipart/form-data">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Product Name</label>
+                        <input type="text" id="name" name="name" required
+                            class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="description" name="description" required
+                            class="mt-1 w-full p-3 border border-gray-300 rounded-lg h-32 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                        <input type="text" id="category" name="category" required
+                            class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label for="author" class="block text-sm font-medium text-gray-700">Author</label>
+                        <input type="text" id="author" name="author" required
+                            class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="price" class="block text-sm font-medium text-gray-700">Price ($)</label>
+                            <input type="number" id="price" name="price" step="0.01" min="0" required
+                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                            <input type="number" id="stock" name="stock" min="0" required
+                                class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Images (up to 3)</label>
+                        <div class="flex flex-col space-y-6">
+                            <!-- Image Upload 1 -->
+                            <div class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
+                                <input type="file" id="image1" name="images" accept="image/*" class="hidden"
+                                    onchange="previewImage(event, 1)">
+                                <button type="button" onclick="document.getElementById('image1').click()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                                    <i class="fas fa-upload mr-2"></i>Choose Image 1
+                                </button>
+                                <div id="preview1" class="mt-4 w-full max-w-xs relative hidden">
+                                    <img id="img-preview1" class="max-w-full rounded" alt="Preview 1">
+                                    <button type="button" onclick="startCrop(1)"
+                                        class="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Crop</button>
+                                    <button type="button" onclick="removeImage(1)"
+                                        class="absolute bottom-2 left-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">Remove</button>
+                                </div>
+                            </div>
+                            <!-- Image Upload 2 -->
+                            <div class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
+                                <input type="file" id="image2" name="images" accept="image/*" class="hidden"
+                                    onchange="previewImage(event, 2)">
+                                <button type="button" onclick="document.getElementById('image2').click()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                                    <i class="fas fa-upload mr-2"></i>Choose Image 2
+                                </button>
+                                <div id="preview2" class="mt-4 w-full max-w-xs relative hidden">
+                                    <img id="img-preview2" class="max-w-full rounded" alt="Preview 2">
+                                    <button type="button" onclick="startCrop(2)"
+                                        class="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Crop</button>
+                                    <button type="button" onclick="removeImage(2)"
+                                        class="absolute bottom-2 left-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">Remove</button>
+                                </div>
+                            </div>
+                            <!-- Image Upload 3 -->
+                            <div class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
+                                <input type="file" id="image3" name="images" accept="image/*" class="hidden"
+                                    onchange="previewImage(event, 3)">
+                                <button type="button" onclick="document.getElementById('image3').click()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                                    <i class="fas fa-upload mr-2"></i>Choose Image 3
+                                </button>
+                                <div id="preview3" class="mt-4 w-full max-w-xs relative hidden">
+                                    <img id="img-preview3" class="max-w-full rounded" alt="Preview 3">
+                                    <button type="button" onclick="startCrop(3)"
+                                        class="absolute bottom-2 right-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Crop</button>
+                                    <button type="button" onclick="removeImage(3)"
+                                        class="absolute bottom-2 left-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition focus:outline-none">Save Product</button>
+                    </div>
+                </form>
             </div>
+        </div>
     </div>
 
     <!-- Crop Modal -->
@@ -137,72 +154,22 @@
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Crop Image</h2>
-                <button id="cropModalClose" class="text-gray-500 hover:text-gray-700 text-2xl"
-                    aria-label="Close">×</button>
+                <button id="cropModalClose" class="text-gray-500 hover:text-gray-700 text-2xl" aria-label="Close">×</button>
             </div>
             <div class="mb-4">
-                <img id="cropImage" class="max-w-full max-h-[60vh]">
+                <img id="cropImage" class="max-w-full max-h-[60vh]" alt="Crop preview">
             </div>
             <div class="flex justify-end space-x-4">
-                <button id="cancelCrop"
-                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Cancel</button>
-                <button id="applyCrop" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save
-                    Crop</button>
+                <button id="cancelCrop" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">Cancel</button>
+                <button id="applyCrop" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Save Crop</button>
             </div>
         </div>
     </div>
 
     <script>
-        let cropper;
-
-        function openCropModal(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById("cropImage").src = e.target.result;
-                    document.getElementById("cropModal").classList.remove("hidden");
-
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-                    cropper = new Cropper(document.getElementById("cropImage"), {
-                        aspectRatio: 1,
-                        viewMode: 2,
-                        autoCropArea: 1
-                    });
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function closeCropModal() {
-            document.getElementById("cropModal").classList.add("hidden");
-            if (cropper) {
-                cropper.destroy();
-            }
-        }
-
-        function applyCrop() {
-            if (cropper) {
-                const croppedCanvas = cropper.getCroppedCanvas();
-                if (croppedCanvas) {
-                    document.getElementById("img-preview").src = croppedCanvas.toDataURL("image/jpeg");
-                    document.getElementById("preview").style.display = "block";
-                    closeCropModal();
-                }
-            }
-        }
-
-        function removeImage() {
-            document.getElementById("preview").style.display = "none";
-            document.getElementById("img-preview").src = "";
-        }
-
         document.addEventListener("DOMContentLoaded", function () {
             let croppers = {};
             let currentIndex = null;
-            const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
 
             // Preview image when selected
             window.previewImage = function (event, index) {
@@ -231,7 +198,8 @@
                 croppers[index] = new Cropper(cropImg, {
                     aspectRatio: 1,
                     viewMode: 2,
-                    autoCropArea: 1
+                    autoCropArea: 1,
+                    responsive: true
                 });
             };
 
@@ -268,10 +236,13 @@
                             const file = new File([blob], `cropped-image${currentIndex}.jpg`, { type: 'image/jpeg' });
                             const imgPreview = document.getElementById(`img-preview${currentIndex}`);
                             imgPreview.src = URL.createObjectURL(blob);
-                            document.getElementById(`image${currentIndex}`).dataset.croppedFile = file;
+                            const input = document.getElementById(`image${currentIndex}`);
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            input.files = dataTransfer.files;
                             document.getElementById('cropModal').classList.add('hidden');
                             croppers[currentIndex].destroy();
-                            delete croppers[currentIndex];
+                            delete croppers[index];
                         }, 'image/jpeg');
                     }
                 }
@@ -287,51 +258,64 @@
                 formData.append('author', document.getElementById('author').value);
                 formData.append('price', document.getElementById('price').value);
                 formData.append('stock', document.getElementById('stock').value);
-                // formData.append('productId', document.getElementById('productId').value);
 
                 let hasImages = false;
                 for (let i = 1; i <= 3; i++) {
                     const input = document.getElementById(`image${i}`);
-                    const croppedFile = input.dataset.croppedFile;
-                    if (croppedFile) {
-                        formData.append('images', croppedFile);
-                        hasImages = true;
-                    } else if (input.files?.[0]) {
+                    if (input.files?.[0]) {
                         formData.append('images', input.files[0]);
                         hasImages = true;
                     }
                 }
 
-                if (!hasImages) return notyf.error('Upload at least one image');
+                if (!hasImages) {
+                    Toastify({
+                        text: "Please upload at least one image",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f44336"
+                    }).showToast();
+                    return;
+                }
 
                 try {
-                    Swal.fire({ title: 'Saving...', text: 'Please wait', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    const response = await fetch('/admin/add-products', { method: 'POST', body: formData });
+                    Swal.fire({
+                        title: 'Saving...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+                    const response = await fetch('/admin/add-products', {
+                        method: 'POST',
+                        body: formData
+                    });
                     const result = await response.json();
                     Swal.close();
 
                     if (!response.ok) throw new Error(result.message || 'Failed to add product');
 
-                    Swal.fire({ title: 'Success!', text: result.message, icon: 'success', confirmButtonColor: '#3085d6' });
+                    Swal.fire({
+                        title: 'Success!',
+                        text: result.message || 'Product added successfully',
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6'
+                    });
                     document.getElementById('addProductForm').reset();
                     [1, 2, 3].forEach(i => removeImage(i));
                     setTimeout(() => window.location.href = '/admin/products', 1500);
                 } catch (error) {
                     console.error('Submission error:', error);
-                    notyf.error(error.message || 'Failed to save product');
+                    Toastify({
+                        text: error.message || "Failed to save product",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f44336"
+                    }).showToast();
                 }
             });
         });
-
-        // Generate random category ID when page loads
-
-        // window.onload = function () {
-        //     const productInput = document.getElementById('productId');
-        //     const productId = 'P' + Math.floor(1000 + Math.random() * 9000);
-        //     productInput.value = productId; // Corrected variable name
-        // };
-
     </script>
 </body>
-
 </html>

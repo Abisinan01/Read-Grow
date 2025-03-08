@@ -18,16 +18,17 @@ import {
     renderShopPage,
     renderProfilePage,
     renderChangePassword,
-
-
+    
+    
 } from "../controllers/userController.js"
 import passport from "passport"
 import jwt from "jsonwebtoken"
  
- 
+
+
 router.get('/login', renderLoginPage)
 router.post('/login', handleLoginPage)
- 
+
 router.get("/signup", renderSignPage )
 router.post('/signup', handleSignupPage)
 
@@ -47,11 +48,11 @@ router.get('/profile/:id',userAuth,renderProfilePage)
 
 router.get('/change-password/:id',userAuth,renderChangePassword)
 router.post('/change-password',userAuth,changePasswordRequest)
- 
+
 
 router.post('/logout',logout)
 
- 
+
 
 // ================google auth setting for signup======================
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -64,40 +65,41 @@ router.get('/auth/google/callback',
             console.error("Google OAuth failed: No user found");
             return res.redirect('/read-and-grow/signup');
         }else if(req.user.googleId)
-
-        req.session.user = req.user._id;
-
-        req.session.save((err) => {
-            if (err) {
-                console.error('Session save error:', err);
+            
+            req.session.user = req.user._id;
+            
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Session save error:', err);
                 return res.redirect('/read-and-grow/signup');
             }
         });
-
+        
         //JWT token setting
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRES
         });
  
-
+        
         res.cookie('jwt', token, {
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000
         });
-
+        
         console.log(`Google signup done`);
-
+        
         return res.redirect('/read-and-grow/home');
     }
 );
 
+
 // ================for handling random routes===============
-// router.get('/notFound', (req, res) => {
-//     res.render('admin/notFound')
-// })
-// router.get('*', (req, res) => {
-//     res.status(404).redirect("/notFound")
-// })
+router.get('/notFound', (req, res) => {
+    res.render('admin/notFound')
+})
+router.get('*', (req, res) => {
+    res.status(404).render('admin/notFound')    
+}) 
 
 // export routes
-export default router
+export default router 

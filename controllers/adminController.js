@@ -12,6 +12,8 @@ import AppError from "../utils/errorHandler.js";
 import Product from "../models/productSchema.js";
 import { promises } from 'fs';
 import { setTimeout } from 'timers/promises';
+import { content_v2_1 } from "googleapis";
+import { redis } from "googleapis/build/src/apis/redis/index.js";
 
 
 //=====================admin login get ==================
@@ -81,83 +83,55 @@ export const adminDashboardGet = async (req, res, next) => {
 }
 
 //=================admin_users_get=========================
-export const adminUserGet = async (req, res, next) => {
+export const renderUserPanel = async (req, res, next) => {
     try {
+        let { page = 1, limit = 5, query = '' } = req.query;
+        page = parseInt(page);
+        limit = parseInt(limit);
+        const skip = (page - 1) * limit;
 
-        let { page, limit } = req.query
-        page = parseInt(page) || 1
-        limit = parseInt(limit) || 5
-        let skip = (page - 1) * limit
+        const filter = query ? { username: { $regex: query, $options: 'i' } } : {};
 
-        const allUsers = await User.find()
+        const allUsers = await User.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit)
+            .limit(limit);
 
-        const totalUsers = await User.find().countDocuments()
-        const totalPages = Math.ceil(totalUsers / limit)
+        if (!allUsers || allUsers.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No users found'
+            });
+        }
 
-        return res.render("admin/users", {
+        const totalUsers = await User.countDocuments(filter);
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.json({
+                success: true,
+                allUsers,
+                totalUsers,
+                totalPages,
+                limit,
+                page
+            });
+        }
+        return res.render('admin/users', {
             totalUsers,
             allUsers,
             totalPages,
-            limit, page
-        })
+            limit,
+            page,
+            query
+        });
 
     } catch (error) {
-        return next(new AppError(`admin Users ${req.method} method failed `, 500))
+        console.error('renderUserPanel error:', error.message);
+        next(new AppError(`Fetching users failed: ${error.message}`, 500));
     }
-}
+};
 
-//==================User searching================================
-
-export const searchUser = async (req, res, next) => {
-    try {
-        const { q } = req.query;
-        // console.log(q);
-
-        if (q?.length === 0 || !q) {
-            const users = await User.find()
-            if (!users) {
-                return res.status(404).json({
-                    success: false,
-                    message: "User not found"
-                })
-            }
-            return res.status(200).json({
-                success: true,
-                users
-            })
-        } else {
-
-            const users = await User.find({
-                $and: [
-                    { role: "user" },
-                    {
-                        $or: [
-                            { username: { $regex: q, $options: 'i' } },
-                            { email: { $regex: q, $options: 'i' } }
-                        ]
-                    }
-                ]
-            })
-            if (!users || users.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: "User not found"
-                })
-            }
-
-            return res.status(200).json({
-                success: true,
-                users
-            })
-        }
-
-    } catch (error) {
-        return next(new AppError(`admin search user failed : ${error} `, 500))
-    }
-}
 
 //==============Block user========================================
 
@@ -383,33 +357,63 @@ export const searchCategory = async (req,res,next) =>{
 }
 
 //==========================Product Managment part=======================
-export const productManagment = async (req, res, next) => {
+export const renderProductPage = async (req, res, next) => {
     try {
-        let { page, limit } = req.query
+        let { page, limit, query } = req.query
         page = parseInt(page) || 1
         limit = parseInt(limit) || 5
         let skip = (page - 1) * limit
 
-        const allProducts = await Product.find()
+        let filter = {} 
+        if (query) {
+             filter = { 
+                name: { $regex: query, $options: "i" },
+        }
+
+
+        const allProducts = await Product.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
 
-        const totalProducts = await Product.find().countDocuments()
+        if(!allProducts && allProducts.length == 0){
+            return res.status(404).json({
+                success:false,
+                message:"User not found"
+            })
+        }
+
+
+        const totalProducts = await Product.countDocuments(filter)
         const totalPages = Math.ceil(totalProducts / limit)
 
-        res.render('admin/product', {
+        if (req.headers["x-requested-with"] === "XMLHttpRequest") {
+            return res.json({
+                success: true,
+                allProducts,
+                totalProducts,
+                totalPages,
+                limit,
+                page
+            })
+        }
+        
+        return res.render("admin/product", {
             allProducts,
             totalProducts,
             totalPages,
             limit,
-            page
+            page,
+            query
         })
+    }
+
     } catch (error) {
-        console.log(`product management get method failed ${error.message}`)
-        next(new AppError(`products page loging failed ${error}`, 500))
+        console.log(`Product management failed: ${error.message}`)
+        next(new AppError(`Fetching products failed: ${error}`, 500))
     }
 }
+
 
 
 export const addProducts = async (req, res, next) => {
@@ -588,50 +592,6 @@ export const blockProduct = async (req, res, next) => {
         next(new AppError(`Block product failed ${error}`, 500))
     }
 }
-
-//====search Product
-export const searchProduct = async (req, res, next) => {
-    try {
-        const { q } = req.query
-        console.log(q)
-
-        if (q?.length === 0 || !q) {
-            const products = await Product.find()
-            if (!products) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Product is not found"
-                })
-            }
-            return res.status(200).json({
-                success: true,
-                products
-            })
-        } else {
-
-            const products = await Product.find({
-                name: { $regex: q, $options: "i" }
-            })
-            console.log(products)
-            if (!products || products.length === 0) {
-                console.log(1)
-                return res.status(404).json({
-                    success: false,
-                    message: "Product is not found"
-                })
-            }
-            return res.status(200).json({
-                success: true,
-                products
-            })
-        }
-
-
-    } catch (error) {
-        next(new AppError(`producting searching failed ${error}`, 500))
-    }
-}
-
 
 
 

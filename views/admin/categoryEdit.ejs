@@ -5,77 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Category - Read & Grow Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <!-- SweetAlert2 JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
-
-    <!-- Notyf (Notification) -->
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/notyf@3.10.0/notyf.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem;
+            }
+        }
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            overscroll-behavior: none;
+            margin: 0;
+        }
+        .container-fluid {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100">
-    <div class="flex">
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="container-fluid">
+
         <!-- Sidebar -->
         <%- include("../partials/admin/adminSideBar.ejs") %>
+        
+        <!-- Main Content -->
+        <div class="flex-1 main-content p-6" style="margin-left: calc(5% + 0px);">
+            <header class="bg-white shadow-sm sticky top-0 z-10 mb-6">
+                <div class="flex justify-between items-center px-6 py-4">
+                    <h1 class="text-2xl font-semibold text-gray-800">Edit Category</h1>
+                </div>
+            </header>
 
-        <!-- Main content -->
-        <div class="ml-[15%] w-[85%] p-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <!-- Header -->
+            <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
                 <div class="mb-6">
-                    <h1 class="text-2xl font-bold text-gray-800">Edit Category</h1>
-                    <p class="text-gray-600 mt-1">Modify the category details below.</p>
+                    <h2 class="text-xl font-semibold text-gray-800">Modify Category Details</h2>
+                    <p class="text-gray-600 mt-1">Update the category information below</p>
                 </div>
 
                 <!-- Form -->
-                <form id="editCategory" class="max-w-2xl">
-                    <div class="space-y-6">
-                        <!-- Category ID -->
-                        <!-- <div> -->
-                            <!-- <label class="block text-sm font-medium text-gray-700 mb-1">Category ID</label> -->
-                            <input type="text" id="categoryId" value="<%= findCategory._id %>" hidden>
-                        <!-- </div> -->
+                <form id="editCategory" class="space-y-6">
+                    <input type="hidden" id="categoryId" name="categoryId" value="<%= findCategory._id %>">
+                    <!-- Category Name -->
+                    <div>
+                        <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-1">Category Name*</label>
+                        <input type="text" id="categoryName" name="categoryName" required value="<%= findCategory.categoryName %>"
+                            class="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
 
-                        <!-- Category Name -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Category Name*</label>
-                            <input type="text" id="categoryName" required value="<%= findCategory.categoryName %>"
-                                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        </div>
+                    <!-- Category Description -->
+                    <div>
+                        <label for="categoryDescription" class="block text-sm font-medium text-gray-700 mb-1">Description*</label>
+                        <textarea id="categoryDescription" name="categoryDescription" required rows="4"
+                            class="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"><%= findCategory.description %></textarea>
+                    </div>
 
-                        <!-- Category Description -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description*</label>
-                            <textarea id="categoryDescription" required rows="4"
-                                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"><%= findCategory.description %></textarea>
-                        </div>                        
+                    <!-- Category Status -->
+                    <div>
+                        <label for="categoryStatus" class="block text-sm font-medium text-gray-700 mb-1">Status*</label>
+                        <select id="categoryStatus" name="categoryStatus" required
+                            class="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="active" <%= findCategory?.status === 'active' ? 'selected' : '' %>>Active</option>
+                            <option value="inactive" <%= findCategory?.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                        </select>
+                    </div>
 
-                        <!-- Category Status -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status*</label>
-                            <select id="categoryStatus" required
-                                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                                          
-                                <option value="active" <%= findCategory?.status === 'active' ? 'selected' : '' %>>Active</option>
-                                <option value="inactive" <%= findCategory?.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
-                                
-                            </select>
-                        </div>
-
-                        <!-- Buttons --> 
-                        <div class="flex gap-4 pt-4">
-                            <button type="submit"
-                                class="bg-red-400 text-white px-6 py-2 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                Save
-                            </button>
-                            <a href="/admin/category"
-                                class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                                Cancel
-                            </a>
-                        </div>
+                    <!-- Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                        <button type="submit"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition w-full sm:w-auto">
+                            Save Changes
+                        </button>
+                        <a href="/admin/category"
+                            class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition text-center w-full sm:w-auto">
+                            Cancel
+                        </a>
                     </div>
                 </form>
             </div>
@@ -83,49 +102,63 @@
     </div>
 
     <script>
-        const notyf = new Notyf({
-            duration: 3000,
-            position: { x: 'right', y: 'top' }
-        });
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('editCategory').addEventListener('submit', async function (event) {
+                event.preventDefault();
 
-        document.getElementById('editCategory').addEventListener('submit', async function (event) {
-            event.preventDefault();
-            
-            const categoryId = document.getElementById('categoryId').value.trim();
-            const categoryName = document.getElementById('categoryName').value.trim();
-            const categoryDescription = document.getElementById('categoryDescription').value.trim();
-            const categoryStatus = document.getElementById('categoryStatus').value.trim();
-            
-            console.log("Updating category:", categoryName);
+                const categoryId = document.getElementById('categoryId').value.trim();
+                const categoryName = document.getElementById('categoryName').value.trim();
+                const categoryDescription = document.getElementById('categoryDescription').value.trim();
+                const categoryStatus = document.getElementById('categoryStatus').value.trim();
 
-            try {
-                const response = await fetch(`/admin/category/${categoryId}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        categoryId,
-                        categoryName,
-                        categoryDescription,
-                        status: categoryStatus
-                    })
-                });
+                try {
+                    Swal.fire({
+                        title: 'Saving...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
 
-                const result = await response.json();
+                    const response = await fetch(`/admin/category/${categoryId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            categoryName,
+                            categoryDescription,
+                            status: categoryStatus
+                        })
+                    });
 
-                if (!response.ok) {
-                    notyf.error("Something went wrong");
-                    return;
+                    const result = await response.json();
+                    Swal.close();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Something went wrong');
+                    }
+
+                    if (result.success) {
+                        Toastify({
+                            text: result.message || "Category updated successfully",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#4CAF50",
+                            close: true
+                        }).showToast();
+                        setTimeout(() => window.location.href = result.redirect || '/admin/category', 1500);
+                    }
+                } catch (error) {
+                    console.error(`Edit category fetch failed: ${error.message}`);
+                    Toastify({
+                        text: error.message || "Error while updating category",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f44336",
+                        close: true
+                    }).showToast();
                 }
-                
-                if (result.success) {
-                    notyf.success(result.message);
-                    setTimeout(() => {
-                        window.location.href = result.redirect || '/admin/category';
-                    }, 1500);
-                }
-            } catch (error) {
-                console.error(`Edit category fetch failed: ${error.message}`);
-            }
+            });
         });
     </script>
 </body>

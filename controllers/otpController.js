@@ -117,7 +117,6 @@ export const otpVerifyPost = async (req, res, next) => {
         const token = jwt.sign({ id: newUser._id, username: newUser.username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
         //Store JWT in cookies
         res.cookie('jwt', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
-
         return res.status(200).json({
             success: true,
             message: "Account created successfully",
