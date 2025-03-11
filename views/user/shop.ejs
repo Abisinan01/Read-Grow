@@ -31,22 +31,10 @@
                                 aria-label="Search">
                             <button type="submit"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                aria-label="Submit search">
+                                aria-label="Submit search" id="searchBtn">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
-
-                        <script>
-                            document.getElementById('searchForm').addEventListener('submit', (e) => {
-                                e.preventDefault();
-
-                                const searchInput = document.querySelector('input[name="query"]').value.trim();
-
-                                if (searchInput) {
-                                    window.location.href = `/read-and-grow/shop?search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
-                                }
-                            });
-                        </script>
                     </div>
                 </div>
                 <button class="relative right-[100px]" onclick="window.location.href = '/read-and-grow/shop?page=1&limit-6'">
@@ -88,16 +76,14 @@
                     <h2 class="text-lg font-semibold mb-3">Categories</h2>
                     <ul class="space-y-2">
                         <li>
-                            <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
+                            <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900 <%= !categories ? 'font-bold' : '' %>">
                                 All Categories
                             </a>
                         </li>
                         <% categories.forEach(cat => { %>
                             <li>
-                                <a href="/read-and-grow/shop/?category=<%= encodeURIComponent(cat.categoryName) %>&search=<%= search || '' %>" 
-                                   class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
-                                    <%= cat.categoryName %>
-                                </a>
+                                <a href="/read-and-grow/shop/?category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" 
+                                    class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">                                 
                             </li>
                         <% }) %>
                     </ul>
@@ -110,7 +96,7 @@
                     <h2 class="text-lg font-semibold mb-3">Authors</h2>
                     <ul class="space-y-2">
                         <% let authorSet = new Set(); %>
-                        <% products.forEach(product => authorSet.add(product.authorName)); %>
+                        <% allProducts.forEach(product => authorSet.add(product.authorName)); %>
                         
                         <% authorSet.forEach(author => { %>
                             <li>
@@ -158,7 +144,7 @@
                     <% }else {%>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             <!-- Book 1 -->
-                            <% products.forEach(product=>{%>
+                            <% allProducts.forEach(product=>{%>
                                 <article
                                     class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
                                     <div class="relative h-64 bg-gray-50">
@@ -203,7 +189,7 @@
                 <!-- Pagination -->
                 <div class="flex justify-center mt-8 space-x-2">
                     <% if(page>1) {%>
-                        <a href="/read-and-grow/shop?page=<%= page-1 %>?limit=<%= limit  %>"
+                        <a href="/read-and-grow/shop?page=<%= page-1 %>&limit=<%= limit  %>"
                             class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-left"></i>
                         </a>
@@ -237,6 +223,119 @@
 
     <!-- Footer -->
     <%- include("../partials/user/footer.ejs") %>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.getElementById('searchForm');
+        const bookGrid = document.querySelector('.grid'); // Target the grid container
+        const pagination = document.querySelector('.flex.space-x-2'); // Target pagination container
+        const limit = <%= limit %>;
+        const totalPages = <%= totalPages %>;
+
+        searchForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const searchInput = document.querySelector('input[name="query"]').value.trim();
+            
+            const url = `/read-and-grow/shop?page=1&limit=${limit}${searchInput ? `&search=${encodeURIComponent(searchInput)}` : ''}`;
+            try {
+                const response = await fetch(url, {
+                    method: "GET",
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    updateData(result.allProducts);
+                    updatePagination(result.totalPages, result.page);
+                    history.pushState({}, '', url);
+                } else {
+                    throw new Error(result.errorMessage || 'No products found');
+                }
+            } catch (error) {
+                console.error('Search product error:', error.message);
+                Toastify({
+                    text: "Failed to search products",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#f44336"
+                }).showToast();
+            }
+        });
+
+        function updateData(products) {
+            bookGrid.innerHTML = '';
+            if (!products || products.length === 0) {
+                bookGrid.innerHTML = `<div class="text-lg text-red-600 justify-content-center font-semibold text-center mt-2">No products found.</div>`;
+                return;
+            }
+
+            products.forEach(product => {
+                if (!product.isBlocked) {
+                    bookGrid.innerHTML += `
+                        <article class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
+                            <div class="relative h-64 bg-gray-50">
+                                <a href="/read-and-grow/product-details/${product._id}" class="flex justify-center">
+                                    <img src="${product.images[0]}" alt="${product.name}" class="w-auto h-52 md:h-64 object-cover rounded-md">
+                                </a>
+                                <button class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100" aria-label="Add to wishlist">
+                                    <i class="far fa-heart text-gray-600"></i>
+                                </button>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg mb-1">${product.name}</h3>
+                                <p class="text-gray-600 text-sm mb-2">${product.authorName}</p>
+                                <div class="flex text-yellow-400 mb-2">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-900">$${product.price}</span>
+                                    <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition" aria-label="Add to cart">
+                                        ADD CART
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }
+            });
+        }
+
+        function updatePagination(totalPages, currentPage) {
+            pagination.innerHTML = '';
+            if (currentPage > 1) {
+                pagination.innerHTML += `
+                    <a href="/read-and-grow/shop?page=${currentPage - 1}&limit=${limit}" class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>`;
+            } else {
+                pagination.innerHTML += `
+                    <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.innerHTML += `
+                    <a href="/read-and-grow/shop?page=${i}&limit=${limit}" class="w-10 h-10 flex items-center justify-center rounded ${i === currentPage ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100'}">
+                        ${i}
+                    </a>`;
+            }
+
+            if (currentPage < totalPages) {
+                pagination.innerHTML += `
+                    <a href="/read-and-grow/shop?page=${currentPage + 1}&limit=${limit}" class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>`;
+            } else {
+                pagination.innerHTML += `
+                    <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>`;
+            }
+        }
+    });
+    </script>
 </body>
 
 </html>

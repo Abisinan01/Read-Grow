@@ -12,17 +12,66 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Toastify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 </head>
 
 <body class="bg-gray-50 min-h-screen flex flex-col">
-    <!-- Navbar -->
-        <% if(user){%>
-            <%- include("../partials/user/navBar.ejs") %>
-        <% }%>
+
+           <!-- Navbar -->
+        <% if(user) {%>
+           <%- include("../partials/user/navBar.ejs") %>
+        <% }else{ %>
+
+            <nav class="bg-white shadow-sm sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-16">
+                        
+                        <!-- Logo -->
+                        <a href="/" class="flex items-center">
+                            <h1 class="text-2xl font-bold text-gray-900">REad & GroW</h1>
+                        </a>
             
-       
+                        <!-- Search Bar -->
+                        <div class="flex-1 max-w-2xl px-6">
+                            <div class="relative">
+                                <form  id="searchForm">
+                                    <input type="search" 
+                                           name="query" 
+                                           placeholder="Search for books..." 
+                                           class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                           aria-label="Search">
+                                    <button type="submit" onclick="pleaseLogin()"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        aria-label="Submit search">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </form>
+                                
+                            </div>
+                        </div>
+                        
+                        <!-- Navigation Icons -->
+                        <div class="flex items-center space-x-6">
+                            <button onclick="pleaseLogin()" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                                Home
+                            </button>
+                            <button onclick="pleaseLogin()" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                                Shop
+                            </button>
+                            <button onclick="pleaseLogin()" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+                                Cart
+                            </button>
+                            
+                            <button onclick="pleaseLogin()" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                                Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        <% } %>
         <!-- Hero Section -->
         <section class="relative bg-gray-900">
             <img src="/images/stephen-andrews-u0zTce7KNlY-unsplash.jpg" alt=""
@@ -42,6 +91,9 @@
         </section>
 
         <!-- Popular Books Section -->
+        <% if(!user){ %>
+            <%- include("../partials/user/homePageProducts.ejs") %>
+        <% }else{ %>
         <section class="py-16 px-4 sm:px-6 lg:px-8">
             <div class="max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Popular Books</h2>
@@ -55,11 +107,11 @@
                                     <img src="<%= product.images[0] %>" alt="<%= product.name %>"
                                         class="w-auto h-52 md:h-64 object-cover rounded-md">
                                 </a>
-                                <button
+                                <a href=""
                                     class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
                                     aria-label="Add to wishlist">
                                     <i class="far fa-heart text-gray-600"></i>
-                                </button>
+                                </a>
                             </div>
                             <div class="p-6">
                                 <h3 class="text-xl font-bold text-gray-900 mb-2">
@@ -84,11 +136,11 @@
                                     <span class="text-2xl font-bold text-gray-900">
                                         <%= product.price %>
                                     </span>
-                                    <button
+                                    <a href=""
                                         class="bg-black text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                                         aria-label="Add <%= product.name %> to cart">
                                         Add to Cart
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </article>
@@ -96,14 +148,15 @@
                 </div>
 
                 <div class="text-center mt-12">
-                    <a href="/read-and-grow/shop"
+                    <button onclick="pleaseLogin()"
                         class="inline-flex items-center text-lg font-semibold text-black hover:text-blue-700">
                         Shop All Books
                         <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
         </section>
+        <% } %>
 
         <!-- Footer -->
         <%- include("../partials/user/footer.ejs") %>
@@ -111,6 +164,24 @@
             <!-- Toastify JS -->
             <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
+        <script>
+                function pleaseLogin() {
+                    Swal.fire({
+                        title: "Please login",
+                        text: "You need to login to continue.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, login",
+                        cancelButtonText: "Cancel",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/read-and-grow/login"; // Redirect to login page
+                        }
+                    });
+                    
+
+                }
+        </script>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>

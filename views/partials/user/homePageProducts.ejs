@@ -1,0 +1,63 @@
+        <!-- Popular Books Section -->
+        <section class="py-16 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Popular Books</h2>
+
+                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <% products.forEach(product=> { %>
+                        <article
+                            class="bg-white rounded-lg shadow-sm overflow-hidden transition-transform hover:scale-105">
+                            <div class="bg-gray-100 relative">
+                                <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center" aria-readonly="true">
+                                    <img src="<%= product.images[0] %>" alt="<%= product.name %>"
+                                        class="w-auto h-52 md:h-64 object-cover rounded-md">
+                                </a>
+                                <button onclick="pleaseLogin()"
+                                    class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                                    aria-label="Add to wishlist">
+                                    <i class="far fa-heart text-gray-600"></i>
+                                </button>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">
+                                    <%= product.name %>
+                                </h3>
+                                <p class="text-gray-600 mb-2">
+                                    <%= product.authorName %>
+                                </p>
+                                <div class="flex items-center mb-4">
+                                    <div class="flex text-yellow-400">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <span class="text-gray-500 ml-2">
+                                        <%= product.rating %>
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-2xl font-bold text-gray-900">
+                                        <%= product.price %>
+                                    </span>
+                                    <button onclick="pleaseLogin()"
+                                        class="bg-black text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                        aria-label="Add <%= product.name %> to cart">
+                                        Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                        <% }) %>
+                </div>
+
+                <div class="text-center mt-12">
+                    <button onclick="pleaseLogin()"
+                        class="inline-flex items-center text-lg font-semibold text-black hover:text-blue-700">
+                        Shop All Books
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>

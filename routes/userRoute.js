@@ -18,6 +18,11 @@ import {
     renderShopPage,
     renderProfilePage,
     renderChangePassword,
+    editProfile,
+    changeEmailRequest,
+    renderChangeEmail,
+    renderUpdateMail,
+    updateNewMail,
     
     
 } from "../controllers/userController.js"
@@ -33,24 +38,29 @@ router.get("/signup", renderSignPage )
 router.post('/signup', handleSignupPage)
 
 router.get('/email-verify',renderEmailVerify)
-router.post('/requestPasswordReset',requestPasswordReset)
+router.post('/requestPasswordReset',requestPasswordReset) 
 router.get('/resetPassword',renderResetPassword)
 router.post('/resetPassword',resetPassword)
 
-router.get('/home', userAuth, renderHomePage)
+router.get('/home', renderHomePage)
 
 router.get('/product-details/:id',userAuth,renderProductDetails)
 
 router.get("/shop",userAuth,renderShopPage)
 
 router.get('/profile/:id',userAuth,renderProfilePage)
-
+router.patch('/profile/:id',userAuth,editProfile)
 
 router.get('/change-password/:id',userAuth,renderChangePassword)
 router.post('/change-password',userAuth,changePasswordRequest)
 
+router.get('/change-email/:id',userAuth,renderChangeEmail)
+router.post('/change-email',userAuth,changeEmailRequest)
+router.get('/new-email/:id',userAuth,renderUpdateMail)
+router.post('/new-email',userAuth,updateNewMail)
 
-router.post('/logout',logout)
+
+router.post('/logout',logout) 
 
 
 

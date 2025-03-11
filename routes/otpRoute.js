@@ -16,7 +16,7 @@ router.post('/otp-verify',otpVerifyPost)
 router.post("/send-otp", async (req, res) => {
     try {
         const { token } = req.body; 
-        console.log(1,token)
+        // console.log(1,token)
 
         if (!token) {
             return res.status(400).json({

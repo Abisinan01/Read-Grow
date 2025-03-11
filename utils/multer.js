@@ -5,11 +5,10 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const directory = path.join(__dirname, "../public/temp/uploads");
 
 const FILE_TYPE_MAP = {
-    'image/pnp': 'png',
+    'image/png': 'png',
     'image/jpg': 'jpg',
     'image/jpeg:': 'jpeg'
 }
@@ -17,12 +16,11 @@ const FILE_TYPE_MAP = {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const isValid = FILE_TYPE_MAP[file.mimetype]
-        let uploadError = new Error("Invalid file format")
-        if (isValid) {
-            uploadError = null
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        if (!isValid) {
+            return cb(new Error("Invalid file format"), false);
         }
-        cb(null, directory)
+        cb(null, directory);
     },
     filename: function (req, file, cb) {
         const fileName = file.originalname.split(' ').join('-')
@@ -31,8 +29,16 @@ const storage = multer.diskStorage({
     }
 })
 
+const fileFilter = (req,file,cb) =>{
+    if(FILE_TYPE_MAP[file.mimetype]){
+        cb(null,true)
+    }else{
+        cb(new Error('Invalid file type'),false)
+    }
+}
 
 const upload = multer({
+    fileFilter:fileFilter,
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }   
 });

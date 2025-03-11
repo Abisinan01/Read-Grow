@@ -39,14 +39,14 @@ router.put('/blockUser/:id', adminAuth, blockUser)
 
 //========category 
 router.get('/category',adminAuth, categoryManagment)
-router.post('/category',adminAuth, categoryManagment)
+router.post('/category',adminAuth, categoryManagment) 
 
 router.get('/add-category',adminAuth, addCategoryGet)
 router.post('/add-category',adminAuth, addCategory)
 
 router.get('/edit-category/:id',adminAuth, editCategory)
 router.patch('/category/:id',adminAuth, editCategoryPatch) 
-router.delete('/category/:id',adminAuth, deleteCategory)
+router.delete('/category/:id',adminAuth, deleteCategory) 
 router.get('/search-category',adminAuth,searchCategory)
 //===========ProductMangment
 router.get("/products",adminAuth,renderProductPage)

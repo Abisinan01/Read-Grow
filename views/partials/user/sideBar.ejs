@@ -43,7 +43,7 @@
             <button 
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 flex items-center"
                 id="logoutButton">
-                <span class="mr-2">↩</span> Logout
+                <span class="mr-2"></span> Logout
             </button>
         </li>
     </ul>
@@ -121,7 +121,7 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
             if (result.success) {
                 Swal.fire("Logged out", "You are successfully logged out", "success");
                 setTimeout(() => {
-                    window.location.href = "/read-and-grow/login";
+                    window.location.href = "/read-and-grow/home";
                 }, 2000);
             } else {
                 Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");

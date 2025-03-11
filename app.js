@@ -69,12 +69,11 @@ app.use(methodOverride('_method'))
  
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
-    const message = err.message || "Internal Server";
+    const message = err.message || "Internal Server error";
 
     console.error(`Error: ${message}, statusCode :${statusCode}`);
     
     return res.status(statusCode).json({success:false, message:'Something went wrong' }); 
-    // return res.status(500).json("Internal Server Error")
 }); 
    
 // console.log("process Id ",process.pid)
@@ -86,7 +85,6 @@ process.on('SIGINT', () => {
 
 
 app.get('/',(req,res)=>{
-    
-    res.redirect('/read-and-grow/login')
+    res.redirect('/read-and-grow/home')
 })
 app.listen(PORT, () => console.log(`Server started running with ${PORT}`));//Listening the port

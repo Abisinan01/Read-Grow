@@ -6,124 +6,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account - Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Toastify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
-        <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
-    <!-- notyf plugin -->
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="bg-gray-300 flex items-center justify-center min-h-screen">
-    <div class="bg-white w-[750px] p-8 rounded-lg shadow-lg">
-        <!-- Title -->
-        <h2 class="text-xl font-semibold mb-6">Your Account</h2>
+<body class="bg-gray-300">
+    <!-- Navbar - positioned at the very top, not fixed -->
+    <%- include("../partials/user/navBar.ejs") %>
 
-        <div class="flex">
-            <!-- Sidebar -->
-            <%- include("../partials/user/sideBar.ejs") %>
+        <!-- Centered Content -->
+        <div class="flex items-center justify-center min-h-[calc(100vh-64px)]">
+            <!-- Profile Section -->
+            <div class="bg-white w-[750px] p-8 rounded-lg shadow-lg my-10">
+                <h2 class="text-xl font-semibold mb-6">Your Account</h2>
+                <div class="flex">
+                    <!-- Sidebar -->
+                    <%- include("../partials/user/sideBar.ejs") %>
 
-            <!-- Profile Form -->
-            <div class="w-2/3 pl-6">
-                <form id="profile-form">
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Username</label>
-                        <input type="text" name="username" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        <!-- Profile Form -->
+                        <div class="w-2/3 pl-6">
+                            <div class="flex flex-col space-y-4">
+                                <!-- Form for Username and Mobile Number -->
+                                <form id="profile-form" class="flex flex-col space-y-4">
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Username</label>
+                                        <input type="text" name="username" value="<%= user.username %>" readonly
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    </div>
+                                    <div class="flex-1 mb-4">
+                                        <label class="block text-gray-700">Email</label>
+                                        <input type="email" value="<%= user.email %>" readonly name="email" required
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Mobile Number</label>
+                                        <input type="text" value="<%= user.phoneNumber %>" readonly name="mobile" required
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    </div>
+                                    <div class="">
+                                        <button type="button" onclick='editData(<%= JSON.stringify(user) %>)'
+                                            class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300 self-end">
+                                            Edit
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>  
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Email</label>
-                        <input type="email" name="email" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-gray-700">Mobile Number</label>
-                        <input type="text" name="mobile" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
-                    </div>
-                    <button type="submit"
-                        class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-red-700 transition duration-300">
-                        Save
-                    </button>
-                </form>
             </div>
         </div>
-    </div>
 
-    <!-- Toastify JS -->
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script>
-        // // Function to show Toastify notifications
-        // function showToast(message, type = 'error') {
-        //     Toastify({
-        //         text: message,
-        //         duration: 3000,
-        //         gravity: "top",
-        //         position: "right",
-        //         backgroundColor: type === 'success' ? "#16a34a" : "#dc2626", // green-600 for success, red-600 for error
-        //         stopOnFocus: true,
-        //     }).showToast();
-        // }
 
-        // // Handle form submission
-        // document.getElementById('profile-form').addEventListener('submit', async (e) => {
-        //     e.preventDefault();
+        <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <script>
+ 
+            function showToast(message, type = 'error') {
+                Toastify({
+                    text: message,
+                    duration: 2000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: type === 'success' ? "#16a34a" : "#dc2626", // green-600 for success, red-600 for error
+                    stopOnFocus: true,
+                }).showToast();
+            }
 
-        //     // Get form data
-        //     const form = e.target;
-        //     const username = form.querySelector('input[name="username"]').value;
-        //     const email = form.querySelector('input[name="email"]').value;
-        //     const mobile = form.querySelector('input[name="mobile"]').value;
+            async function editData(user) {
+                const form = document.getElementById('profile-form');
 
-        //     // Basic client-side validation
-        //     if (!username || !email || !mobile) {
-        //         showToast('Please fill in all fields');
-        //         return;
-        //     }
-        //     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        //         showToast('Please enter a valid email address');
-        //         return;
-        //     }
-        //     if (!/^\d{10}$/.test(mobile)) {
-        //         showToast('Mobile number must be 10 digits');
-        //         return;
-        //     }
+                form.innerHTML = '';
 
-        //     // Prepare data for backend
-        //     const formData = { username, email, mobile };
+                const formContainer = document.createElement('div');
+                formContainer.innerHTML = `
+                    <div class="w-2/3 pl-6">
+                        <div class="text-xl font-semibold mb-6">Edit Profile</div>
+                        <div>
+                            <form id="editedForm" class="space-y-4">
+                                <input type="text" id="userId" name="userId" value="<%= user._id %>" hidden>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700">Username</label>
+                                    <input type="text" name="username" value="<%= user.username %>"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-gray-700">Mobile Number</label>
+                                    <input type="text" name="mobile" value="<%= user.phoneNumber %>" required
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    <div id="errField" class="text-red-600"></div>
+                                </div>
+                                <button type="submit"
+                                    class="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                                    Save
+                                </button>
+                            </form>
+                        </div>
+                        <div class="mt-4">
+                            <button type="button" onclick="window.location.href='/read-and-grow/change-email/<%= user._id %>'"
+                                class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                                Change email
+                            </button>
+                        </div>
+                    </div>
 
-        //     try {
-        //         const response = await fetch('/', {
-        //             method: 'POST', // or 'PUT' depending on your backend
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 // Add authorization header if needed, e.g., 'Authorization': `Bearer ${token}`
-        //             },
-        //             body: JSON.stringify(formData),
-        //         });
+                `;
 
-        //         const data = await response.json();
+                form.appendChild(formContainer);
 
-        //         if (!response.ok) {
-        //             throw new Error(data.message || 'Failed to update profile');
-        //         }
+                const editedForm = form.querySelector('#editedForm');
+                console.log(editedForm);
 
-        //         // Success handling
-        //         showToast('Profile updated successfully', 'success');
-        //         // Optionally reset form or update UI with new data
-        //         // form.reset();
+                editedForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
 
-        //     } catch (error) {
-        //         // Error handling
-        //         console.error('Error updating profile:', error);
-        //         showToast(error.message || 'An error occurred while updating profile');
-        //     }
-        // });
+                    const form = document.getElementById('editedForm');
+                    const formData = new FormData(form);
 
-    </script>
+                    let userData = {
+                        username: formData.get('username').trim(),
+                        // email: formData.get('email'),
+                        phoneNumber: formData.get("mobile").trim()
+                    };
+                    
+                    if (!userData.username || !userData.phoneNumber) {
+                        showToast('Please make changes if you want to update');
+                        return;
+                    }
+                   
+                    const pattern = /^\d{10}$/;
+                    const isValid = pattern.test(userData.phoneNumber)
+                    if(!isValid){
+                        const error=document.getElementById('errField');
+                        error.innerHTML="Phone number must be 10 digits"
+                        return;
+                    }
+                     
+                    
+                    try {
+                        const id = document.getElementById('userId').value;
+                        const url = `/read-and-grow/profile/${id}`;
+                        const response = await fetch(url, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(userData)
+                        });
+
+                        const result = await response.json();
+                        if (!response.ok) {
+                            throw new Error(result.message || "Failed to update profile");
+                        }
+
+                        showToast("Profile updated successfully", "success");
+                        location.reload();
+                    } catch (error) {
+                        console.error('Error updating profile:', error);
+                        showToast(error.message || 'An error occurred while updating profile');
+                    }
+                });
+            }
+ 
+            document.getElementById('editButton')?.addEventListener('click', (e) => {
+                e.preventDefault();  
+                const user = {
+                    _id: "123",
+                    username: "john_doe",
+                    email: "john@example.com",
+                    phoneNumber: "123-456-7890"
+                };
+                editData(user);
+            });
+
+
+
+
+        </script>
 </body>
 
 </html>

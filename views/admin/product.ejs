@@ -298,117 +298,160 @@
             }
         }
 
-
-
-        // Search Form Submission
-        document.getElementById('searchForm').addEventListener('submit', (event) => {
-            event.preventDefault();
-            const searchInput = document.querySelector('input[name="searchInput"]').value.trim();
-            const url = new URL(window.location.href);
-            url.pathname = '/admin/products';
-            url.searchParams.set('query', searchInput);
-            url.searchParams.set('page', '1');
-            url.searchParams.set('limit', '<%= limit %>');
-            window.location.href = url.toString();
-        });
-
-        // Fetch Products (Simplified)
-        async function fetchProducts(query = '', page = 1, limit = <%= limit %>) {
-            try {
-                const url = `/admin/products?page=${page}&limit=${limit}${query ? `&query=${encodeURIComponent(query)}` : ''}`;
-                const response = await fetch(url, {
-                        method: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' } // Indicate AJAX request
-                    });
-                const data = await response.json();
- 
-
-                if (response.ok && data.success) {
-                       console.log(2)
-                        updateTable(data.allProducts);
-                        updatePagination(data.totalPages, data.page);
-                        history.pushState({}, '', url); // Update URL without reload
-                } else {
-                        document.querySelector('tbody').innerHTML = `
-                            <tr class="hover:bg-gray-50 transition">
-                                <td colspan="5" class="px-6 py-4 text-center">
-                                    <div class="text-bold text-red-600 text-sm">
-                                        Not found products
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                }
-            } catch (error) {
-                console.error("Fetch error:", error);
-                Toastify({ text: "Failed to load products", ...toastifyOptions }).showToast();
-            }
-        }
-
-        // Update Table
-        function updateTable(products) {
-            const tbody = document.querySelector('tbody');
-            tbody.innerHTML = '';
-
-            if (products.length === 0 || !products) {
-                tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-6 py-4 text-center text-red-600">No products found</td>
-            </tr>`;
-                return;
-            }
-
-            products.forEach(product => {
-                tbody.innerHTML += `
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4">
-                    <div class="flex items-center">
-                        <img src="${product.images?.[0] || '/default-image.jpg'}" alt="Book cover" class="h-14 w-14 rounded-md">
-                        <div class="ml-4">${product.name}</div>
-                    </div>
-                </td>
-                <td class="px-6 py-4"><span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${product.category}</span></td>
-                <td class="px-6 py-4">${product.stock} copies</td>
-                <td class="px-6 py-4">$${product.price}</td>
-                <td class="px-6 py-4">
-                    <span class="px-2 py-1 rounded-full ${product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                        ${product.stock === 0 ? 'Out of Stock' : 'In Stock'}
-                    </span>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="flex space-x-3">
-                        <button class="text-blue-600" onclick="window.location.href='/admin/product/${product._id}'"><i class="fas fa-edit"></i></button>
-                        <button class="text-red-600" onclick="deleteConfirm('${product._id}')"><i class="fas fa-trash-alt"></i></button>
-                        <button class="text-gray-600" onclick="isBlocked('/admin/block-product/${product._id}', this)">
-                            <i class="fas ${product.isBlocked ? 'fa-eye-slash' : 'fa-eye'}"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>`;
-            });
-        }
-
-        // Update Pagination
-        function updatePagination(currentPage, totalPages) {
-            const nav = document.querySelector('.flex.space-x-2');
-            nav.innerHTML = '';
-
-            if (totalPages <= 1) return;
-
-            nav.innerHTML += currentPage > 1
-                ? `<a href="/admin/products/?page=${currentPage - 1}&limit=<%= limit %><%= query ? '&query=' + query : '' %>" class="px-3 py-1 border rounded-md text-gray-500 hover:bg-gray-50">Previous</a>`
-                : `<span class="px-3 py-1 border rounded-md text-gray-400 bg-gray-100">Previous</span>`;
-
-            for (let i = 1; i <= totalPages; i++) {
-                nav.innerHTML += `
-            <a href="/admin/products/?page=${i}&limit=<%= limit %><%= query ? '&query=' + query : '' %>" 
-               class="px-3 py-1 rounded-md ${i === currentPage ? 'bg-blue-600 text-white' : 'border text-gray-500 hover:bg-gray-50'}">${i}</a>`;
-            }
-
-            nav.innerHTML += currentPage < totalPages
-                ? `<a href="/admin/products/?page=${currentPage + 1}&limit=<%= limit %><%= query ? '&query=' + query : '' %>" class="px-3 py-1 border rounded-md text-gray-500 hover:bg-gray-50">Next</a>`
-                : `<span class="px-3 py-1 border rounded-md text-gray-400 bg-gray-100">Next</span>`;
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+           const form = document.getElementById("searchForm");
+           const tbody = document.querySelector('tbody');
+           const paginationNav = document.querySelector('.flex.space-x-2');
+           let currentQuery = '';
+           let currentPage = 1;
+           const limit = 5; // You can adjust this or make it dynamic if needed
+       
+           // Load initial data from URL
+           const urlParams = new URLSearchParams(window.location.search);
+           currentQuery = urlParams.get('query') || '';
+           currentPage = parseInt(urlParams.get('page')) || 1;
+           fetchData();
+       
+           // Handle search form submission
+           form.addEventListener("submit", async function (event) {
+               event.preventDefault();
+               currentQuery = document.querySelector('input[name="searchInput"]').value.trim();
+               currentPage = 1; // Reset to page 1 on new search
+               fetchData();
+           });
+       
+           // Main data fetching and rendering
+           async function fetchData() {
+               const url = `/admin/products?page=${currentPage}&limit=${limit}${currentQuery ? `&query=${encodeURIComponent(currentQuery)}` : ''}`;
+               try {
+                   const response = await fetch(url, {
+                       method: 'GET',
+                       headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                   });
+                   const data = await response.json();
+       
+                   if (response.ok && data.success) {
+                       // Update table
+                       tbody.innerHTML = '';
+                       if (!data.allProducts || data.allProducts.length === 0) {
+                           tbody.innerHTML = `
+                               <tr class="hover:bg-gray-50 transition">
+                                   <td colspan="6" class="px-6 py-4 text-center">
+                                       <div class="text-bold text-red-600 text-sm">
+                                           No products found
+                                       </div>
+                                   </td>
+                               </tr>`;
+                       } else {
+                           data.allProducts.forEach(product => {
+                               tbody.innerHTML += `
+                                   <tr class="hover:bg-gray-50 transition">
+                                       <td class="px-6 py-4 whitespace-nowrap">
+                                           <div class="flex items-center">
+                                               <img src="${product.images?.[0] || '/default-image.jpg'}" 
+                                                    alt="Book cover" 
+                                                    class="h-14 w-14 rounded-md object-cover">
+                                               <div class="ml-4">${product.name || 'Unnamed Product'}</div>
+                                           </div>
+                                       </td>
+                                       <td class="px-6 py-4 whitespace-nowrap">
+                                           <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                               ${product.category || 'Uncategorized'}
+                                           </span>
+                                       </td>
+                                       <td class="px-6 py-4 whitespace-nowrap">${product.stock || 0} copies</td>
+                                       <td class="px-6 py-4 whitespace-nowrap">$${product.price || '0.00'}</td>
+                                       <td class="px-6 py-4 whitespace-nowrap">
+                                           <span class="px-2 py-1 rounded-full text-sm ${product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                               ${product.stock === 0 ? 'Out of Stock' : 'In Stock'}
+                                           </span>
+                                       </td>
+                                       <td class="px-6 py-4 whitespace-nowrap">
+                                           <div class="flex space-x-3">
+                                               <button class="text-blue-600 hover:text-blue-800" 
+                                                       onclick="window.location.href='/admin/product/${product._id}'">
+                                                   <i class="fas fa-edit"></i>
+                                               </button>
+                                               <button class="text-red-600 hover:text-red-900" 
+                                                       onclick="deleteConfirm('${product._id}')">
+                                                   <i class="fas fa-trash-alt"></i>
+                                               </button>
+                                               <button class="text-gray-600 hover:text-gray-900" 
+                                                       onclick="isBlocked(event, '/admin/block-product/${product._id}')">
+                                                   <i class="fas ${product.isBlocked ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                               </button>
+                                           </div>
+                                       </td>
+                                   </tr>`;
+                           });
+                       }
+       
+                       // Update pagination
+                       paginationNav.innerHTML = '';
+                       const totalPages = data.totalPages || 1;
+                       if (currentPage > 1) {
+                           paginationNav.innerHTML += `
+                               <a href="#" 
+                                  class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50"
+                                  onclick="event.preventDefault(); currentPage--; fetchData();">Previous</a>`;
+                       } else {
+                           paginationNav.innerHTML += `
+                               <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>`;
+                       }
+       
+                       for (let i = 1; i <= totalPages; i++) {
+                           paginationNav.innerHTML += `
+                               <a href="#" 
+                                  class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm ${i === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50'}"
+                                  onclick="event.preventDefault(); currentPage = ${i}; fetchData();">${i}</a>`;
+                       }
+       
+                       if (currentPage < totalPages) {
+                           paginationNav.innerHTML += `
+                               <a href="#" 
+                                  class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50"
+                                  onclick="event.preventDefault(); currentPage++; fetchData();">Next</a>`;
+                       } else {
+                           paginationNav.innerHTML += `
+                               <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>`;
+                       }
+       
+                       // Update URL without reloading
+                       history.pushState({}, '', url);
+                   } else {
+                       tbody.innerHTML = `
+                           <tr class="hover:bg-gray-50 transition">
+                               <td colspan="6" class="px-6 py-4 text-center">
+                                   <div class="text-bold text-red-600 text-sm">
+                                       No products found
+                                   </div>
+                               </td>
+                           </tr>`;
+                       console.log('Server response error:', data.message || 'Unknown error');
+                   }
+               } catch (error) {
+                   console.error('Fetch error:', error);
+                   tbody.innerHTML = `
+                       <tr class="hover:bg-gray-50 transition">
+                           <td colspan="6" class="px-6 py-4 text-center">
+                               <div class="text-bold text-red-600 text-sm">
+                                   Failed to load products
+                               </div>
+                           </td>
+                       </tr>`;
+                   // Optional: Add Toastify notification if you have it included
+                   if (typeof Toastify !== 'undefined') {
+                       Toastify({
+                           text: "Failed to load products",
+                           duration: 3000,
+                           gravity: "top",
+                           position: "center",
+                           backgroundColor: "#f44336"
+                       }).showToast();
+                   }
+               }
+           }
+       });
     </script>
 </body>
 

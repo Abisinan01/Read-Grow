@@ -6,7 +6,7 @@ dotenv.config()
 const localDB = process.env.DB_CONNECTION // db connection link from .env
 // console.log(localDB)
 
-const connectDb=async()=>{
+const connectDb = async () => {
     try {
         await mongoose.connect(localDB)
         console.log(`MONGODB DATABASE CONNECTED..`)

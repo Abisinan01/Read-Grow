@@ -288,19 +288,20 @@ export const editCategory = async (req, res, next) => {
 //=====Patch      
 export const editCategoryPatch = async (req, res, next) => {
     try {
-        const { categoryId, categoryName, categoryDescription, status } = req.body
-        console.log("editCategory Patch :", categoryDescription)
+        const { categoryName, categoryDescription, status } = req.body
+        const id = req.params
+        console.log("editCategory Patch :", req.body)
 
-        const updatedCategory = await Category.findOneAndUpdate(
-            { _id:categoryId },
+        const updatedCategory = await Category.findByIdAndUpdate(
+            id.id,
             {
                 $set: {
                     categoryName,
                     description: categoryDescription,
-                    status,
+                    status:status,
                 },
             })
-
+            console.log(updatedCategory)
         return res.status(200).json({
             success: true,
             message: "Category updated"
@@ -359,31 +360,27 @@ export const searchCategory = async (req,res,next) =>{
 //==========================Product Managment part=======================
 export const renderProductPage = async (req, res, next) => {
     try {
-        let { page, limit, query } = req.query
+        let { page, limit, query = '' } = req.query
+        // console.log(req.query)
         page = parseInt(page) || 1
         limit = parseInt(limit) || 5
         let skip = (page - 1) * limit
 
-        let filter = {} 
-        if (query) {
-             filter = { 
-                name: { $regex: query, $options: "i" },
-        }
-
+        const filter = query ? { name: { $regex: query, $options: "i" }} : {};
 
         const allProducts = await Product.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
+        if(!allProducts || allProducts.length === 0){ 
+            console.log("searched query ::::",allProducts)
 
-        if(!allProducts && allProducts.length == 0){
-            return res.status(404).json({
+            return res.status(404).json({ 
                 success:false,
-                message:"User not found"
+                message:"Products not found"
             })
         }
-
-
+ 
         const totalProducts = await Product.countDocuments(filter)
         const totalPages = Math.ceil(totalProducts / limit)
 
@@ -406,12 +403,13 @@ export const renderProductPage = async (req, res, next) => {
             page,
             query
         })
-    }
+ 
 
     } catch (error) {
         console.log(`Product management failed: ${error.message}`)
         next(new AppError(`Fetching products failed: ${error}`, 500))
     }
+
 }
 
 
