@@ -9,6 +9,10 @@ import { appengine } from "googleapis/build/src/apis/appengine/index.js"
 import Product from "../models/productSchema.js"
 import nodemailer from "nodemailer"
 import Category from "../models/categorySchema.js"
+import Address from "../models/addressSchema.js"
+import Cart from "../models/cartSchema.js"
+import Wishlist from "../models/wishListSchema.js"
+import { status } from "init"
 
 
 
@@ -194,7 +198,7 @@ export const renderHomePage = async (req, res, next) => {
 export const renderProductDetails = async (req, res, next) => {
     try {
         const { id } = req.params;
-        console.log("Product ID: ", id);
+        // console.log("Product ID: ", id);
 
         const product = await Product.findOne({ _id: id });
 
@@ -204,9 +208,17 @@ export const renderProductDetails = async (req, res, next) => {
                 message: "Product not found"
             });
         }
+        const relatedProducts = await Product.find(
+            { category: product.category, _id: { $ne: id } }
+        );
 
         const date = new Date(product.createdAt).toDateString();
-        res.render("user/product", { product, date, user: req.user });
+        res.render("user/product", {
+            product,
+            date,
+            user: req.user,
+            relatedProducts
+        });
 
     } catch (error) {
         return next(new AppError(`Product details page : ${error}`, 500))
@@ -224,6 +236,10 @@ export const renderShopPage = async (req, res, next) => {
 
         let query = { isBlocked: { $ne: true } };
 
+        if (category) {
+            query.category = category;
+        }
+
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: "i" } },
@@ -232,9 +248,7 @@ export const renderShopPage = async (req, res, next) => {
             ];
         }
 
-        if (category) {
-            query.category = category;
-        }
+        // console.log("search",search)
 
         if (price) {
             if (price === 'under-20') {
@@ -249,7 +263,7 @@ export const renderShopPage = async (req, res, next) => {
         const products = await Product.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
 
         const categories = await Category.find({ status: { $ne: "inactive" } });
         const totalProducts = await Product.countDocuments(query);
@@ -262,6 +276,7 @@ export const renderShopPage = async (req, res, next) => {
             totalPages,
             page,
             limit,
+            price,
             search: search || "",
             category: category || "",
             categories,
@@ -269,20 +284,19 @@ export const renderShopPage = async (req, res, next) => {
             user: req.user
         };
 
-        // Check if it's an AJAX request
+
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
             return res.status(200).json(responseData);
         }
 
-        // Render the page for non-AJAX requests
         return res.render("user/shop", responseData);
     } catch (error) {
         next(new AppError(`Shop product error: ${error.message}`, 500));
     }
 };
 
-//==================forgot password==================
 
+//==================forgot password================== 
 export const renderEmailVerify = async (req, res, next) => {
     try {
         return res.render('user/emailVerify')
@@ -419,7 +433,7 @@ export const editProfile = async (req, res, next) => {
     } catch (error) {
         next(new AppError(`User profile update Failed : ${error}`, 500))
     }
-} 
+}
 
 
 export const renderChangePassword = async (req, res, next) => {
@@ -480,10 +494,10 @@ export const renderChangeEmail = async (req, res, next) => {
     try {
         const id = req.params
         const user = await User.findById(id.id)
-        req.session.update=user.email
-        if(req.session.update){
-            return res.render("user/editEmail",{id})
-        }else{
+        req.session.update = user.email
+        if (req.session.update) {
+            return res.render("user/editEmail", { id })
+        } else {
             return res.redirect(`/read-and-grow/profile/${id}`)
         }
     } catch (error) {
@@ -504,7 +518,7 @@ export const changeEmailRequest = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message: "Email is not valid"
-            }) 
+            })
         }
 
         const resetURL = `http://localhost:3999/read-and-grow/new-email/${id.id}`;
@@ -529,10 +543,10 @@ export const changeEmailRequest = async (req, res, next) => {
         };
 
         await transporter.sendMail(mailOptions);
-        
+
         return res.status(200).json({
-            success:true,
-            message:"Please check your email"
+            success: true,
+            message: "Please check your email"
         })
 
     } catch (error) {
@@ -541,27 +555,27 @@ export const changeEmailRequest = async (req, res, next) => {
 }
 
 
-export const renderUpdateMail = async (req,res,next)=>{
+export const renderUpdateMail = async (req, res, next) => {
     try {
-    if(req.session.update){
-        return res.render("user/updateNewMail",{user:req.user})
-    }
-    return res.status(404).redirect('/read-and-grow/notFound')
+        if (req.session.update) {
+            return res.render("user/updateNewMail", { user: req.user })
+        }
+        return res.status(404).redirect('/read-and-grow/notFound')
     } catch (error) {
-        next (new AppError(`Update Mail failed : ${error}`,500))
+        next(new AppError(`Update Mail failed : ${error}`, 500))
     }
 }
 
-export const updateNewMail = async (req,res,next)=>{
+export const updateNewMail = async (req, res, next) => {
     try {
-        const {email} = req.body
+        const { email } = req.body
         console.log(email)
-        
-        const isExists = await User.findOne({email:email})
-        if(isExists){
+
+        const isExists = await User.findOne({ email: email })
+        if (isExists) {
             return res.status(400).json({
-                success:false,
-                message:"This email is alreeady in use. Please choose another."
+                success: false,
+                message: "This email is alreeady in use. Please choose another."
             })
         }
 
@@ -571,22 +585,522 @@ export const updateNewMail = async (req,res,next)=>{
         if (!otpResult.success) {
             return res.status(500).json(otpResult.message)
         }
- 
-        req.session.updateNew=email
+
+        req.session.updateNew = email
         return res.status(200).json({
-            success:true,
-            message:otpResult.message,
-            redirect:"/otp/verify"
+            success: true,
+            message: otpResult.message,
+            redirect: "/otp/verify"
         })
-        
+
     } catch (error) {
         next(new AppError(`updateNew Mail : ${id}`))
     }
 }
 
 
+//=======================address Managment===========
+export const renderAddressPage = async (req, res, next) => {
+    try {
+        const user = req.user
+        const address = await Address.find({ userId: user.id })
+        res.render("user/address", { user, address })
+    } catch (error) {
+        next(new AppError(`Address page : ${error}`, 500))
+    }
+}
+
+export const addAddress = async (req, res, next) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            street,
+            city,
+            state,
+            zip,
+            phone,
+            addressType
+        } = req.body
+        const user = req.user
+        if (!firstName || !lastName || !street || !city || !state || !zip || !phone) {
+            return res.status(400).json({
+                success: false,
+                message: "Please add your address"
+            })
+        }
+
+        const newAddress = new Address({
+            firstName,
+            lastName,
+            street,
+            city,
+            state,
+            pincode: zip,
+            phoneNumber: Number(phone),
+            addressType,
+            userId: user.id
+        })
+
+        await newAddress.save()
+        if (!newAddress) {
+            return res.status(400).json({
+                success: false,
+                message: "Address can't save to db"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Address added successfully."
+        })
+
+    } catch (error) {
+        next(new AppError(`Add address is failed : ${error}`, 500))
+    }
+}
+
+
+export const editAddress = async (req, res, next) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            street,
+            city,
+            state,
+            phone,
+            zip,
+            addressType
+        } = req.body;
+
+        const user = req.user;
+        const phoneNumber = parseInt(phone);
+
+        const updateAddress = await Address.findOneAndUpdate(
+            {
+                userId: user.id
+            },
+            {
+                $set: {
+                    firstName,
+                    lastName,
+                    street,
+                    city,
+                    state,
+                    pincode: zip,
+                    phoneNumber,
+                    addressType,
+                }
+            });
+        // console.log(updateAddress)
+
+        if (!updateAddress) {
+            return res.status(400).json({
+                success: false,
+                message: "Address not found or can't be changed."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Address edited successfully."
+        });
+    } catch (error) {
+        next(new AppError(`Edit address failed: ${error}`, 500));
+    }
+};
+
+
+export const deleteAddress = async (req, res, next) => {
+    try {
+        const id = req.params.id
+        console.log(id)
+        const deleteAddress = await Address.findByIdAndDelete(id)
+        if (!deleteAddress) {
+            return res.status(400).json({
+                success: false,
+                message: "Address not deleted"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Address deleted."
+        })
+    } catch (error) {
+        next(new AppError(`Address delete failed : ${error}`, 500))
+    }
+}
+
+
+//=============================WISHLIST====================
+
+export const renderWishListPage = async (req, res, next) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        const wishlist = await Wishlist.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(user.id) } },
+            { $unwind: "$items" },
+            {
+                $lookup: {
+                    from: "products",
+                    let: { productId: "$items.productId" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$_id", { $toObjectId: "$$productId" }] } } }
+                    ],
+                    as: "productDetails"
+                }
+            },
+            { $unwind: "$productDetails" },
+            {
+                $project: {
+                    _id: 1,
+                    "items._id": 1,
+                    "items.productId": 1,
+                    "productDetails.name": 1,
+                    "productDetails.images": 1,
+                    "productDetails.authorName": 1,
+                    "productDetails.price": 1,
+                    "productDetails.images": 1
+                }
+            }
+        ]);
+
+        // console.log(JSON.stringify(wishlist,null,2));
+        return res.render("user/wishlist", {
+            user,
+            wishlist: JSON.stringify(wishlist, null, 2)
+        });
+
+    } catch (error) {
+        console.error("Wishlist error:", error);
+        next(new AppError(`Wishlist failed : ${error}`, 500));
+    }
+};
+
+
+export const addToWishlist = async (req, res, next) => {
+    try {
+        console.log("product id ", req.body)
+        const productId = req.body.productId
+        const user = req.user
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        let wishlist = await Wishlist.findOne({ userId: user.id });
+        if (!wishlist) {
+            wishlist = new Wishlist({
+                userId: user.id,
+                items: [{ productId }]
+            });
+        } else {
+            if (!wishlist.items.includes(productId)) {
+                wishlist.items.push({ productId })
+            } else {
+                return res.status(400).json({ success: false, message: "Product already in wishlist" });
+            }
+        }
+
+        await wishlist.save()
+
+        return res.status(200).json({
+            success: true,
+            message: "Added to wishlist"
+        })
+
+    } catch (error) {
+        next(new AppError(` Wishlist product adding faield : ${error} `, 500))
+    }
+}
+
+
+export const deleteWishlist = async (req, res, next) => {
+    try {
+        const wishlistId = req.params.id
+        const productId = req.body
+
+        const user = req.user
+        console.log("productId", productId)
+        console.log("wishId", wishlistId)
+        console.log("userId", user.id)
+
+
+        // if (!wishlistId) {
+        //     return res.status(400).json({ success: false, message: "Product not removed from cart" })
+        // }
+
+        const validProductId = mongoose.Types.ObjectId(productId.productId)
+        const validWishlistId = mongoose.Types.ObjectId(wishlistId)
+
+        if (!validProductId) {
+            return res.status(400).json({ success: false, message: "Invalid Product ID" });
+        }
+
+        const result = await Wishlist.updateOne(
+            { _id: validWishlistId, userId: user.id },
+            { $pull: { items: validProductId } }
+        );
+
+        console.log(result);
+        // const wishlistCheck = await Wishlist.findOne({ userId: user.id });
+
+
+        return res.status(200).json({
+            success: true,
+            message: "Product removed from wishlist"
+        })
+
+    } catch (error) {
+        next(`wishlist product deletion failed : ${error}`, 500)
+    }
+}
+
+
+//=======================CART MANAGMENT==============================
+
+export const renderCartManagment = async (req, res, next) => {
+    try {
+        const user = req.user
+        const cartItems = await Cart?.findOne({ userId: user.id })
+        const product = await Product.findOne({productId:cartItems?.items?.productId})
+        
+        if (!cartItems?.items?.length) {
+            return res.render('user/cart', { user, allCartProducts: [] });
+        }
+        
+        let allCartProducts = []
+        console.log("cartIems s",cartItems)
+        for (let item of cartItems.items) {
+            const product = await Product.findById(item.productId).lean()
+
+            if(!product){
+                console.log(`Not product found in this cart pid:${item.productId}`)
+            }
+            if (product.isBlocked) {
+                cartItems.items.pull({ productId: product._id })
+                await cartItems.save()
+                continue;
+            }
+
+            const cartProduct = {
+                ...product,
+                quantity: item.quantity 
+            };
+            allCartProducts.push(cartProduct);
+        } 
+
+        console.log("cartAllProducts", allCartProducts)
+        return res.render("user/cart", { user, allCartProducts })
+
+    } catch (error) {
+        next(new AppError(`Cart managment failed : ${error}`, 500))
+    }
+}
+
+export const addToCart = async (req, res, next) => {
+    try {
+        const productId = req.body.productId
+        const user = req.user
+        console.log("productId : ", productId)
+        console.log("user:", user.id)
+
+        const product = await Product.findById(productId)
+        // console.log(product)
+        if (product.isBlocked || !product) {
+            return res.status(400).json({
+                success: false,
+                message: "Unavailable."
+            })
+        }
+        if (product.stock <= 0) {
+            return next(new AppError(`Out of stock`, 400))
+        }
+        let cart = await Cart.findOne({ userId: user.id })
+
+        if (cart) {
+            const existItemIndex = cart.items.findIndex(
+                item => item.productId.toString() === productId.toString()
+            )
+
+            if (existItemIndex > -1) {
+                if (cart.items[existItemIndex].quantity + 1 > product.stock && product.stock === 0) {
+
+                    return res.status(400).json({
+                        success: false, message: "Out of stocks"
+                    })
+                }
+                cart.items[existItemIndex].quantity += 1;
+                product.stock -= 1
+
+            } else {
+                cart.items.push({
+                    productId: new mongoose.Types.ObjectId(product._id),
+                    quantity: 1,
+                    stock: parseInt(product.stock)
+                })
+                product.stock -= 1
+            } 
+            const saveCart = await cart.save()
+            await product.save()   
+        } else {
+            const addCart = new Cart({
+                userId: new mongoose.Types.ObjectId(user.id),
+                items:
+                    [
+                        {
+                            productId: new mongoose.Types.ObjectId(product._id),
+                            quantity: 1,
+                            stock: parseInt(product.stock)
+                        }
+                    ]
+            })
+            product.stock -= 1
+            await addCart.save()
+            await product.save()
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Product is moved to cart"
+        })
+    } catch (error) {
+        next(new AppError(`Add To cart Failed : ${error}`, 500))
+    }
+}
+
+export const removeFromCart = async (req, res, next) => {
+    try {
+        const productId = req.params.id
+        const user = req.user
+        console.log("productId", productId)
+
+        const product = await Product.findById(productId)
+        const cartItem = await Cart.findOne({ userId: user.id })
+        console.log("cartItem",cartItem)
+        const stockCount = cartItem.items.find(p => {
+            if (p.productId.toString() == product._id.toString()) return p.quantity
+        })
+        console.log("stockCount before", stockCount.quantity)
+
+        const updateCart = await Cart.updateOne(
+            { userId: user.id },
+            {
+                $pull: { items: { productId: product._id } }
+            }
+        )
+
+        const updateInventory = await Product.updateOne(
+            { _id: product._id },
+            { $inc: { stock: stockCount.quantity } }
+        )
+        if (updateInventory) console.log(`Inventory updated ${product.name} ${stockCount}`)
+
+        if (!updateCart) {
+            return res.status(200).json({
+                success: false,
+                message: "Removing failed "
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Product is removed from cart"
+        })
+    } catch (error) {
+        next(new AppError(`Remove cart data Failed : ${error}`, 500))
+    }
+}
+
+
+export const updateQuantity = async (req, res, next) => {
+    try {
+        const productId = req.params.id
+        const newQty = req.body.quantity
+        const minusQty = req.body.minusQty
+        const user = req.user
+
+        const product = await Product.findById(productId)
+        console.log("current stock:", product.stock)
+
+        const cart = await Cart.findOne({userId:user.id})
+        console.log('cart',cart)
+        if (newQty) {
+            if (newQty > product.stock && product.stock === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Not enough quantity"
+                })
+            }
+            console.log("newQty :", newQty)
+            console.log("current stock:", product.stock)
+
+            const item = cart.items.find(item=>item.productId.toString() === product._id.toString())
+            if(!item){
+                return res.status(400).json({
+                    success:false,
+                    message:"Item not found in cart"
+                })
+            }   
+
+            item.quantity += 1
+            product.stock -= 1
+            await product.save()
+            await cart.save()
+            console.log("updated Stock :", product.stock)
+        }
+        if (minusQty) {
+            if (newQty > product.stock && product.stock === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Not enough quantity"
+                })
+            }
+            console.log("newQty :", newQty)
+            console.log("current stock:", product.stock)
+
+            const item = cart.items.find(item=>item.productId.toString() === product._id.toString())
+            if(!item){
+                return res.status(400).json({
+                    success:false,
+                    message:"Item not found in cart"
+                })
+            }   
+
+            item.quantity -= 1
+            product.stock += 1
+            await product.save()
+            await cart.save()
+            console.log("updated Stock :", product.stock)
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Done"
+        })
+    } catch (error) {
+        next(new AppError(`Update quantity failed : ${error}`, 500))
+    }
+}
 
  
+
+//==========================CHECKOUT MANAGEMENT===============================
+
+export const renderCheckoutPage = async (req,res,next)=>{
+    try {
+        
+    } catch (error) {
+        next (new AppError(`Checkout page : ${error}`,500))
+    }
+}
+
 
 
 //============Logout===================

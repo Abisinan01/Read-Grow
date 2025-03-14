@@ -70,10 +70,11 @@ app.use(methodOverride('_method'))
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server error";
-
     console.error(`Error: ${message}, statusCode :${statusCode}`);
     
-    return res.status(statusCode).json({success:false, message:'Something went wrong' }); 
+    return res.status(statusCode).json({
+        success:false, 
+        message:message }); 
 }); 
    
 // console.log("process Id ",process.pid)

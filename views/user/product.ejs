@@ -8,18 +8,81 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/magnifieProduct.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="/js/user/shop.js" defer></script>
 </head>
 
 <body class="bg-gray-100 font-sans">
-    <!-- Navbar -->
-    <%- include("../partials/user/navBar.ejs") %>
+<!-- Navbar -->
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            
+            <!-- Logo -->
+            <a href="/" class="flex items-center">
+                <h1 class="text-2xl font-bold text-gray-900">REad & GroW</h1>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-2xl px-6">
+                <div class="relative">
+                    <form id="searchForm">
+                        <input type="search" 
+                               name="query" 
+                               placeholder="Search for books..." 
+                               class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               aria-label="Search">
+                        <button type="submit" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            aria-label="Submit search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    
+                    <script>
+                        document.getElementById('searchForm').addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            
+                            const searchInput = document.querySelector('input[name="query"]').value.trim();
+                            
+                            if (searchInput) {
+                                window.location.href = `/read-and-grow/shop?search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
+                            }
+                        });
+                    </script>
+            
+                </div>
+            </div>
+            
+            <!-- Navigation Icons -->
+            <div class="flex items-center space-x-6">
+                <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                    <i class="fas fa-store text-xl"></i>
+                </a>
+                <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                    <i class="fas fa-heart text-xl"></i>
+                </a>
+                <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                </a>
+                <a href="/read-and-grow/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                    <i class="fas fa-user text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+ 
 
     <main class="container mx-auto p-6">
         <nav class="text-gray-600 text-sm mb-4">
             <ol class="flex space-x-2">
-                <li><a href="/" class="hover:text-gray-900">Home</a></li>
-                <li>/</li>
-                <li><a href="/read-and-grow/category/<%= product.category %>" class="hover:text-gray-900 capitalize"><%= product.category %></a></li>
+                <li><a href="/" class="hover:text-gray-900">Home /</a></li>
+                <li><a href="/read-and-grow/shop?page=1&limit=6" class="hover:text-gray-900 capitalize">Shop /</a></li>
+                <li><a href="/read-and-grow/shop?page=1&limit=6&category=<%= product.category %>" class="hover:text-gray-900 capitalize"><%= product.category %> </a></li>
                 <li>/</li>
                 <li class="text-gray-900 font-semibold"><%= product.name %></li>
             </ol>
@@ -44,18 +107,26 @@
                 <h1 class="text-2xl font-semibold text-gray-800"><%= product.name %> (Paperback)</h1>
                 <h2 class="text-lg text-gray-600 mb-4">by <%= product.authorName %></h2>
                 <div class="flex items-center mb-4">
-                    <div class="text-yellow-400 space-x-1">
-                        <% for (let i = 0; i < 4; i++) { %>
-                            <i class="fas fa-star"></i>
-                        <% } %>
-                        <i class="fas fa-star-half-alt"></i>
-                    </div>
+                        <div class="text-yellow-400 space-x-1">
+                            <% for (let i = 0; i < 5; i++) { %>
+                                <% if( i < Math.floor(product.rating)){ %>
+                                        <i class="fas fa-star"></i>
+                                    <% }else{%>
+                                        <i class="far fa-star"></i>
+                                <% } %>
+                            <% } %>
+                        </div>
                     <span class="text-gray-500 ml-2 text-sm"><%= product.rating %> ratings</span>
                 </div>
                 <p class="text-xl font-bold text-gray-900">Price: $<%= product.price %> <span class="text-sm text-red-500">(10% off)</span></p>
                 <p class="mt-4 text-gray-600"><%= product.description %></p>
-                <button class="mt-6 bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition flex items-center">
-                    <i class="fas fa-plus mr-2"></i> ADD TO CART
+                <button 
+                    onclick="addToCart('<%= product._id %>')" 
+                    id="addToCart"
+                    <%= product.stock > 0 ? "" : "disabled" %>
+                    class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
+                    aria-label="Add <%= product.name %> to cart">
+                    ADD CART
                 </button>
                 <p class="mt-4 <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %>"><%= product.stock > 0 ? 'In Stock' : 'Out of Stock' %></p>
             </div>
@@ -83,6 +154,57 @@
                     <p class="text-gray-600 mb-4">Share your experience</p>
                     <textarea class="w-full border rounded-lg p-4 mb-4" placeholder="Write your review here..." rows="4"></textarea>
                     <button class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-black transition duration-150">Add feedback</button>
+                </div>
+
+                <!-- Related Products -->
+                <div class="bg-white rounded-lg shadow-md p-6 mt-4">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Related Products</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <% relatedProducts.forEach(product=>{%>
+                            <article
+                                class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
+                                <div class="relative h-64 bg-gray-50">
+                                    <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center">
+                                        <img src="<%= product.images[0] %>" alt="Rich Dad Poor Dad"
+                                            class="w-auto h-52 md:h-64 object-cover rounded-md">
+                                    </a>
+                                    <button
+                                        class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                                        aria-label="Add Rich Dad Poor Dad to wishlist">
+                                        <i class="far fa-heart text-gray-600"></i>
+                                    </button>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="font-semibold text-lg mb-1">
+                                        <%= product.name %>
+                                    </h3>
+                                    <p class="text-gray-600 text-sm mb-2">
+                                        <%= product.authorName %>
+                                    </p>
+                                    <div class="text-yellow-400 space-x-1">
+                                        <% for (let i = 0; i < 5; i++) { %>
+                                            <% if( i < Math.floor(product.rating)){ %>
+                                                    <i class="fas fa-star"></i>
+                                                <% }else{%>
+                                                    <i class="far fa-star"></i>
+                                            <% } %>
+                                        <% } %>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-gray-900">$<%= product.price %></span>
+                                        <button 
+                                            onclick="addToCart('<%= product._id %>')" 
+                                            id="addToCart"
+                                            <%= product.stock > 0 ? "" : "disabled" %>
+                                            class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
+                                            aria-label="Add <%= product.name %> to cart">
+                                            ADD CART
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        <% }) %>    
+                    </div>
                 </div>
     </main>
     

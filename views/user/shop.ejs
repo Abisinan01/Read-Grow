@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
+    <script src="/js/user/showMessage.js" defer></script>
+    <script src="/js/user/shop.js" defer></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -51,10 +52,10 @@
                     <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
                         <i class="fas fa-shop text-xl"></i>
                     </a>
-                    <a href="" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                    <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
                         <i class="fas fa-heart text-xl"></i>
                     </a>
-                    <a href="" class="text-gray-600 hover:text-gray-900 relative" aria-label="Shopping cart">
+                    <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900 relative" aria-label="Shopping cart">
                         <i class="fas fa-shopping-cart text-xl"></i>
                         <span
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">2</span>
@@ -71,24 +72,40 @@
         <div class="flex flex-col md:flex-row gap-8">
             <!-- Sidebar -->
             <aside class="w-full md:w-64 space-y-6">
+                <!-- <nav class="text-gray-600 text-sm">
+                    <ol class="flex space-x-2">
+                        <li><a href="/" class="hover:text-gray-900">Home</a> /</li>
+                        <li><a href="/read-and-grow/shop" class="hover:text-gray-900 capitalize">Shop</a></li>
+                
+                        <% if (category) { %>
+                            <li>/ <a href="/read-and-grow/shop?page=1&limit=6&category=<%= encodeURIComponent(category) %>" 
+                                class="hover:text-gray-900 capitalize">
+                                <%= category %>
+                            </a></li>
+                        <% } %>
+                    </ol>
+                </nav> -->
+                
                 <!-- Categories -->
                 <div>
                     <h2 class="text-lg font-semibold mb-3">Categories</h2>
                     <ul class="space-y-2">
                         <li>
-                            <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900 <%= !categories ? 'font-bold' : '' %>">
+                            <a href="/read-and-grow/shop?page=1&limit=6<%= search ? '&search=' + encodeURIComponent(search) : '' %>" 
+                               class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
                                 All Categories
                             </a>
                         </li>
                         <% categories.forEach(cat => { %>
                             <li>
-                                <a href="/read-and-grow/shop/?category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" 
-                                    class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">                                 
+                                <a href="/read-and-grow/shop?page=1&limit=6&category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %>" 
+                                   class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
+                                    <%= cat.categoryName %>
+                                </a> 
                             </li>
                         <% }) %>
-                    </ul>
+                    </ul>                    
                 </div>
-                
                 
 
                 <!-- Authors -->
@@ -100,7 +117,7 @@
                         
                         <% authorSet.forEach(author => { %>
                             <li>
-                                <a href="/read-and-grow/shop/?search=<%= encodeURIComponent(author) %>" 
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %>&search=<%= encodeURIComponent(author) %>" 
                                    class="text-gray-600 hover:text-gray-900">
                                     <%= author %>
                                 </a>
@@ -109,24 +126,25 @@
                     </ul>
                 </div>
                 
-
                 <!-- Price Range -->
                 <div>
                     <h2 class="text-lg font-semibold mb-3">Price</h2>
                     <ul class="space-y-2">
                         <li>
-                            <a href="/read-and-grow/shop?price=<%= encodeURIComponent('under-20') %>" class="text-gray-600 hover:text-gray-900">
+                            <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&price=under-20" 
+                               class="text-gray-600 hover:text-gray-900">
                                 Under $20
                             </a>
                         </li>
                         <li>
-                            <a href="/read-and-grow/shop?price=<%= encodeURIComponent('20-30') %>" class="text-gray-600 hover:text-gray-900">
+                            <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&price=20-30" 
+                               class="text-gray-600 hover:text-gray-900">
                                 $20 - $30
                             </a>
                         </li>
-
                         <li>
-                            <a href="/read-and-grow/shop?price=<%= encodeURIComponent('above-30') %>" class="text-gray-600 hover:text-gray-900">
+                            <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&price=above-30" 
+                               class="text-gray-600 hover:text-gray-900">
                                 Above $30
                             </a>
                         </li>
@@ -152,7 +170,7 @@
                                             <img src="<%= product.images[0] %>" alt="Rich Dad Poor Dad"
                                                 class="w-auto h-52 md:h-64 object-cover rounded-md">
                                         </a>
-                                        <button
+                                        <button onclick="showMessage('wishlist','<%= product._id %>')"
                                             class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
                                             aria-label="Add Rich Dad Poor Dad to wishlist">
                                             <i class="far fa-heart text-gray-600"></i>
@@ -165,20 +183,26 @@
                                         <p class="text-gray-600 text-sm mb-2">
                                             <%= product.authorName %>
                                         </p>
-                                        <div class="flex text-yellow-400 mb-2">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
+                                        <div class="text-yellow-400 space-x-1">
+                                            <% for (let i = 0; i < 5; i++) { %>
+                                                <% if( i < Math.floor(product.rating)){ %>
+                                                        <i class="fas fa-star"></i>
+                                                    <% }else{%>
+                                                        <i class="far fa-star"></i>
+                                                <% } %>
+                                            <% } %>
                                         </div>
                                         <div class="flex justify-between items-center">
                                             <span class="font-bold text-gray-900">$<%= product.price %></span>
-                                            <button
-                                                class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
-                                                aria-label="Add Rich Dad Poor Dad to cart">
+                                            <button 
+                                                onclick="addToCart('<%= product._id %>')" 
+                                                id="addToCart"
+                                                <%= product.stock > 0 ? "" : "disabled" %>
+                                                class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
+                                                aria-label="Add <%= product.name %> to cart">
                                                 ADD CART
                                             </button>
+                                        
                                         </div>
                                     </div>
                                 </article>
@@ -188,36 +212,36 @@
 
                 <!-- Pagination -->
                 <div class="flex justify-center mt-8 space-x-2">
-                    <% if(page>1) {%>
-                        <a href="/read-and-grow/shop?page=<%= page-1 %>&limit=<%= limit  %>"
-                            class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                    <% if(page > 1) { %>
+                        <a href="/read-and-grow/shop?page=<%= page-1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
+                           class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-left"></i>
                         </a>
-                        <% }else{ %>
-                            <a
-                                class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        <% } %>
-                        <% for(let i=1; i<=totalPages; i++){ %>
-                            <a href="/read-and-grow/shop?page=<%= i %>&limit=<%= limit %>"
-                                class="w-10 h-10 flex items-center justify-center rounded bg-black text-white">
-                                <%= i %>
-                            </a>
-                        <% } %>
-                        <% if(page<totalPages) {%>
-                            <a href="/read-and-grow/shop?page=<%= page+1 %>?limit=<%= limit %>"
-                                class="w-10 h-10 flex items-center justify-center rounded border border-gray-400 hover:bg-gray-200">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                            <% }else{ %>
-                                <a
-                                    class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                        <% } %>
+                    <% } else { %>
+                        <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    <% } %>
+                    
+                    <% for(let i=1; i<=totalPages; i++) { %>
+                        <a href="/read-and-grow/shop?page=<%= i %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
+                           class="w-10 h-10 flex items-center justify-center rounded <%= i === page ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100' %>">
+                            <%= i %>
+                        </a>
+                    <% } %>
+                    
+                    <% if(page < totalPages) { %>
+                        <a href="/read-and-grow/shop?page=<%= page+1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
+                           class="w-10 h-10 flex items-center justify-center rounded border border-gray-400 hover:bg-gray-200">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } else { %>
+                        <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    <% } %>
                 </div>
-            </div>
+            </div> 
         </div>
     </main>
 
@@ -225,117 +249,134 @@
     <%- include("../partials/user/footer.ejs") %>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchForm = document.getElementById('searchForm');
-        const bookGrid = document.querySelector('.grid'); // Target the grid container
-        const pagination = document.querySelector('.flex.space-x-2'); // Target pagination container
-        const limit = <%= limit %>;
-        const totalPages = <%= totalPages %>;
-
-        searchForm.addEventListener("submit", async function (event) {
-            event.preventDefault();
-            const searchInput = document.querySelector('input[name="query"]').value.trim();
-            
-            const url = `/read-and-grow/shop?page=1&limit=${limit}${searchInput ? `&search=${encodeURIComponent(searchInput)}` : ''}`;
-            try {
-                const response = await fetch(url, {
-                    method: "GET",
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    updateData(result.allProducts);
-                    updatePagination(result.totalPages, result.page);
-                    history.pushState({}, '', url);
-                } else {
-                    throw new Error(result.errorMessage || 'No products found');
-                }
-            } catch (error) {
-                console.error('Search product error:', error.message);
-                Toastify({
-                    text: "Failed to search products",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: "#f44336"
-                }).showToast();
-            }
-        });
-
-        function updateData(products) {
-            bookGrid.innerHTML = '';
-            if (!products || products.length === 0) {
-                bookGrid.innerHTML = `<div class="text-lg text-red-600 justify-content-center font-semibold text-center mt-2">No products found.</div>`;
-                return;
-            }
-
-            products.forEach(product => {
-                if (!product.isBlocked) {
-                    bookGrid.innerHTML += `
-                        <article class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
-                            <div class="relative h-64 bg-gray-50">
-                                <a href="/read-and-grow/product-details/${product._id}" class="flex justify-center">
-                                    <img src="${product.images[0]}" alt="${product.name}" class="w-auto h-52 md:h-64 object-cover rounded-md">
-                                </a>
-                                <button class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100" aria-label="Add to wishlist">
-                                    <i class="far fa-heart text-gray-600"></i>
-                                </button>
-                            </div>
-                            <div class="p-4">
-                                <h3 class="font-semibold text-lg mb-1">${product.name}</h3>
-                                <p class="text-gray-600 text-sm mb-2">${product.authorName}</p>
-                                <div class="flex text-yellow-400 mb-2">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="font-bold text-gray-900">$${product.price}</span>
-                                    <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition" aria-label="Add to cart">
-                                        ADD CART
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    `;
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchForm = document.getElementById('searchForm');
+            const bookGrid = document.querySelector('.grid'); // Target the grid container
+            const pagination = document.querySelector('.flex.space-x-2'); // Target pagination container
+            const limit = <%= limit %>;
+            const totalPages = <%= totalPages %>;
+            const currentCategory = "<%= category %>"; // Get the current category
+        
+            searchForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const searchInput = document.querySelector('input[name="query"]').value.trim();
+                
+                // Include category in the search if one is selected
+                const url = `/read-and-grow/shop?page=1&limit=${limit}${searchInput ? `&search=${encodeURIComponent(searchInput)}` : ''}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}`;
+                
+                try {
+                    const response = await fetch(url, {
+                        method: "GET",
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const result = await response.json();
+        
+                    if (response.ok && result.success) {
+                        updateData(result.allProducts);
+                        updatePagination(result.totalPages, result.page, result.search, result.category);
+                        history.pushState({}, '', url);
+                    } else {
+                        throw new Error(result.errorMessage || 'No products found');
+                    }
+                } catch (error) {
+                    console.error('Search product error:', error.message);
+                    Toastify({
+                        text: "Failed to search products",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "#f44336"
+                    }).showToast();
                 }
             });
-        }
-
-        function updatePagination(totalPages, currentPage) {
-            pagination.innerHTML = '';
-            if (currentPage > 1) {
-                pagination.innerHTML += `
-                    <a href="/read-and-grow/shop?page=${currentPage - 1}&limit=${limit}" class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>`;
-            } else {
-                pagination.innerHTML += `
-                    <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>`;
+        
+            function updateData(products) {
+                bookGrid.innerHTML = '';
+                if (!products || products.length === 0) {
+                    bookGrid.innerHTML = `<div class="text-lg text-red-600 justify-content-center font-semibold text-center mt-2 col-span-full">No products found.</div>`;
+                    return;
+                }
+        
+                products.forEach(product => {
+                    if (!product.isBlocked) {
+                        // Create stars based on product rating
+                        let stars = '';
+                        for (let i = 0; i < 5; i++) {
+                            if (i < Math.floor(product.rating)) {
+                                stars += '<i class="fas fa-star"></i>';
+                            } else {
+                                stars += '<i class="far fa-star"></i>';
+                            }
+                        }
+                        
+                        bookGrid.innerHTML += `
+                            <article class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
+                                <div class="relative h-64 bg-gray-50">
+                                    <a href="/read-and-grow/product-details/${product._id}" class="flex justify-center">
+                                        <img src="${product.images[0]}" alt="${product.name}" class="w-auto h-52 md:h-64 object-cover rounded-md">
+                                    </a>
+                                    <button class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100" aria-label="Add to wishlist">
+                                        <i class="far fa-heart text-gray-600"></i>
+                                    </button>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="font-semibold text-lg mb-1">${product.name}</h3>
+                                    <p class="text-gray-600 text-sm mb-2">${product.authorName}</p>
+                                    <div class="text-yellow-400 space-x-1">
+                                        ${stars}
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-gray-900">$${product.price}</span>
+                                        <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition" aria-label="Add to cart">
+                                            ADD CART
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        `;
+                    }
+                });
             }
-
-            for (let i = 1; i <= totalPages; i++) {
-                pagination.innerHTML += `
-                    <a href="/read-and-grow/shop?page=${i}&limit=${limit}" class="w-10 h-10 flex items-center justify-center rounded ${i === currentPage ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100'}">
-                        ${i}
-                    </a>`;
+        
+            function updatePagination(totalPages, currentPage, search = "", category = "") {
+                pagination.innerHTML = '';
+                
+                // Build the base URL with current filters
+                const baseUrl = `/read-and-grow/shop?limit=${limit}${category ? `&category=${encodeURIComponent(category)}` : ''}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+                
+                if (currentPage > 1) {
+                    pagination.innerHTML += `
+                        <a href="${baseUrl}&page=${currentPage - 1}" class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>`;
+                } else {
+                    pagination.innerHTML += `
+                        <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>`;
+                }
+        
+                for (let i = 1; i <= totalPages; i++) {
+                    pagination.innerHTML += `
+                        <a href="${baseUrl}&page=${i}" class="w-10 h-10 flex items-center justify-center rounded ${i === currentPage ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100'}">
+                            ${i}
+                        </a>`;
+                }
+        
+                if (currentPage < totalPages) {
+                    pagination.innerHTML += `
+                        <a href="${baseUrl}&page=${currentPage + 1}" class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>`;
+                } else {
+                    pagination.innerHTML += `
+                        <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>`;
+                }
             }
-
-            if (currentPage < totalPages) {
-                pagination.innerHTML += `
-                    <a href="/read-and-grow/shop?page=${currentPage + 1}&limit=${limit}" class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>`;
-            } else {
-                pagination.innerHTML += `
-                    <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>`;
-            }
-        }
-    });
-    </script>
+        });
+        </scrip>
 </body>
 
 </html>

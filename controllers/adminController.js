@@ -412,8 +412,6 @@ export const renderProductPage = async (req, res, next) => {
 
 }
 
-
-
 export const addProducts = async (req, res, next) => {
     try {
         res.render("admin/addProducts")
@@ -423,7 +421,7 @@ export const addProducts = async (req, res, next) => {
     }
 }
 
-//=========product uploading
+//=========product uploading================
 export const addProductsPost = async (req, res, next) => {
     try {
         console.log("body", req.body)
@@ -515,6 +513,7 @@ export const editProduct = async (req, res, next) => {
         }
 
         // console.log(imagesPaths,"images path") 
+
          await Product.findOneAndUpdate(
             { _id : id },
             {

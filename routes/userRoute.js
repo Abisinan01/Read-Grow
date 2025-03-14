@@ -23,6 +23,17 @@ import {
     renderChangeEmail,
     renderUpdateMail,
     updateNewMail,
+    renderAddressPage,
+    addAddress,
+    editAddress,
+    deleteAddress,
+    renderCartManagment,
+    renderWishListPage,
+    deleteWishlist,
+    addToWishlist,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
     
     
 } from "../controllers/userController.js"
@@ -59,17 +70,28 @@ router.post('/change-email',userAuth,changeEmailRequest)
 router.get('/new-email/:id',userAuth,renderUpdateMail)
 router.post('/new-email',userAuth,updateNewMail)
 
+router.get('/address/:id',userAuth,renderAddressPage)
+router.post('/address',userAuth,addAddress)
+router.put('/address/:id',userAuth,editAddress)
+router.delete('/address/:id',userAuth,deleteAddress)
 
+router.get('/wishlist',userAuth,renderWishListPage)
+router.post('/wishlist/add',userAuth,addToWishlist)
+router.delete('/wishlist/remove/:id',userAuth,deleteWishlist)
+
+router.get('/cart',userAuth,renderCartManagment)
+router.post('/cart',userAuth,addToCart)
+router.delete('/cart/:id',userAuth,removeFromCart)
+router.put('/cart/:id',userAuth,updateQuantity)
+ 
+//================logout========
 router.post('/logout',logout) 
-
-
-
 // ================google auth setting for signup======================
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/read-and-grow/signup' }),
-    (req, res) => {
+    (req, res) => { 
 
         if (!req.user) {
             console.error("Google OAuth failed: No user found");

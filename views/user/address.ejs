@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Highlight active sidebar button */
+        .sidebar-btn.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* Modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-200 min-h-screen">
+    <!-- Navbar - positioned at the very top, not fixed -->
+    <%- include("../partials/user/navBar.ejs") %>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex">
+
+
+            <!-- Address Section -->
+            <div class="w-2/3 pl-6">
+                <h2 class="text-xl font-semibold mb-6">Your Addresses</h2>
+                <!-- Add Address Button -->
+                <button id="addAddressBtn"
+                    class="mb-6 bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                    Add New Address
+                </button>
+
+                <!-- Address List -->
+                <% address.forEach(address=>{ %>
+                    <div
+                        class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-start">
+                        <div>
+                            <p class="font-medium">
+                                <%= address.firstName %>, <%= address.lastName %> (<%= address.addressType %>)
+                            </p>
+                            <p class="text-gray-600">
+                                <%= address.street %>
+                            </p>
+                            <p class="text-gray-600">
+                                <%= address.city %>
+                            </p>
+                            <p class="text-gray-600">
+                                <%= address.state %>
+                            </p>
+                            <p class="text-gray-600">Phone: <%= address.phoneNumber %>
+                            </p>
+                        </div>
+                        <!-- Buttons Container -->
+                        <div class="flex space-x-2 items-start">
+                            <button class="editAddressBtn text-gray-600 hover:text-gray-900" data-address-id="1">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"
+                                    width="24px" fill="#4f4f4f">
+                                    <path
+                                        d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z" />
+                                </svg>
+                            </button>
+                            <button onclick="deleteConfirm('<%= address._id %>')">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"
+                                    width="24px" fill="#4f4f4f">
+                                    <path
+                                        d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <% }) %>
+            </div>
+            <div class="d-flex justify-content-start px-28">
+                <button class="btn btn-primary"
+                    onclick="window.location.href='/read-and-grow/profile/<%= user.id %>'">Go
+                    Back</button>
+            </div>
+
+            <!-- Modal for Add/Edit Address -->
+            <div id="addressModal" class="fixed inset-0 flex items-center justify-center hidden modal-backdrop z-50">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                    <h3 id="modalTitle" class="text-lg font-semibold mb-4">Add New Address</h3>
+                    <form id="addressForm" class="space-y-4">
+                        <div>
+                            <span id="userId" hidden>
+                                <%= user.id %>
+                            </span>
+                            <label class="block text-gray-700">First name</label>
+                            <input type="text" name="firstName" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Last name</label>
+                            <input type="text" name="lastName" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Street Address</label>
+                            <input type="text" name="street" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">City</label>
+                            <input type="text" name="city" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">State</label>
+                            <input type="text" name="state" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Zip Code</label>
+                            <input type="text" name="zip" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <!-- Address Type Dropdown -->
+                        <div>
+                            <label class="block text-gray-700">Address Type</label>
+                            <select name="addressType" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                <option value="" disabled selected>Select Address Type</option>
+                                <option value="home">Home</option>
+                                <option value="work">Work</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" id="cancelAddressBtn"
+                                class="bg-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 transition duration-300">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal for Add/Edit Address -->
+            <div id="addressModalEdit"
+                class="fixed inset-0 flex items-center justify-center hidden modal-backdrop z-50">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                    <h3 id="modalTitle" class="text-lg font-semibold mb-4">Edit Address</h3>
+                    <form id="addressForm" class="space-y-4">
+                        <div>
+                            <span id="userId" hidden>
+                                <%= user.id %>
+                            </span>
+                            <label class="block text-gray-700">First name</label>
+                            <input type="text" name="firstName" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Last name</label>
+                            <input type="text" name="lastName" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Street Address</label>
+                            <input type="text" name="street" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">City</label>
+                            <input type="text" name="city" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">State</label>
+                            <input type="text" name="state" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Zip Code</label>
+                            <input type="text" name="zip" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        </div>
+                        <!-- Address Type Dropdown -->
+                        <div>
+                            <label class="block text-gray-700">Address Type</label>
+                            <select name="addressType" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                <option value="" disabled selected>Select Address Type</option>
+                                <option value="home">Home</option>
+                                <option value="work">Work</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" id="cancelAddressBtn"
+                                class="bg-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-400 transition duration-300">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+            <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+            <script>
+                function showToast(message, type = 'error') {
+                    Toastify({
+                        text: message,
+                        duration: 2000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
+                        stopOnFocus: true,
+                    }).showToast();
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Get DOM elements
+                    const addModal = document.getElementById('addressModal');
+                    const editModal = document.getElementById('addressModalEdit');
+                    const addForm = addModal.querySelector('form');
+                    const editForm = editModal.querySelector('form');
+
+                    // Fix the form IDs by assigning unique IDs
+                    addForm.id = "addAddressForm";
+                    editForm.id = "editAddressForm";
+
+                    // Add new address
+                    document.getElementById('addAddressBtn').addEventListener('click', function () {
+                        addForm.reset();
+                        addModal.classList.remove('hidden');
+                    });
+
+                    // Close add modal
+                    addModal.querySelector('#cancelAddressBtn').addEventListener('click', function () {
+                        addModal.classList.add('hidden');
+                    });
+
+                    // Close edit modal
+                    editModal.querySelector('#cancelAddressBtn').addEventListener('click', function () {
+                        editModal.classList.add('hidden');
+                    });
+
+                    // Edit address buttons
+                    document.querySelectorAll('.editAddressBtn').forEach(button => {
+                        button.addEventListener('click', function () {
+                            const addressId = this.getAttribute('data-address-id');
+
+                            // Get the parent address div
+                            const addressDiv = this.closest('.bg-white');
+
+                            // Extract address information
+                            const fullName = addressDiv.querySelector('.font-medium').textContent.trim();
+                            const nameParts = fullName.split(',');
+                            const firstName = nameParts[0].trim();
+                            const lastName = nameParts[1].trim();
+                            const addressType = fullName.match(/\((.*?)\)/)[1].trim();
+
+                            const paragraphs = addressDiv.querySelectorAll('.text-gray-600');
+                            const street = paragraphs[0].textContent.trim();
+                            const city = paragraphs[1].textContent.trim();
+                            const state = paragraphs[2].textContent.trim();
+                            const phone = paragraphs[3].textContent.replace('Phone:', '').trim();
+
+                            // Fill the edit form
+                            const form = editModal.querySelector('form');
+                            form.querySelector('input[name="firstName"]').value = firstName;
+                            form.querySelector('input[name="lastName"]').value = lastName;
+                            form.querySelector('input[name="street"]').value = street;
+                            form.querySelector('input[name="city"]').value = city;
+                            form.querySelector('input[name="state"]').value = state;
+                            // Note: ZIP is not displayed in the UI, so we can't populate it
+                            form.querySelector('input[name="phone"]').value = phone;
+
+                            // Set the address type dropdown
+                            const addressTypeSelect = form.querySelector('select[name="addressType"]');
+                            for (let i = 0; i < addressTypeSelect.options.length; i++) {
+                                if (addressTypeSelect.options[i].value === addressType.toLowerCase()) {
+                                    addressTypeSelect.selectedIndex = i;
+                                    break;
+                                }
+                            }
+
+                            // Store the address ID for submission
+                            form.setAttribute('data-address-id', addressId);
+
+                            // Show the edit modal
+                            editModal.classList.remove('hidden');
+                        });
+                    });
+
+                    // Add address form submission
+                    addForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const userId = document.getElementById('userId').textContent.trim();
+
+                        const addressData = {
+                            firstName: formData.get('firstName'),
+                            lastName: formData.get('lastName'),
+                            street: formData.get('street'),
+                            city: formData.get('city'),
+                            state: formData.get('state'),
+                            zip: formData.get('zip'),
+                            phone: formData.get('phone'),
+                            addressType: formData.get('addressType')
+                        };
+
+                        try {
+                            const response = await fetch('/read-and-grow/address', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(addressData)
+                            });
+
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(result.message || 'Failed to add address');
+                            }
+
+                            showToast('Address added successfully!', 'success');
+                            addModal.classList.add('hidden');
+                            location.reload();
+                        } catch (err) {
+                            showToast(err.message, 'error');
+                            console.error('Error adding address:', err);
+                        }
+                    });
+
+
+                    editForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        const userId = document.getElementById('userId').textContent.trim();
+
+                        const formData = new FormData(this);
+                        const addressId = this.getAttribute('data-address-id');
+
+                        const addressData = {
+                            firstName: formData.get('firstName'),
+                            lastName: formData.get('lastName'),
+                            street: formData.get('street'),
+                            city: formData.get('city'),
+                            state: formData.get('state'),
+                            zip: formData.get('zip'),
+                            phone: formData.get('phone'),
+                            addressType: formData.get('addressType')
+                        };
+
+                        console.log("Phone value:", addressData.phone);
+
+                        try {
+                            const response = await fetch(`/read-and-grow/address/${userId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(addressData)  // Don't wrap in {addressData: ...}
+                            });
+
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(result.message || 'Failed to update address');
+                            }
+
+                            showToast('Address updated successfully!', 'success');
+                            editModal.classList.add('hidden');
+                            location.reload(); // Reload to show the updated address
+                        } catch (err) {
+                            showToast(err.message, 'error');
+                            console.error('Error updating address:', err);
+                        }
+                    });
+                });
+
+                function deleteConfirm(id) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            deleteAddress(id);
+                        }
+                    });
+                }
+
+                // Function to delete category
+                async function deleteAddress(id) {
+                    try {
+                        const response = await fetch(`/read-and-grow/address/${id}`, {
+                            method: 'DELETE'
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            return showToast(result.message || 'Something went wrong', 'success');
+                        }
+
+                        if (result.success) {
+                           ('Category deleted successfully');
+                            // Reload the page to see changes
+                            location.reload();
+                        }
+                    } catch (error) {
+                        console.error("Delete category error:", error);
+                        showToast('Failed to delete address',"error");
+                    }
+                }
+            </script>
+</body>
+
+</html>
