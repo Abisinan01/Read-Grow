@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details - REad & GroW</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen font-sans">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-lg p-4 flex items-center justify-between border-b border-gray-200">
+    <div class="text-2xl font-bold text-gray-900 flex items-center">
+      <span class="mr-2">REad & GroW</span>
+      <span class="text-green-600 text-sm font-medium bg-green-100 px-2 py-1 rounded-full">New</span>
+    </div>
+    <div class="flex-1 mx-6">
+      <input type="text" placeholder="Search for books..." 
+             class="w-full max-w-lg px-5 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+    </div>
+    <div class="flex space-x-5 text-gray-700">
+      <a href="/read-and-grow/shop" class="hover:text-blue-600 transition duration-200"><i class="fas fa-store"></i></a>
+      <a href="/read-and-grow/wishlist" class="hover:text-red-600 transition duration-200"><i class="fas fa-heart"></i></a>
+      <a href="/read-and-grow/cart" class="hover:text-yellow-600 transition duration-200"><i class="fas fa-shopping-cart"></i></a>
+      <a href="/read-and-grow/profile" class="hover:text-purple-600 transition duration-200"><i class="fas fa-user"></i></a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-6 py-10">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Order Details</h1>
+      <a href="/read-and-grow/orders" class="text-blue-600 hover:text-blue-800 font-medium transition duration-200 flex items-center">
+        <i class="fas fa-arrow-left mr-2"></i> Go Back
+      </a>
+    </div>
+
+    <!-- Order Details Card -->
+    <div class="bg-white p-8 rounded-xl shadow-md border border-gray-100 transform transition-all duration-300 hover:shadow-lg">
+      <!-- Order Summary -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-5 border-b border-gray-200 pb-3">Order Summary</h2>
+        <div class="space-y-4 text-gray-700">
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-800">Order Number:</span>
+            <span class="text-gray-900 font-semibold">#ORD123456</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-800">Order Date:</span>
+            <span class="text-gray-900">March 10, 2025</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-800">Status:</span>
+            <div class="flex items-center">
+              <span class="text-green-600 font-medium mr-2">Delivered</span>
+              <div class="w-24 h-2 bg-green-200 rounded-full overflow-hidden">
+                <div class="w-full h-full bg-green-600 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-800">Total Amount:</span>
+            <span class="text-gray-900 font-semibold">$75.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ordered Items -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-5 border-b border-gray-200 pb-3">Items</h2>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-200">
+            <div class="flex items-center space-x-5">
+              <div class="w-14 h-14 bg-gray-200 rounded-lg flex items-center justify-center">
+                <i class="fas fa-book text-gray-700 text-xl"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-900">Atomic Habits</p>
+                <p class="text-sm text-gray-600">Qty: 1</p>
+              </div>
+            </div>
+            <p class="text-gray-900 font-medium">$40.00</p>
+          </div>
+          <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-200">
+            <div class="flex items-center space-x-5">
+              <div class="w-14 h-14 bg-gray-200 rounded-lg flex items-center justify-center">
+                <i class="fas fa-book text-gray-700 text-xl"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-900">Rich Dad Poor Dad</p>
+                <p class="text-sm text-gray-600">Qty: 1</p>
+              </div>
+            </div>
+            <p class="text-gray-900 font-medium">$35.00</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shipping Address -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-5 border-b border-gray-200 pb-3">Shipping Address</h2>
+        <div class="text-gray-600 space-y-1">
+          <p>James Bond</p>
+          <p>Kondotty, Calicut</p>
+          <p>Kerala</p>
+          <p>Phone: 8086001138</p>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-5 border-b border-gray-200 pb-3">Payment Method</h2>
+        <p class="text-gray-600">Credit Card (Ending in 4242)</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex space-x-6">
+        <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+          Return
+        </button>
+        <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+          Cancel
+        </button>
+        <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+          Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

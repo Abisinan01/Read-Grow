@@ -292,10 +292,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message || 'Failed to select address');
 
-                showToast('Address selected!', 'success');
+                showToast(result.message, 'success');
+                localStorage.setItem('addressId',addressId)//temperory
                 console.log(`Selected address ID: ${addressId}`);
-
-                // Uncheck other checkboxes if one is selected
+ 
                 if (isChecked) {
                     document.querySelectorAll('.selectAddress').forEach(cb => {
                         if (cb !== this) {
@@ -340,27 +340,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-//===============================CHECKOUT FORM================================
-    // Handle checkout form submission
+//===============================CHECKOUT FORM CONFIRM ORDER================================
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             if (isProcessing) return;
-
+            
             const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
-
             if (!selectedPayment) {
                 showToast('Please select a payment method', 'error');
                 return;
             }
+            
+            const selectedAddress = localStorage.getItem('addressId')
+            localStorage.removeItem('addressId')
+            if (!selectedAddress) {
+                showToast('Please select a address', 'error');
+                return;
+            }
 
             isProcessing = true;
-
+    
             try {
                 const orderData = {
-                    // addressId: document.querySelector('input[name="selectAddress"]:checked')?.getAttribute('data-address-id') || '',
+                    addressId:selectedAddress,
                     paymentMethod: selectedPayment.value,
-                    // defaultAddressId: document.getElementById('defaultAddress')?.value || ''
                 };
 
                 console.log('Submitting order:', orderData);
@@ -377,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error(result.message);
                 }
 
-                // showToast(result.message, 'success');
+                showToast(result.message, 'success');
                 window.location.href = '/read-and-grow/confirm-order'
             } catch (err) {
                 showToast(err.message, 'error');

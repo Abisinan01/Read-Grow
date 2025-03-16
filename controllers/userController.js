@@ -173,6 +173,7 @@ export const renderHomePage = async (req, res, next) => {
         const token = req.cookies.jwt
         let user = null
         // console.log("token data : ",token)
+ 
         if (token) {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -180,7 +181,7 @@ export const renderHomePage = async (req, res, next) => {
             } catch (error) {
                 console.log('Invalid jwt :', error)
             }
-        } 
+        }
         const products = await Product.find({
             $and: [
                 { rating: { $gte: 4.0 } },
@@ -266,12 +267,12 @@ export const renderShopPage = async (req, res, next) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-        
+
         const categories = await Category.find({ status: { $ne: "inactive" } });
-            
+
         let wishlistItems = []
-        const wishlist = await Wishlist.findOne({userId:user.id})
-        for(let item of wishlist.items){
+        const wishlist = await Wishlist.findOne({ userId: user.id })
+        for (let item of wishlist.items) {
             const product = await Product.findById(item.productId).lean()
 
             if (!product) {
@@ -299,6 +300,7 @@ export const renderShopPage = async (req, res, next) => {
             wishlistItems
         };
 
+        if(req.session.order){req.session.order=null}
 
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
             return res.status(200).json(responseData);
@@ -836,11 +838,17 @@ export const selectAddress = async (req, res, next) => {
                 message: "Failed to select addresss"
             });
         }
-
-        return res.status(200).json({
-            success: true,
-            message: "Address is selected"
-        })
+        if(isChecked){
+            return res.status(200).json({
+                success: true,
+                message: "Address is selected"
+            })
+        }else{
+            return res.status(200).json({
+                success: true,
+                message: "Address is unselected"
+            })
+        }
     } catch (error) {
         next(new AppError(`Default address : ${error}`, 500))
     }
@@ -851,32 +859,32 @@ export const selectAddress = async (req, res, next) => {
 export const renderWishListPage = async (req, res, next) => {
     try {
         const user = req.user;
- 
+
         let wishlistItems = []
-        const wishlist = await Wishlist.findOne({userId:user.id})
+        const wishlist = await Wishlist.findOne({ userId: user.id })
 
         const itemsToRemove = [];
-        if(!wishlist){
+        if (!wishlist) {
             return res.status(400).json({
-                success:false,
-                message:"Not found wishlist"
+                success: false,
+                message: "Not found wishlist"
             })
         }
 
-        const cart = await Cart.findOne({userId:user.id})
-        for(let item of wishlist.items){
+        const cart = await Cart.findOne({ userId: user.id })
+        for (let item of wishlist.items) {
             const product = await Product.findById(item.productId).lean()
-            
+
             if (!product) {
                 console.log(`Product not found`);
                 itemsToRemove.push(item.productId);
                 continue;
             }
-            if(!cart){
-                res.status(200).json({success:false,message:"Not cart products"})
+            if (!cart) {
+                res.status(200).json({ success: false, message: "Not cart products" })
             }
-            
-            for(let cartItem of cart.items){       
+
+            for (let cartItem of cart.items) {
                 if (cartItem.productId.toString() === product._id.toString()) {
                     itemsToRemove.push(item.productId);
                     break;
@@ -885,10 +893,10 @@ export const renderWishListPage = async (req, res, next) => {
 
             wishlistItems.push(product)
         }
-        console.log("wishlistItems : ",wishlistItems);
+        console.log("wishlistItems : ", wishlistItems);
 
         if (itemsToRemove.length > 0) {
-            wishlist.items = wishlist.items.filter(item => 
+            wishlist.items = wishlist.items.filter(item =>
                 !itemsToRemove.includes(item.productId.toString()) // Remove items in itemsToRemove
             );
             await wishlist.save();
@@ -974,10 +982,10 @@ export const deleteWishlist = async (req, res, next) => {
 
         const result = await Wishlist.updateOne(
             { _id: validWishlistId, userId: user.id },
-            { $pull: { items: {productId:validProductId } } }
+            { $pull: { items: { productId: validProductId } } }
         );
 
-        console.log('Updated result : ',result);
+        console.log('Updated result : ', result);
 
         return res.status(200).json({
             success: true,
@@ -999,7 +1007,7 @@ export const renderCartManagment = async (req, res, next) => {
         const product = await Product.findOne({ productId: cartItems?.items?.productId })
 
         if (!cartItems?.items?.length) {
-            return res.render('user/cart', { user, allCartProducts: [] });
+            return res.render('user/cart', { user, allCartProducts: [] , cartItems });
         }
 
         let allCartProducts = []
@@ -1213,10 +1221,10 @@ export const updateQuantity = async (req, res, next) => {
         }
         return res.status(200).json({
             success: true,
-            message: "Done" 
+            message: "Done"
         })
     } catch (error) {
-        next(new AppError(`Update quantity failed : ${error}`, 500)) 
+        next(new AppError(`Update quantity failed : ${error}`, 500))
     }
 }
 
@@ -1235,7 +1243,7 @@ export const renderCheckoutPage = async (req, res, next) => {
         console.log("usercart", userCart)
         console.log("Delivery cart address :", address)
 
-        let checkoutTotal= 0
+        let checkoutTotal = 0
         const checkoutProducts = []
         for (let item of userCart.items) {
             const product = await Product.findById(item.productId).lean()
@@ -1249,7 +1257,7 @@ export const renderCheckoutPage = async (req, res, next) => {
             checkoutProducts.push(product);
         }
 
-        req.session.orderDetails=checkoutTotal.toFixed(2)
+        req.session.orderDetails = checkoutTotal.toFixed(2)
 
         console.log("checkoutProducts", checkoutProducts)
         console.log("checkoutTotal", checkoutTotal)
@@ -1267,67 +1275,95 @@ export const renderCheckoutPage = async (req, res, next) => {
 }
 
 
-export const confirmOrder = async(req,res,next)=>{
+export const confirmOrder = async (req, res, next) => {
     try {
         const user = req.user
-        const {paymentMethod} = req.body
-         console.log("paymentMethod :",paymentMethod)
+        const { paymentMethod, addressId } = req.body
 
-         const address = await Address.findOne({$or:[{isSelected:true},{isDefault:true}]})
-
-         const totalAmount = req.session.orderDetails
-    
-         console.log("totalAmount : ",totalAmount)
-
-         const orderID = `ORD-${Date.now()}`;
-         console.log("orderID :",orderID)
-
-         const cart = await Cart.findOne({userId:user.id})
-
-         const newOrder = new Order({
-            userId : user.id,
-            orderId: orderID,
-            addressId:address._id,
-            payment:paymentMethod,
-            items:cart.items.map(item=>({
-                productId:item.productId,
-                quantity:item.quantity
-            })),
-            totalAmount:totalAmount
-         })
-
-         const saveOrder = await newOrder.save()
-
-         if(!saveOrder){
-            return res.json({
-                success:false,message:"Order failed"
+        if (!paymentMethod) {
+            return res.status(400).json({
+                success: false,
+                message: "Please select payment method"
             })
-         }
-         
-         return res.status(200).json({
-            success:true, message:"Order confirmed"
-         })
+        }
+        console.log("paymentMethod :", paymentMethod)
+
+        const address = await Address.findById(addressId)
+        console.log('Delivery Address :', address)
+
+        if (!address) {
+            return res.status(400).json({
+                success: false,
+                message: "Please select address"
+            })
+        }
+
+        const totalAmount = req.session.orderDetails
+        console.log("totalAmount : ", totalAmount)
+
+        const orderID = `ORD-${Date.now()}`;
+        console.log("orderID :", orderID)
+
+        const cart = await Cart.findOne({ userId: user.id })
+
+        const newOrder = new Order({
+            userId: user.id,
+            orderId: orderID,
+            addressId: address._id,
+            payment: paymentMethod,
+            items: cart.items.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity
+            })),
+            totalAmount: totalAmount
+        })
+
+        const saveOrder = await newOrder.save()
+        if (!saveOrder) {
+            return res.json({
+                success: false, message: "Order failed"
+            })
+        }
+
+        req.session.order = newOrder
+        return res.status(200).json({
+            success: true, message: "Order confirmed"
+        })
     } catch (error) {
         next(new AppError(`Checkout Confirm order : ${error}`, 500))
     }
-1}
+    1
+}
 
-export const orderConfirmed = async (req,res,next)=>{
+export const orderConfirmed = async (req, res, next) => {
     try {
         const userId = req.user
+        if(!req.session.order){
+            return res.redirect('/read-and-grow/home')
+        }
         const user = await User.findById(userId.id)
-        const orders = await Order.findOne({userId:userId.id})
-        // if(!req.session.order){
-        //     return res.redirect('/read-and-grow/home')
-        // }
-        return res.render('user/orderConfirmed',{
-                user,
-                orders
-            })
+        const orders = await Order.findById(req.session.order._id);
+        console.log("Order detials : ",orders)
+        const cart = await Cart.findOneAndUpdate(
+            {userId:user._id},
+            {
+                $unset:{items:""}
+            },{new : true}
+        )
+        return res.render('user/orderConfirmed', {
+            user,
+            orders  
+        })
     } catch (error) {
-        next(new AppError(`Order confimation falied : ${error}`,500))
+        next(new AppError(`Order confimation falied : ${error}`, 500))
     }
 }
+//=======================ORDER MANAGMENT ======================
+
+
+
+
+
 //============Logout=================== 
 export const logout = async (req, res, next) => {
     try {
