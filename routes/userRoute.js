@@ -34,6 +34,12 @@ import {
     addToCart,
     removeFromCart,
     updateQuantity,
+    setDefault,
+    renderCheckoutPage,
+    selectAddress,
+    confirmOrder,
+    orderConfirmed,
+
     
     
 } from "../controllers/userController.js"
@@ -61,7 +67,7 @@ router.get("/shop",userAuth,renderShopPage)
 
 router.get('/profile/:id',userAuth,renderProfilePage)
 router.patch('/profile/:id',userAuth,editProfile)
-
+ 
 router.get('/change-password/:id',userAuth,renderChangePassword)
 router.post('/change-password',userAuth,changePasswordRequest)
 
@@ -72,18 +78,23 @@ router.post('/new-email',userAuth,updateNewMail)
 
 router.get('/address/:id',userAuth,renderAddressPage)
 router.post('/address',userAuth,addAddress)
-router.put('/address/:id',userAuth,editAddress)
+router.put('/address/:userId/:addressId',userAuth,editAddress)
+router.patch('/address/:id/set-default',userAuth,setDefault)
 router.delete('/address/:id',userAuth,deleteAddress)
+router.patch('/address/:id/select-address',selectAddress)
 
 router.get('/wishlist',userAuth,renderWishListPage)
 router.post('/wishlist/add',userAuth,addToWishlist)
 router.delete('/wishlist/remove/:id',userAuth,deleteWishlist)
 
-router.get('/cart',userAuth,renderCartManagment)
-router.post('/cart',userAuth,addToCart)
-router.delete('/cart/:id',userAuth,removeFromCart)
-router.put('/cart/:id',userAuth,updateQuantity)
+router.get('/cart',userAuth,renderCartManagment) 
+router.post('/cart',userAuth,addToCart) 
+router.delete('/cart/:id',userAuth,removeFromCart) 
+router.put('/cart/:id',userAuth,updateQuantity) 
  
+router.get('/checkout/:id',userAuth,renderCheckoutPage)
+router.post('/confirm-order',userAuth,confirmOrder)
+router.get('/confirm-order',userAuth,orderConfirmed)
 //================logout========
 router.post('/logout',logout) 
 // ================google auth setting for signup======================

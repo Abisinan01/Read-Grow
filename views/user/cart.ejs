@@ -124,9 +124,11 @@
                                 </div>
                             <% }); %>
                             <div class="flex justify-between text-[12px] text-red-600">
-                                <span >Total Qty (items)</span>
-                                <span id="totalQty"></span>
-                            </div>
+                                <span>Total Qty (items)</span>
+                                <% let sum = 0; %>
+                                <% allCartProducts.forEach(p => { sum += p.quantity; }); %>
+                                <span id="totalQty"><%= sum %></span>
+                            </div>                            
                         <% } else { %>
                             <p class="text-sm text-gray-600">No items to summarize</p>
                         <% } %>
@@ -137,14 +139,15 @@
                             </div>
                         </div>
                     </div>
-                    <button class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition-colors font-medium">
+                    <button onclick="window.location.href='/read-and-grow/checkout/<%= cartItems._id %>'" 
+                         class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition-colors font-medium">
                         Proceed to Checkout
                     </button>
                 </div>
-            </div>
+            </div> 
         </div>
-    </div>
-
+    </div> 
+ 
     <script>
         function showToast(message, type = 'error') {
             Toastify({
@@ -183,7 +186,10 @@
 
                     if(result.success){
                         qtyInput.value = quantity;
-                        document.getElementById('totalQty').innerHTML += quantity
+                        const totalQtyElement = document.getElementById('totalQty')
+                        const totalQty = Number(totalQtyElement.innerText) + 1;
+                        totalQtyElement.innerText = totalQty;
+
                         updatePrice(productId, quantity);
                         updateTotal();
                     }
@@ -213,7 +219,9 @@
                         }
 
                         qtyInput.value = quantity;
-                        document.getElementById('totalQty').textContent -= quantity
+                        const totalQtyElement = document.getElementById('totalQty')
+                        const totalQty = Number(totalQtyElement.innerText) - 1;
+                        totalQtyElement.innerText = totalQty;
                         updatePrice(productId, quantity);
                         updateTotal();
                     } catch (error) {
@@ -287,6 +295,7 @@
                     showToast('Something went wrong', 'error');
                 }
             }
+
 
             document.addEventListener('DOMContentLoaded',async () => {
                 updateTotal();

@@ -9,7 +9,6 @@
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-  <!-- Add Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <title>Email Verification</title>
@@ -31,7 +30,7 @@
       </div>
 
       <div class="flex space-x-4">
-        <button type="submit"
+        <button type="submit" id="verifyBtn"
           class="w-full bg-green-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
           Verify
         </button>
@@ -43,64 +42,81 @@
           Cancel
         </button>
       </div>
-
-  </div>
-  </form>
+    </form>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script>
+
     function showToast(message, type = 'error') {
+      if (document.querySelector('.toastify')) return; // Prevent multiple alerts
+
       Toastify({
         text: message,
         duration: 2000,
         gravity: "top",
         position: "center",
-        backgroundColor: type === 'success' ? "#16a34a" : "#dc2626", // green-600 for success, red-600 for error
+        backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
         stopOnFocus: true,
       }).showToast();
     }
 
-    
-    document.getElementById('emailForm').addEventListener('click', async function (e) {
-      e.preventDefault()
-      const email = document.getElementById("email").value.trim()
-      const error = document.getElementById('errorDiv')
+    let isProcessing = false;
+
+    document.getElementById('emailForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (isProcessing) return;
+
+      isProcessing = true;
+      const verifyBtn = document.getElementById('verifyBtn');
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying...';
+      const email = document.getElementById("email").value.trim();
+      const error = document.getElementById('errorDiv');
+      error.innerHTML = ""; // Clear previous errors
 
       if (email === "") {
-        error.innerHTML = "Please give your current email";
+        error.innerHTML = "Please enter your current email";
+        resetButton();
         return;
       }
 
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      const isValid = emailPattern.test(email)
-      if (!isValid) {
-        error.innerHTML = "Incorrect email format"
-        return
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        error.innerHTML = "Incorrect email format";
+        resetButton();
+        return;
       }
 
       try {
         const response = await fetch('/read-and-grow/change-email', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({email})
-        })
+          body: JSON.stringify({ email })
+        });
 
-        const result = await response.json()
-
+        const result = await response.json();
         if (!response.ok) {
-          showToast(result.message || "something went wrong")
+          showToast(result.message || "Something went wrong");
         }
-
         if (result.success) {
-          showToast(result.message || "Please check your mail")
+          showToast(result.message || "Please check your mail", 'success');
         }
-
       } catch (error) {
-        console.log(`Email changing : ${error}`)
-        showToast('Something went wrong')
+        console.error(`Email changing error: ${error}`);
+        showToast('Something went wrong');
+      } finally {
+        resetButton();
       }
-    })
+    });
+
+    function resetButton() {
+      isProcessing = false;
+      const verifyBtn = document.getElementById('verifyBtn');
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'Verify';
+    }
+
   </script>
 </body>
 

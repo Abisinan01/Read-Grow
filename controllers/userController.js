@@ -13,6 +13,7 @@ import Address from "../models/addressSchema.js"
 import Cart from "../models/cartSchema.js"
 import Wishlist from "../models/wishListSchema.js"
 import { status } from "init"
+import Order from "../models/orderSchema.js"
 
 
 
@@ -179,7 +180,7 @@ export const renderHomePage = async (req, res, next) => {
             } catch (error) {
                 console.log('Invalid jwt :', error)
             }
-        }
+        } 
         const products = await Product.find({
             $and: [
                 { rating: { $gte: 4.0 } },
@@ -229,6 +230,7 @@ export const renderProductDetails = async (req, res, next) => {
 //==================shoping page =====================
 export const renderShopPage = async (req, res, next) => {
     try {
+        const user = req.user
         let { search, category, page, limit, price } = req.query;
         page = parseInt(page) || 1;
         limit = parseInt(limit) || 6;
@@ -264,8 +266,20 @@ export const renderShopPage = async (req, res, next) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-
+        
         const categories = await Category.find({ status: { $ne: "inactive" } });
+            
+        let wishlistItems = []
+        const wishlist = await Wishlist.findOne({userId:user.id})
+        for(let item of wishlist.items){
+            const product = await Product.findById(item.productId).lean()
+
+            if (!product) {
+                console.log(`Not product found`)
+            }
+            wishlistItems.push(product)
+        }
+
         const totalProducts = await Product.countDocuments(query);
         const totalPages = Math.ceil(totalProducts / limit);
 
@@ -281,7 +295,8 @@ export const renderShopPage = async (req, res, next) => {
             category: category || "",
             categories,
             errorMessage: products.length === 0 ? "No products found." : null,
-            user: req.user
+            user: req.user,
+            wishlistItems
         };
 
 
@@ -610,6 +625,7 @@ export const renderAddressPage = async (req, res, next) => {
     }
 }
 
+
 export const addAddress = async (req, res, next) => {
     try {
         const {
@@ -629,7 +645,12 @@ export const addAddress = async (req, res, next) => {
                 message: "Please add your address"
             })
         }
+        console.log("Add address :", req.body)
+        const phoneNumber = parseInt(phone)
 
+        if (isNaN(phoneNumber)) {
+            return res.status(400).json({ success: false, message: "Number must be digits" })
+        }
         const newAddress = new Address({
             firstName,
             lastName,
@@ -637,7 +658,7 @@ export const addAddress = async (req, res, next) => {
             city,
             state,
             pincode: zip,
-            phoneNumber: Number(phone),
+            phoneNumber: parseInt(phone),
             addressType,
             userId: user.id
         })
@@ -675,12 +696,22 @@ export const editAddress = async (req, res, next) => {
         } = req.body;
 
         const user = req.user;
-        const phoneNumber = parseInt(phone);
+        const addressId = req.params.addressId
+        console.log("Address edit : ", addressId)
 
-        const updateAddress = await Address.findOneAndUpdate(
-            {
-                userId: user.id
-            },
+        if (!firstName || !lastName || !street || !city || !state || !phone || !zip || !addressType) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required."
+            });
+        }
+
+        const phoneNumber = parseInt(phone)
+        if (isNaN(phoneNumber)) {
+            return res.status(400).json({ success: false, message: "Number must be digits" })
+        }
+        const updateAddress = await Address.findByIdAndUpdate(
+            addressId,
             {
                 $set: {
                     firstName,
@@ -693,7 +724,7 @@ export const editAddress = async (req, res, next) => {
                     addressType,
                 }
             });
-        // console.log(updateAddress)
+
 
         if (!updateAddress) {
             return res.status(400).json({
@@ -704,7 +735,8 @@ export const editAddress = async (req, res, next) => {
 
         return res.status(200).json({
             success: true,
-            message: "Address edited successfully."
+            message: "Address edited successfully.",
+
         });
     } catch (error) {
         next(new AppError(`Edit address failed: ${error}`, 500));
@@ -720,7 +752,7 @@ export const deleteAddress = async (req, res, next) => {
         if (!deleteAddress) {
             return res.status(400).json({
                 success: false,
-                message: "Address not deleted"
+                message: "Address not found"
             })
         }
 
@@ -733,49 +765,139 @@ export const deleteAddress = async (req, res, next) => {
     }
 }
 
+export const setDefault = async (req, res, next) => {
+    try {
+        const addressId = req.params.id
+        const isChecked = req.body.isDefault
+        console.log("Address set defualt : ", isChecked)
+
+        const address = await Address.findById(addressId)
+        if (!address) {
+            return res.status(400).json({ success: false, message: "Address not found" })
+        }
+
+        if (isChecked) {
+            await Address.updateMany(
+                { user: address.user, _id: { $ne: addressId } },
+                { $set: { isDefault: false } }
+            );
+        }
+
+        const updateAddress = await Address.findByIdAndUpdate(
+            addressId,
+            { $set: { isDefault: isChecked } },
+            { new: true }
+        )
+
+        if (!updateAddress) {
+            return res.status(400).json({
+                success: false,
+                message: "Failed to update address"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Address as set default"
+        })
+    } catch (error) {
+        next(new AppError(`Default address : ${error}`, 500))
+    }
+}
+
+
+export const selectAddress = async (req, res, next) => {
+    try {
+        const addressId = req.params.id
+        const isChecked = req.body.isSelected
+        console.log("Address is selected : ", isChecked)
+
+        const address = await Address.findById(addressId)
+        if (!address) {
+            return res.status(400).json({ success: false, message: "Address not found" })
+        }
+
+        if (isChecked) {
+            await Address.updateMany(
+                { user: address.user, _id: { $ne: addressId } },
+                { $set: { isSelected: false } }
+            );
+        }
+
+        const updateAddress = await Address.findByIdAndUpdate(
+            addressId,
+            { $set: { isSelected: isChecked } },
+            { new: true }
+        )
+
+        if (!updateAddress) {
+            return res.status(400).json({
+                success: false,
+                message: "Failed to select addresss"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Address is selected"
+        })
+    } catch (error) {
+        next(new AppError(`Default address : ${error}`, 500))
+    }
+}
 
 //=============================WISHLIST====================
 
 export const renderWishListPage = async (req, res, next) => {
     try {
         const user = req.user;
+ 
+        let wishlistItems = []
+        const wishlist = await Wishlist.findOne({userId:user.id})
 
-        if (!user) {
-            return res.redirect('/login');
+        const itemsToRemove = [];
+        if(!wishlist){
+            return res.status(400).json({
+                success:false,
+                message:"Not found wishlist"
+            })
         }
 
-        const wishlist = await Wishlist.aggregate([
-            { $match: { userId: new mongoose.Types.ObjectId(user.id) } },
-            { $unwind: "$items" },
-            {
-                $lookup: {
-                    from: "products",
-                    let: { productId: "$items.productId" },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ["$_id", { $toObjectId: "$$productId" }] } } }
-                    ],
-                    as: "productDetails"
-                }
-            },
-            { $unwind: "$productDetails" },
-            {
-                $project: {
-                    _id: 1,
-                    "items._id": 1,
-                    "items.productId": 1,
-                    "productDetails.name": 1,
-                    "productDetails.images": 1,
-                    "productDetails.authorName": 1,
-                    "productDetails.price": 1,
-                    "productDetails.images": 1
+        const cart = await Cart.findOne({userId:user.id})
+        for(let item of wishlist.items){
+            const product = await Product.findById(item.productId).lean()
+            
+            if (!product) {
+                console.log(`Product not found`);
+                itemsToRemove.push(item.productId);
+                continue;
+            }
+            if(!cart){
+                res.status(200).json({success:false,message:"Not cart products"})
+            }
+            
+            for(let cartItem of cart.items){       
+                if (cartItem.productId.toString() === product._id.toString()) {
+                    itemsToRemove.push(item.productId);
+                    break;
                 }
             }
-        ]);
 
-        // console.log(JSON.stringify(wishlist,null,2));
+            wishlistItems.push(product)
+        }
+        console.log("wishlistItems : ",wishlistItems);
+
+        if (itemsToRemove.length > 0) {
+            wishlist.items = wishlist.items.filter(item => 
+                !itemsToRemove.includes(item.productId.toString()) // Remove items in itemsToRemove
+            );
+            await wishlist.save();
+        }
+
         return res.render("user/wishlist", {
             user,
-            wishlist: JSON.stringify(wishlist, null, 2)
+            wishlist,
+            wishlistItems
         });
 
     } catch (error) {
@@ -791,6 +913,13 @@ export const addToWishlist = async (req, res, next) => {
         const productId = req.body.productId
         const user = req.user
 
+        if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ success: false, message: "Invalid or missing product ID" });
+        }
+        if (!user || !user.id) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
@@ -803,8 +932,8 @@ export const addToWishlist = async (req, res, next) => {
                 items: [{ productId }]
             });
         } else {
-            if (!wishlist.items.includes(productId)) {
-                wishlist.items.push({ productId })
+            if (!wishlist.items.some(item => item.productId.toString() === productId)) {
+                wishlist.items.push({ productId });
             } else {
                 return res.status(400).json({ success: false, message: "Product already in wishlist" });
             }
@@ -825,34 +954,30 @@ export const addToWishlist = async (req, res, next) => {
 
 export const deleteWishlist = async (req, res, next) => {
     try {
-        const wishlistId = req.params.id
-        const productId = req.body
-
+        const productId = req.params.id
         const user = req.user
         console.log("productId", productId)
-        console.log("wishId", wishlistId)
         console.log("userId", user.id)
 
-
-        // if (!wishlistId) {
-        //     return res.status(400).json({ success: false, message: "Product not removed from cart" })
-        // }
-
-        const validProductId = mongoose.Types.ObjectId(productId.productId)
-        const validWishlistId = mongoose.Types.ObjectId(wishlistId)
-
-        if (!validProductId) {
-            return res.status(400).json({ success: false, message: "Invalid Product ID" });
+        if (!mongoose.isValidObjectId(productId)) {
+            return res.status(400).json({ success: false, message: "Invalid Product ID format" });
         }
+        const validProductId = new mongoose.Types.ObjectId(productId);
+
+        const wishlist = await Wishlist.findOne({ userId: user.id }).select('_id');
+        if (!wishlist) {
+            return res.status(400).json({ success: false, message: "Wishlist not found" });
+        }
+
+        const validWishlistId = new mongoose.Types.ObjectId(wishlist._id)
+
 
         const result = await Wishlist.updateOne(
             { _id: validWishlistId, userId: user.id },
-            { $pull: { items: validProductId } }
+            { $pull: { items: {productId:validProductId } } }
         );
 
-        console.log(result);
-        // const wishlistCheck = await Wishlist.findOne({ userId: user.id });
-
+        console.log('Updated result : ',result);
 
         return res.status(200).json({
             success: true,
@@ -871,18 +996,18 @@ export const renderCartManagment = async (req, res, next) => {
     try {
         const user = req.user
         const cartItems = await Cart?.findOne({ userId: user.id })
-        const product = await Product.findOne({productId:cartItems?.items?.productId})
-        
+        const product = await Product.findOne({ productId: cartItems?.items?.productId })
+
         if (!cartItems?.items?.length) {
             return res.render('user/cart', { user, allCartProducts: [] });
         }
-        
+
         let allCartProducts = []
-        console.log("cartIems s",cartItems)
+        console.log("cartIems s", cartItems)
         for (let item of cartItems.items) {
             const product = await Product.findById(item.productId).lean()
 
-            if(!product){
+            if (!product) {
                 console.log(`Not product found in this cart pid:${item.productId}`)
             }
             if (product.isBlocked) {
@@ -893,13 +1018,13 @@ export const renderCartManagment = async (req, res, next) => {
 
             const cartProduct = {
                 ...product,
-                quantity: item.quantity 
+                quantity: item.quantity
             };
             allCartProducts.push(cartProduct);
-        } 
+        }
 
         console.log("cartAllProducts", allCartProducts)
-        return res.render("user/cart", { user, allCartProducts })
+        return res.render("user/cart", { user, allCartProducts, cartItems })
 
     } catch (error) {
         next(new AppError(`Cart managment failed : ${error}`, 500))
@@ -948,9 +1073,9 @@ export const addToCart = async (req, res, next) => {
                     stock: parseInt(product.stock)
                 })
                 product.stock -= 1
-            } 
+            }
             const saveCart = await cart.save()
-            await product.save()   
+            await product.save()
         } else {
             const addCart = new Cart({
                 userId: new mongoose.Types.ObjectId(user.id),
@@ -985,7 +1110,7 @@ export const removeFromCart = async (req, res, next) => {
 
         const product = await Product.findById(productId)
         const cartItem = await Cart.findOne({ userId: user.id })
-        console.log("cartItem",cartItem)
+        console.log("cartItem", cartItem)
         const stockCount = cartItem.items.find(p => {
             if (p.productId.toString() == product._id.toString()) return p.quantity
         })
@@ -1030,8 +1155,8 @@ export const updateQuantity = async (req, res, next) => {
         const product = await Product.findById(productId)
         console.log("current stock:", product.stock)
 
-        const cart = await Cart.findOne({userId:user.id})
-        console.log('cart',cart)
+        const cart = await Cart.findOne({ userId: user.id })
+        console.log('cart', cart)
         if (newQty) {
             if (newQty > product.stock && product.stock === 0) {
                 return res.status(400).json({
@@ -1039,16 +1164,22 @@ export const updateQuantity = async (req, res, next) => {
                     message: "Not enough quantity"
                 })
             }
+
+            if (newQty > 3) {
+                return res.status(400).json({
+                    success: false, message: "Quantity maximum 3"
+                })
+            }
             console.log("newQty :", newQty)
             console.log("current stock:", product.stock)
 
-            const item = cart.items.find(item=>item.productId.toString() === product._id.toString())
-            if(!item){
+            const item = cart.items.find(item => item.productId.toString() === product._id.toString())
+            if (!item) {
                 return res.status(400).json({
-                    success:false,
-                    message:"Item not found in cart"
+                    success: false,
+                    message: "Item not found in cart"
                 })
-            }   
+            }
 
             item.quantity += 1
             product.stock -= 1
@@ -1066,13 +1197,13 @@ export const updateQuantity = async (req, res, next) => {
             console.log("newQty :", newQty)
             console.log("current stock:", product.stock)
 
-            const item = cart.items.find(item=>item.productId.toString() === product._id.toString())
-            if(!item){
+            const item = cart.items.find(item => item.productId.toString() === product._id.toString())
+            if (!item) {
                 return res.status(400).json({
-                    success:false,
-                    message:"Item not found in cart"
+                    success: false,
+                    message: "Item not found in cart"
                 })
-            }   
+            }
 
             item.quantity -= 1
             product.stock += 1
@@ -1082,28 +1213,122 @@ export const updateQuantity = async (req, res, next) => {
         }
         return res.status(200).json({
             success: true,
-            message: "Done"
+            message: "Done" 
         })
     } catch (error) {
-        next(new AppError(`Update quantity failed : ${error}`, 500))
+        next(new AppError(`Update quantity failed : ${error}`, 500)) 
     }
 }
 
- 
+
 
 //==========================CHECKOUT MANAGEMENT===============================
 
-export const renderCheckoutPage = async (req,res,next)=>{
+export const renderCheckoutPage = async (req, res, next) => {
     try {
-        
+        const user = req.user
+        const cartId = req.params.id
+        const address = await Address.find({ userId: user.id })
+
+        const userCart = await Cart.findById(cartId)
+
+        console.log("usercart", userCart)
+        console.log("Delivery cart address :", address)
+
+        let checkoutTotal= 0
+        const checkoutProducts = []
+        for (let item of userCart.items) {
+            const product = await Product.findById(item.productId).lean()
+
+            if (!product) {
+                console.log(`Not product found in this cart`)
+                throw new Error('Product not found in cart')
+            }
+
+            checkoutTotal += (product.price * item.quantity)
+            checkoutProducts.push(product);
+        }
+
+        req.session.orderDetails=checkoutTotal.toFixed(2)
+
+        console.log("checkoutProducts", checkoutProducts)
+        console.log("checkoutTotal", checkoutTotal)
+
+        res.render('user/checkout', {
+            user,
+            address,
+            checkoutTotal,
+            checkoutProducts,
+            userCart
+        })
     } catch (error) {
-        next (new AppError(`Checkout page : ${error}`,500))
+        next(new AppError(`Checkout page : ${error}`, 500))
     }
 }
 
 
+export const confirmOrder = async(req,res,next)=>{
+    try {
+        const user = req.user
+        const {paymentMethod} = req.body
+         console.log("paymentMethod :",paymentMethod)
 
-//============Logout===================
+         const address = await Address.findOne({$or:[{isSelected:true},{isDefault:true}]})
+
+         const totalAmount = req.session.orderDetails
+    
+         console.log("totalAmount : ",totalAmount)
+
+         const orderID = `ORD-${Date.now()}`;
+         console.log("orderID :",orderID)
+
+         const cart = await Cart.findOne({userId:user.id})
+
+         const newOrder = new Order({
+            userId : user.id,
+            orderId: orderID,
+            addressId:address._id,
+            payment:paymentMethod,
+            items:cart.items.map(item=>({
+                productId:item.productId,
+                quantity:item.quantity
+            })),
+            totalAmount:totalAmount
+         })
+
+         const saveOrder = await newOrder.save()
+
+         if(!saveOrder){
+            return res.json({
+                success:false,message:"Order failed"
+            })
+         }
+         
+         return res.status(200).json({
+            success:true, message:"Order confirmed"
+         })
+    } catch (error) {
+        next(new AppError(`Checkout Confirm order : ${error}`, 500))
+    }
+1}
+
+export const orderConfirmed = async (req,res,next)=>{
+    try {
+        const userId = req.user
+        const user = await User.findById(userId.id)
+        const orders = await Order.findOne({userId:userId.id})
+        // if(!req.session.order){
+        //     return res.redirect('/read-and-grow/home')
+        // }
+        return res.render('user/orderConfirmed',{
+                user,
+                orders
+            })
+    } catch (error) {
+        next(new AppError(`Order confimation falied : ${error}`,500))
+    }
+}
+//============Logout=================== 
 export const logout = async (req, res, next) => {
     try {
         res.clearCookie("jwt")

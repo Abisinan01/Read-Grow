@@ -148,15 +148,119 @@
                     </div>
                 </div>
         
-                <!-- Reviews -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Review</h2>
-                    <p class="text-gray-600 mb-4">Share your experience</p>
-                    <textarea class="w-full border rounded-lg p-4 mb-4" placeholder="Write your review here..." rows="4"></textarea>
-                    <button class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-black transition duration-150">Add feedback</button>
-                </div>
+<!-- Reviews -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Review</h2>
+    <p class="text-gray-600 mb-4">Share your experience</p>
 
-                <!-- Related Products -->
+    <!-- Rating Section -->
+    <div class="mb-4">
+        <label class="block text-gray-700 font-medium mb-2">Rate this product:</label>
+        <div class="flex space-x-1" id="rating-stars">
+            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="1"></i>
+            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="2"></i>
+            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="3"></i>
+            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="4"></i>
+            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="5"></i>
+        </div>
+        <input type="hidden" name="rating" id="rating-value" value="0">
+    </div>
+
+    <!-- Review Textarea -->
+    <textarea class="w-full border rounded-lg p-4 mb-4" placeholder="Write your review here..." rows="4" name="review" id="review-text"></textarea>
+
+    <!-- Submit Button -->
+    <button class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-black transition duration-150" id="submit-review">Add feedback</button>
+</div>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const stars = document.querySelectorAll('#rating-stars i');
+        const ratingValueInput = document.getElementById('rating-value');
+        const submitButton = document.getElementById('submit-review');
+        const reviewText = document.getElementById('review-text');
+        
+        let currentRating = 0;
+        let temporaryRating = 0;
+
+ 
+        function highlightStars(value) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'));
+                if (starValue <= value) {
+                    star.classList.remove('text-gray-300');
+                    star.classList.add('text-yellow-500');
+                } else {
+                    star.classList.remove('text-yellow-500');
+                    star.classList.add('text-gray-300');
+                }
+            });
+        }
+
+ 
+        stars.forEach(star => {
+           
+            star.addEventListener('click', () => {
+                currentRating = parseInt(star.getAttribute('data-value'));
+                ratingValueInput.value = currentRating;
+                highlightStars(currentRating);
+            });
+            
+ 
+            star.addEventListener('mouseover', () => {
+                temporaryRating = parseInt(star.getAttribute('data-value'));
+                highlightStars(temporaryRating);
+            });
+            
+ 
+            star.addEventListener('mouseout', () => {
+                highlightStars(currentRating);
+            });
+        });
+        
+        // Submit review
+        submitButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const rating = ratingValueInput.value;
+            const review = reviewText.value.trim();
+
+            if (rating === "0" && !review) {
+                Toastify({
+                    text: "Please provide a rating or review!",
+                    duration: 2000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#dc2626", 
+                    stopOnFocus: true
+                }).showToast();
+            } else {
+ 
+                
+   
+                let message;
+                if (rating !== "0" && review) {
+                    message = `Thank you for your ${rating}-star rating and feedback!`;
+                } else if (rating !== "0") {
+                    message = `Thank you for your ${rating}-star rating!`;
+                } else {
+                    message = `Thank you for your feedback!`;
+                }
+                
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#16a34a",
+                    stopOnFocus: true
+                }).showToast();
+
+    
+                reviewText.value = "";
+            }
+        });
+    });
+</script>      <!-- Related Products -->
                 <div class="bg-white rounded-lg shadow-md p-6 mt-4">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Related Products</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

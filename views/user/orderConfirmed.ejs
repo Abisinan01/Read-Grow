@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - REad & GroW</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-200   min-h-screen flex items-center justify-center py-10">
+  <div class="bg-white p-8 rounded-xl shadow-lg  w-full max-w-2xl mx-4 border-blue-600">
+    <!-- Header with Celebration Icon -->
+    <div class="text-center mb-8">
+      <div class="flex justify-center mb-4">
+        <div class="text-green-500 text-6xl animate-bounce">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800">Order Confirmed!</h1>
+      <p class="text-gray-600 mt-2">Thank you for shopping with <span class="font-semibold">REad & GroW</span></p>
+    </div>
+
+    <!-- Order Details -->
+    <!-- <div class="border-t border-b border-gray-200 py-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Details</h2>
+      <div class="space-y-3 text-gray-700">
+        <div class="flex justify-between">
+          <span class="font-medium">Order Number:</span>
+          <span>#ORD123456</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Date:</span>
+          <span>March 16, 2025</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Payment Method:</span>
+          <span>Credit Card (•••• 1234)</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Total Amount:</span>
+          <span class="text-blue-600 font-semibold">$47.98</span>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Order Items (New Section) -->
+    <!-- <div class="mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Books</h2>
+      <div class="space-y-4">
+        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+          <div class="bg-blue-100 p-2 rounded-md mr-3">
+            <i class="fas fa-book text-blue-600"></i>
+          </div>
+          <div class="flex-grow">
+            <h3 class="font-medium">The Adventure of Reading</h3>
+            <p class="text-sm text-gray-500">Paperback</p>
+          </div>
+          <div class="text-gray-700 font-medium">$19.99</div>
+        </div>
+        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+          <div class="bg-blue-100 p-2 rounded-md mr-3">
+            <i class="fas fa-book text-blue-600"></i>
+          </div>
+          <div class="flex-grow">
+            <h3 class="font-medium">Growing Through Words</h3>
+            <p class="text-sm text-gray-500">Hardcover</p>
+          </div>
+          <div class="text-gray-700 font-medium">$27.99</div>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Estimated Delivery (New Section) -->
+    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+      <div class="flex items-center">
+        <i class="fas fa-shipping-fast text-blue-600 mr-3"></i>
+        <div>
+          <h3 class="font-medium text-blue-800">Estimated Delivery</h3>
+          <p class="text-sm text-blue-600">March 20 - 23, 2025</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wishes -->
+    <div class="text-center mb-8">
+      <p class="text-lg font-medium text-gray-700">
+        Happy Reading! 📚
+      </p>
+      <p class="text-gray-600 mt-1">
+        We hope these books bring you joy and inspiration. Thank you for choosing us!
+      </p>
+    </div>
+
+    <!-- Buttons - Continue Shopping & Track Order -->
+    <div class="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+      <button onclick="window.location.href='/read-and-grow/shop'"
+        class="bg-black hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+        <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
+      </button>
+      <button onclick="window.location.href='/read-and-grow/orders'"
+        class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+        <i class="fas fa-box mr-2"></i> Track Order
+      </button>
+    </div>
+
+    <!-- Social Share (New Section) -->
+    <!-- <div class="mt-8 text-center">
+      <p class="text-sm text-gray-500 mb-2">Share your book haul with friends</p>
+      <div class="flex justify-center space-x-3">
+        <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fab fa-facebook fa-lg"></i></a>
+        <a href="#" class="text-blue-400 hover:text-blue-600"><i class="fab fa-twitter fa-lg"></i></a>
+        <a href="#" class="text-pink-600 hover:text-pink-800"><i class="fab fa-instagram fa-lg"></i></a>
+        <a href="#" class="text-green-600 hover:text-green-800"><i class="fab fa-whatsapp fa-lg"></i></a>
+      </div>
+    </div> -->
+  </div>
+</body>
+
+</html>

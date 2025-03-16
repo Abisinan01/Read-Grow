@@ -18,57 +18,10 @@
 
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <a href="/" class="text-2xl font-bold text-gray-900" aria-label="Home">Read & Grow</a>
-
-                <div class="flex-1 max-w-2xl px-6">
-                    <div class="relative">
-                        <form id="searchForm">
-                            <input type="search" name="query" 
-                                placeholder="Search for books..."
-                                class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                aria-label="Search">
-                            <button type="submit"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                aria-label="Submit search" id="searchBtn">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                <button class="relative right-[100px]" onclick="window.location.href = '/read-and-grow/shop?page=1&limit-6'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#666666">
-                        <path d="M20.944 12.979c-.489 4.509-4.306
-                     8.021-8.944 8.021-2.698 0-5.112-1.194-6.763-3.075l1.245-1.633c1.283 1.645 3.276 2.708 5.518 
-                    2.708 3.526 0 6.444-2.624 6.923-6.021h-2.923l4-5.25 4 5.25h-3.056zm-15.864-1.979c.487-3.387 3.4-6 
-                    6.92-6 2.237 0 4.228 1.059 5.51 2.698l1.244-1.632c-1.65-1.876-4.061-3.066-6.754-3.066-4.632 0-8.443 3.501-8.941 
-                    8h-3.059l4 5.25 4-5.25h-2.92z" />
-                    </svg>
-                </button>
-
-                <div class="flex items-center space-x-6">
-                    <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
-                        <i class="fas fa-shop text-xl"></i>
-                    </a>
-                    <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
-                        <i class="fas fa-heart text-xl"></i>
-                    </a>
-                    <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900 relative" aria-label="Shopping cart">
-                        <i class="fas fa-shopping-cart text-xl"></i>
-                        <span
-                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">2</span>
-                    </a>
-                    <a href="/read-and-grow/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
-                        <i class="fas fa-user text-xl"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+    <%- include("../partials/user/navBar.ejs") %>
 
     <main class="container mx-auto px-4 py-8 flex-1">
+
         <div class="flex flex-col md:flex-row gap-8">
             <!-- Sidebar -->
             <aside class="w-full md:w-64 space-y-6">
@@ -112,14 +65,13 @@
                 <div>
                     <h2 class="text-lg font-semibold mb-3">Authors</h2>
                     <ul class="space-y-2">
-                        <% let authorSet = new Set(); %>
-                        <% allProducts.forEach(product => authorSet.add(product.authorName)); %>
+                        <% let authorSet = new Set(allProducts); %>
                         
-                        <% authorSet.forEach(author => { %>
+                        <% Array.from(authorSet).forEach(author => { %>
                             <li>
-                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %>&search=<%= encodeURIComponent(author) %>" 
-                                   class="text-gray-600 hover:text-gray-900">
-                                    <%= author %>
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %>&search=<%= encodeURIComponent(author.authorName) %>" 
+                                    class="text-gray-600 hover:text-gray-900 <%= author === author.authorName ? 'font-bold' : '' %>">
+                                    <%= author.authorName %>
                                 </a>
                             </li>
                         <% }) %>
@@ -170,11 +122,15 @@
                                             <img src="<%= product.images[0] %>" alt="Rich Dad Poor Dad"
                                                 class="w-auto h-52 md:h-64 object-cover rounded-md">
                                         </a>
-                                        <button onclick="showMessage('wishlist','<%= product._id %>')"
+                                        <button onclick="toggleWishlist(this, '<%= product._id %>')"
                                             class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
-                                            aria-label="Add Rich Dad Poor Dad to wishlist">
-                                            <i class="far fa-heart text-gray-600"></i>
-                                        </button>
+                                            aria-label="Toggle wishlist">
+                                            <% if (wishlistItems.includes(product._id.toString()==product._id.toString())) { %>
+                                                <i class="fas fa-heart text-red-500"></i> <!-- Filled heart -->
+                                            <% } else { %>
+                                                <i class="far fa-heart text-gray-600"></i> <!-- Empty heart -->
+                                            <% } %>
+                                        </button>                                     
                                     </div>
                                     <div class="p-4">
                                         <h3 class="font-semibold text-lg mb-1">
@@ -256,7 +212,7 @@
             const limit = <%= limit %>;
             const totalPages = <%= totalPages %>;
             const currentCategory = "<%= category %>"; // Get the current category
-        
+  
             searchForm.addEventListener("submit", async function (event) {
                 event.preventDefault();
                 const searchInput = document.querySelector('input[name="query"]').value.trim();
@@ -376,7 +332,7 @@
                 }
             }
         });
-        </scrip>
+        </script>
 </body>
 
 </html>

@@ -57,7 +57,7 @@ resave: false,
     }),
 })) 
 app.use(cors())
-// app.use(morgan("dev"))
+app.use(morgan("dev"))
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -74,7 +74,7 @@ app.use((err, req, res, next) => {
     
     return res.status(statusCode).json({
         success:false, 
-        message:message }); 
+        message:"Something went wrong" }); 
 }); 
    
 // console.log("process Id ",process.pid)
