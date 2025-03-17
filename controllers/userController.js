@@ -173,7 +173,7 @@ export const renderHomePage = async (req, res, next) => {
         const token = req.cookies.jwt
         let user = null
         // console.log("token data : ",token)
- 
+
         if (token) {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -300,7 +300,7 @@ export const renderShopPage = async (req, res, next) => {
             wishlistItems
         };
 
-        if(req.session.order){req.session.order=null}
+        // if (req.session.order) { req.session.order = null }
 
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
             return res.status(200).json(responseData);
@@ -838,15 +838,15 @@ export const selectAddress = async (req, res, next) => {
                 message: "Failed to select addresss"
             });
         }
-        if(isChecked){
+        if (isChecked) {
             return res.status(200).json({
                 success: true,
                 message: "Address is selected"
             })
-        }else{
+        } else {
             return res.status(200).json({
                 success: true,
-                message: "Address is unselected"
+                message: "Please select an address"
             })
         }
     } catch (error) {
@@ -1007,7 +1007,7 @@ export const renderCartManagment = async (req, res, next) => {
         const product = await Product.findOne({ productId: cartItems?.items?.productId })
 
         if (!cartItems?.items?.length) {
-            return res.render('user/cart', { user, allCartProducts: [] , cartItems });
+            return res.render('user/cart', { user, allCartProducts: [], cartItems });
         }
 
         let allCartProducts = []
@@ -1338,31 +1338,83 @@ export const confirmOrder = async (req, res, next) => {
 export const orderConfirmed = async (req, res, next) => {
     try {
         const userId = req.user
-        if(!req.session.order){
+        if (!req.session.order) {
             return res.redirect('/read-and-grow/home')
         }
         const user = await User.findById(userId.id)
         const orders = await Order.findById(req.session.order._id);
-        console.log("Order detials : ",orders)
+        console.log("Order detials : ", orders)
         const cart = await Cart.findOneAndUpdate(
-            {userId:user._id},
+            { userId: user._id },
             {
-                $unset:{items:""}
-            },{new : true}
+                $unset: { items: "" }
+            }, { new: true }
         )
         return res.render('user/orderConfirmed', {
             user,
-            orders  
+            orders
         })
     } catch (error) {
         next(new AppError(`Order confimation falied : ${error}`, 500))
     }
 }
-//=======================ORDER MANAGMENT ======================
+//=======================ORDER MANAGMENT======================
+export const renderOrdersPage = async (req, res, next) => {
+    try {
+        const user = req.user
+        const orders = await Order.find({ userId: user.id })
+            .sort({ createdAt: -1 })
 
+        if (!orders.length === 0) {
+            return res.status(400).render('user/order', { allOrders: [], orders, user })
+        }
 
+        const allProducts = orders.flatMap(order => order.items.map(item => item.productId))
+        const orderedProducts = await Product.find({ _id: { $in: allProducts } });
+        for (let order of orders) {
+            console.log(order.orderId)
+        }
+        res.render('user/order', {
+            orders,
+            user,
+            orderedProducts
+        })
+    } catch (error) {
+        next(new AppError(`Order page : ${error}`, 500))
+    }
+}
 
+export const renderOrderDetailsPage = async (req, res, next) => {
+    try {
+        const user = req.user
+        const addressId = req.session.order.addressId
 
+        const orderId = req.params.id
+        const order = await Order.findById(orderId)
+
+        const deliveryAddress = await Address.findById(addressId)
+
+        const products = order.items.flatMap(item => item.productId);
+        const orderedProducts = await Product.find({ _id: { $in: products } });
+
+        res.render('user/orderDetails', {
+            orderedProducts,
+            order,
+            deliveryAddress,
+            user
+        })
+    } catch (error) {
+        next(new AppError(`Order details page : ${error}`, 500))
+    }
+}
+
+export const generateInvoice = async (req,res,next)=>{
+    try {
+        return
+    } catch (error) {
+        next(new AppError(`Invoice generate failed : ${error}`,500))
+    }
+}
 
 //============Logout=================== 
 export const logout = async (req, res, next) => {

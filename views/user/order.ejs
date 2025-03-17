@@ -10,89 +10,57 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen">
-  <!-- Navbar -->
-  <nav class="bg-white shadow-md p-4 flex items-center justify-between">
-    <div class="text-2xl font-bold text-gray-800">REad & GroW</div>
-    <div class="flex-1 mx-4">
-      <input type="text" placeholder="Search for books..." 
-             class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
-    <div class="flex space-x-4 text-gray-600">
-      <a href="/read-and-grow/shop"><i class="fas fa-store"></i></a>
-      <a href="/read-and-grow/wishlist"><i class="fas fa-heart"></i></a>
-      <a href="/read-and-grow/cart"><i class="fas fa-shopping-cart"></i></a>
-      <a href="/read-and-grow/profile"><i class="fas fa-user"></i></a>
-    </div>
-  </nav>
+    <!-- Navbar -->
+    <%- include("../partials/user/navBar.ejs") %>
 
   <!-- Main Content -->
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Your Orders</h1>
-      <a href="/read-and-grow/profile" class="text-blue-600 hover:underline">Go Back</a>
+      <a href="/read-and-grow/profile/<%= user.id  %>" class="text-gray-600 hover:underline">Go Back</a>
     </div>
 
     <!-- Orders List -->
+    <% if(orders.length > 0) {%>
     <div class="space-y-4">
       <!-- Order 1 -->
-      <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-start">
-        <div class="w-full">
-          <div class="flex justify-between items-center mb-2">
-            <p class="font-medium text-gray-800">
-              Order #ORD123456 <span class="text-green-600 text-sm">[Delivered]</span>
-            </p>
-          </div>
-          <p class="text-gray-600">Placed on: March 10, 2025</p>
-          <p class="text-gray-600">Items: Atomic Habits, Rich Dad Poor Dad</p>
-          <p class="text-gray-600">Total: $75.00</p>
-        </div>
-        <div class="flex space-x-2 items-start">
-          <button class="text-gray-600 hover:text-gray-900 viewDetailsBtn" data-order-id="ORD123456">
-            <i class="fas fa-eye"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Order 2 -->
-      <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-start">
-        <div class="w-full">
-          <div class="flex justify-between items-center mb-2">
-            <p class="font-medium text-gray-800">
-              Order #ORD123457 <span class="text-yellow-600 text-sm">[Shipped]</span>
-            </p>
-          </div>
-          <p class="text-gray-600">Placed on: March 12, 2025</p>
-          <p class="text-gray-600">Items: The Power of Habit</p>
-          <p class="text-gray-600">Total: $30.00</p>
-        </div>
-        <div class="flex space-x-2 items-start">
-          <button class="text-gray-600 hover:text-gray-900 viewDetailsBtn" data-order-id="ORD123457">
-            <i class="fas fa-eye"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Order 3 -->
-      <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-start">
-        <div class="w-full">
-          <div class="flex justify-between items-center mb-2">
-            <p class="font-medium text-gray-800">
-              Order #ORD123458 <span class="text-blue-600 text-sm">[Processing]</span>
-            </p>
-          </div>
-          <p class="text-gray-600">Placed on: March 15, 2025</p>
-          <p class="text-gray-600">Items: Think Like a Monk</p>
-          <p class="text-gray-600">Total: $25.00</p>
-        </div>
-        <div class="flex space-x-2 items-start">
-          <button class="text-gray-600 hover:text-gray-900 viewDetailsBtn" data-order-id="ORD123458">
-            <i class="fas fa-eye"></i>
-          </button>
-        </div>
-      </div>
+       <% orders.forEach(order=>{ %>
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-start">
+                <div class="w-full">
+                <div class="flex justify-between items-center mb-2">
+        
+                        <a href="/read-and-grow/order-details/<%= order._id %>" class="font-medium text-gray-800">
+                        Order #<%= order.orderId %> <span class="text-green-600 text-sm">[<%= order.status %>]</span>
+                        </a>
+                </div>
+        
+                <p class="text-gray-600">Placed on: 
+                    <%= new Date(order.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',  // Example: "January", "February"
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true   // 12-hour format (AM/PM)
+                    })  %>
+                </p>
+                <% orderedProducts.forEach(item=>{ %>
+                    <p class="text-gray-600">Items: <%= item.name %></p>
+                <% }) %>
+                <p class="text-gray-600">Total: $<%= order.totalAmount %></p>
+                </div>
+                <!-- <div class="flex space-x-2 items-start">
+                <button class="text-gray-600 hover:text-gray-900 viewDetailsBtn" data-order-id="ORD123456">
+                    <i class="fas fa-eye"></i>
+                </button>
+                </div> -->
+            </div>
+      <% }) %>
     </div>
-  </div>
-
+    <% }else{ %>
+        <p class="text-center text-gray-600">Your cart is empty.</p>
+    <% } %>
   <script>
     document.querySelectorAll('.viewDetailsBtn').forEach(button => {
       button.addEventListener('click', function () {

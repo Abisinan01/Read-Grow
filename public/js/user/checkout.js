@@ -381,8 +381,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error(result.message);
                 }
 
-                showToast(result.message, 'success');
+                // showToast(result.message, 'success');
+                Swal.fire({
+                    title: 'Loading...',
+                    text: 'Please wait while we fetch your orders',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        setTimeout(() => {
                 window.location.href = '/read-and-grow/confirm-order'
+
+                        }, 2000);
+                    }
+                  });
+                  
             } catch (err) {
                 showToast(err.message, 'error');
                 console.error('Error placing order:', err);

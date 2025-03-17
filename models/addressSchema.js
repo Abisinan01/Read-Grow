@@ -38,14 +38,14 @@ const addressScehama = new Schema({
         type: String,
         required: true
     },
-    isDefault: { 
-        type: Boolean, 
+    isDefault: {
+        type: Boolean,
         default: false
-     },
-     isSelected:{
-        type:Boolean,
-        default:false
-     }
+    },
+    isSelected: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true })
 
 const Address = mongoose.model('address', addressScehama)
