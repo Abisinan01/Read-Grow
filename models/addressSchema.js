@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose"
 
 const addressScehama = new Schema({
     userId: {
-        type: mongoose.Schema.Types.ObjectId
+        type: mongoose.Schema.Types.ObjectId,ref: "User"
         , required: true
     },
     firstName: {
@@ -48,5 +48,5 @@ const addressScehama = new Schema({
     }
 }, { timestamps: true })
 
-const Address = mongoose.model('address', addressScehama)
+const Address = mongoose.model('Address', addressScehama)
 export default Address  

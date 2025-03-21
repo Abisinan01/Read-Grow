@@ -1,41 +1,43 @@
+
 import mongoose, { Schema } from "mongoose";
 
 const orderSchema = new Schema({
-    userId:{
+    userId: {
         type: mongoose.Types.ObjectId,
-        required:true,
+        required: true,
     },
-    orderId:{
-        type:String
-        ,required:true
+    orderId: {
+        type: String
+        , required: true
     },
-    addressId:{
-        type:mongoose.Types.ObjectId,
-        required:true
+    addressId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Address",
+        required: true
     },
-    status:{
-        type:String,
-        default:'Pending'
+    status: {
+        type: String,
+        default: "Pending"
     },
-    payment:{
-        type:String,
-        default:"COD"
+    payment: {
+        type: String,
+        default: "COD"
     },
-    items:[{
-        productId : String,
-        quantity:Number,
-        price:Number
+    items: [{
+        productId: String,
+        productName:String,
+        quantity: Number,
+        price: Number,
+        isCancelled: { type: Boolean, default: false },
+        isReturned: { type: Boolean, default: false },
+        status: { type: String, default: "Pending" },
+        reason: { type: String, default: null }
     }],
-    totalAmount:{type:Number,required:true},
-    isCancelled:{
-        type:Boolean,
-        default:false
-    },
-    isReturned:{
-        type:Boolean,
-        default:false
-    }
-},{timestamps:true})
+    totalAmount: { type: Number, required: true },
+    paymentStatus: { type: String },
+    reason: { type: String, default: null }
 
-const Order = mongoose.model('Order',orderSchema)
+}, { timestamps: true })
+
+const Order = mongoose.model('Order', orderSchema)
 export default Order

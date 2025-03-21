@@ -13,9 +13,6 @@ import {
     handleSignupPage,
     renderEmailVerify,
     renderResetPassword,
-    renderHomePage,
-    renderProductDetails,
-    renderShopPage,
     renderProfilePage,
     renderChangePassword,
     editProfile,
@@ -27,29 +24,14 @@ import {
     addAddress,
     editAddress,
     deleteAddress,
-    renderCartManagment,
-    renderWishListPage,
-    deleteWishlist,
-    addToWishlist,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
     setDefault,
-    renderCheckoutPage,
     selectAddress,
-    confirmOrder,
-    orderConfirmed,
-    renderOrdersPage,
-    renderOrderDetailsPage,
-    generateInvoice,
 
-
-
-} from "../controllers/userController.js"
+} from "../controllers/user/userController.js"
 import passport from "passport"
 import jwt from "jsonwebtoken"
-
-
+import { renderHomePage, renderProductDetails, renderShopPage } from "../controllers/user/shopController.js"
+import { renderWallet } from "../controllers/user/walletController.js"
 
 router.get('/login', renderLoginPage)
 router.post('/login', handleLoginPage)
@@ -86,23 +68,9 @@ router.patch('/address/:id/set-default', userAuth, setDefault)
 router.delete('/address/:id', userAuth, deleteAddress)
 router.patch('/address/:id/select-address', selectAddress)
 
-router.get('/wishlist', userAuth, renderWishListPage)
-router.post('/wishlist/add', userAuth, addToWishlist)
-router.delete('/wishlist/remove/:id', userAuth, deleteWishlist)
+router.get('/wallet/:id',userAuth,renderWallet)
 
-router.get('/cart', userAuth, renderCartManagment)
-router.post('/cart', userAuth, addToCart)
-router.delete('/cart/:id', userAuth, removeFromCart)
-router.put('/cart/:id', userAuth, updateQuantity)
-
-router.get('/checkout/:id', userAuth, renderCheckoutPage)
-router.post('/confirm-order', userAuth, confirmOrder)
-router.get('/confirm-order', userAuth, orderConfirmed)
-
-router.get('/orders', userAuth, renderOrdersPage)
-router.get('/order-details/:id', userAuth, renderOrderDetailsPage)
-
-router.post('generate-invoice', userAuth, generateInvoice)
+ 
 //================logout========
 router.post('/logout', logout)
 // ================google auth setting for signup======================
@@ -145,12 +113,12 @@ router.get('/auth/google/callback',
 
 
 // ================for handling random routes===============
-router.get('/notFound', (req, res) => {
-    res.render('admin/notFound')
-})
-router.get('*', (req, res) => {
-    res.status(404).render('admin/notFound')
-})
+// router.get('/notFound', (req, res) => {
+//     res.render('admin/notFound')
+// })
+// router.get('*', (req, res) => {
+//     res.status(404).render('admin/notFound')
+// })
 
 // export routes
 export default router 

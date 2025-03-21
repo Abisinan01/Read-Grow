@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Read & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
+    <!-- Sidebar -->
+    <%- include("../partials/admin/adminSideBar.ejs") %>
+
+    <!-- Main Content -->
+    <div class="md:ml-[0%] p-4 flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-2">
+            <h1 class="text-2xl font-bold text-gray-800">Order Management</h1>
+        </div>
+
+        <!-- Subheader with Search and Button -->
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="text-lg font-semibold text-gray-700">Order List</h2>
+            <div class="flex space-x-2">
+                <div class="relative">
+                    <input type="text" placeholder="Search orders..." class="border border-gray-300 rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
+                <button class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">Search</button>
+                <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200">Reset</button>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-white shadow-md rounded-lg flex-1 overflow-y-auto">
+            <table class="w-full">
+                <thead class="bg-gray-200 sticky top-0">
+                    <tr>
+                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change Status</th>
+                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (allOrders && allOrders.length > 0) { %>
+                        <% allOrders.forEach(order => { %>
+                            <% order.items.forEach(item => { %>
+                                <tr class="border-b bg-white hover:bg-gray-50">
+                                    <td class="py-4 px-6 text-sm text-gray-700"><%= order.orderId %></td>
+                                    <td class="py-4 px-6 text-sm text-gray-700">
+                                        <%= new Date(order.createdAt).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            hour12: true
+                                        }) %>
+                                    </td>
+                                    <td class="py-4 px-6 text-sm">
+                                        <% let statusClass = ""; %>
+                                        <% if (item.status === "Delivered") { %>
+                                            <% statusClass = "bg-green-100 text-green-800"; %>
+                                        <% } else if (item.status === "Pending") { %>
+                                            <% statusClass = "bg-yellow-100 text-yellow-800"; %>
+                                        <% } else if (item.status === "Cancelled") { %>
+                                            <% statusClass = "bg-red-100 text-red-800"; %>
+                                        <% } else if (item.status === "Returned") { %>
+                                            <% statusClass = "bg-blue-100 text-blue-800"; %>
+                                        <% } else { %>
+                                            <% statusClass = "bg-gray-100 text-gray-800"; %>
+                                        <% } %>
+                                        <span class="status-display text-xs font-medium px-2.5 py-0.5 rounded-full <%= statusClass %>" data-order-id="<%= order._id %>" data-item-id="<%= item.productId %>">
+                                            <%= item.status || "Unknown" %>
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 text-sm">
+                                        <select class="status-select border border-gray-300 rounded-lg py-1 px-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                                data-order-id="<%= order._id %>" 
+                                                data-item-id="<%= item.productId %>">
+                                            <option value="Pending" <%= item.status === "Pending" ? "selected" : "" %>>Pending</option>
+                                            <option value="Delivered" <%= item.status === "Delivered" ? "selected" : "" %>>Delivered</option>
+                                            <option value="Cancelled" <%= item.status === "Cancelled" ? "selected" : "" %>>Cancelled</option>
+                                            <option value="Returned" <%= item.status === "Returned" ? "selected" : "" %>>Returned</option>
+                                        </select>
+                                    </td>
+                                    <td class="py-4 px-6 text-sm">
+                                        <a href="/admin/view-order/<%= order._id %>/<%= item.productId %>" class="bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition duration-200">View Details</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="py-4 px-6 text-sm text-gray-700 text-center">No orders are available</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- JavaScript for Sidebar Navigation and Status Updates -->
+    <script>
+        // Sidebar Navigation
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const path = this.getAttribute('data-path');
+                if (path) {
+                    window.location.href = path;
+                }
+            });
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            alert('Logging out...');
+            window.location.href = '/logout';
+        });
+
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', async function() {
+                const orderId = this.getAttribute('data-order-id');
+                const newStatus = this.value;
+
+                try {
+                    const response = await fetch(`/admin/orders/update/${orderId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ status: newStatus }),
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert(`Order ${orderId} status updated to ${newStatus}!`);
+                        window.location.reload(); // Keep this as per your request
+                    } else {
+                        alert('Failed to update status: ' + result.message);
+                        this.value = result.previousStatus || 'Pending';
+                    }
+                } catch (err) {
+                    console.error('Error updating status:', err);
+                    alert('An error occurred while updating the status.');
+                    this.value = this.dataset.previousValue || 'Pending';
+                }
+
+                this.dataset.previousValue = newStatus;
+            });
+        });
+    </script>
+</body>
+</html>

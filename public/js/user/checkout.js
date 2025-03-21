@@ -49,8 +49,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const city = paragraphs[1].textContent.trim();
             const state = paragraphs[2].textContent.trim();
             const phone = paragraphs[3].textContent.replace('Phone:', '').trim();
-            const zip = paragraphs[4].textContent.trim();
-
+            const zipElement = document.querySelector('#editAddressForm input[name="zip"]');
+            const zip = zipElement ? zipElement.value.trim() : "234343";
+            
             editForm.querySelector('input[name="firstName"]').value = firstName;
             editForm.querySelector('input[name="lastName"]').value = lastName;
             editForm.querySelector('input[name="street"]').value = street;
@@ -275,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             isProcessing = true;
             const addressId = this.getAttribute('data-address-id');
+            console.log(addressId)
             if (!addressId) {
                 console.error("Address ID not found for selected checkbox.");
                 return;
@@ -313,11 +315,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    // Handle payment method selection
+  
     const paymentOptions = document.querySelectorAll('input[name="paymentMethod"]');
     paymentOptions.forEach(option => {
         option.addEventListener('change', function () {
-            // Visual highlight for the selected payment method
             document.querySelectorAll('.payment-option').forEach(label => {
                 label.classList.remove('border-blue-500', 'border-2');
             });
@@ -327,14 +328,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Handle add new address button
     const addAddressBtn = document.getElementById('addAddressBtn');
     if (addAddressBtn) {
         addAddressBtn.addEventListener('click', function () {
             if (addModal) {
                 addModal.classList.remove('hidden');
             } else {
-                // Redirect to add address page if modal doesn't exist
                 window.location.href = '/add-address?redirect=checkout';
             }
         });
@@ -378,7 +377,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 const result = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(result.message);
+                    const confirmOrderBtn = document.getElementById('confirmOrderBtn')
+                    // showToast(result.message || 'Out of stock','error')
+                    confirmOrderBtn.style.background = 'red'
+                    confirmOrderBtn.disabled = true
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "OUT OF STOCK!",
+                        footer: '<a href="/read-and-grow/shop">Continue shop</a>',
+                        confirmButtonText: "OK"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/read-and-grow/shop";  // Redirect after clicking "OK"
+                        }
+                    });
+                    
+                    return
                 }
 
                 // showToast(result.message, 'success');

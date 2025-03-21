@@ -13,26 +13,14 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
     <style>
-        .font-inria {
-            font-family: 'Inria Sans', sans-serif;
-        }
-
-        .cart-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .shadow-hover:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+        .font-inria { font-family: 'Inria Sans', sans-serif; }
+        .cart-container { max-width: 1200px; margin: 0 auto; }
+        .shadow-hover:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen font-inria">
-
-    <!-- Navbar - -->
     <%- include("../partials/user/navBar.ejs") %>
-
 
     <div class="cart-container px-4 sm:px-6 lg:px-8 py-8">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
@@ -59,47 +47,40 @@
                                 <!-- Product Details -->
                                 <div class="flex-grow flex flex-col">
                                     <h2 class="text-lg font-bold text-gray-800"><%= product.name %></h2>
+                                    <p class="text-sm font-medium text-black">Rs. <%= product.price %></p>
                                     <p class="text-sm font-medium <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %> mt-1">
-                                        <%= product.stock > 0 ? 'In Stock' : 'Out of Stock' %>
+                                        <%= product.stock > 0   ? 'In Stock' : 'Out of Stock' %>
                                     </p>
-
-                                    <p class="text-lg font-semibold text-gray-900 mt-1">$<%= product.price %></p>
 
                                     <!-- Quantity Controls -->
                                     <div class="flex items-center gap-2 mt-3">
                                         <button onclick="decreaseQuantity('<%= product._id %>')"
                                                 class="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition-colors text-gray-600"
                                                 aria-label="Decrease quantity">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                 viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M20 12H4" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                                             </svg>
                                         </button>
                                         <input type="text" id="quantity-<%= product._id %>"
-                                               value="<%= product.quantity ? parseInt(product.quantity) : 1  %>" data-price="<%= product.price %>"
+                                               value="<%= product.quantity ? parseInt(product.quantity) : 1 %>"
+                                               data-price="<%= product.price %>"
                                                class="w-12 h-7 text-center border border-gray-200 rounded bg-white text-gray-800"
                                                readonly>
-                                        <button onclick="increaseQuantity('<%= product._id %>')" id="increaseQtyBtn"
+                                        <button onclick="increaseQuantity('<%= product._id %>')" id="increaseQtyBtn-<%= product._id %>"
                                                 class="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200 transition-colors text-gray-600"
                                                 aria-label="Increase quantity">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                 viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M12 4v16m8-8H4" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                             </svg>
-                                        </button> 
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- Remove Button -->
-                                <button class="text-sm font-medium text-white relative left-10   px-3 py-1.5 rounded-md flex items-center gap-1.5 self-start mt-2 sm:mt-0"
+                                <button class="text-sm font-medium text-white relative left-10 px-3 py-1.5 rounded-md flex items-center gap-1.5 self-start mt-2 sm:mt-0"
                                         onclick="removeFromCart('<%= product._id %>')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 32 32" fill="#838383">
-                                            <path d="M 15 4 C 14.476563 4 13.941406 4.183594 13.5625 4.5625 C 13.183594 4.941406 13 5.476563 13 6 L 13 7 L 7 7 L 7 9 L 8 9 L 8 25 C 8 26.644531 9.355469 28 11 28 L 23 28 C 24.644531 28 26 26.644531 26 25 L 26 9 L 27 9 L 27 7 L 21 7 L 21 6 C 21 5.476563 20.816406 4.941406 20.4375 4.5625 C 20.058594 4.183594 19.523438 4 19 4 Z M 15 6 L 19 6 L 19 7 L 15 7 Z M 10 9 L 24 9 L 24 25 C 24 25.554688 23.554688 26 23 26 L 11 26 C 10.445313 26 10 25.554688 10 25 Z M 12 12 L 12 23 L 14 23 L 14 12 Z M 16 12 L 16 23 L 18 23 L 18 12 Z M 20 12 L 20 23 L 22 23 L 22 12 Z"></path>
-                                            </svg>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 32 32" fill="#838383">
+                                        <path d="M 15 4 C 14.476563 4 13.941406 4.183594 13.5625 4.5625 C 13.183594 4.941406 13 5.476563 13 6 L 13 7 L 7 7 L 7 9 L 8 9 L 8 25 C 8 26.644531 9.355469 28 11 28 L 23 28 C 24.644531 28 26 26.644531 26 25 L 26 9 L 27 9 L 27 7 L 21 7 L 21 6 C 21 5.476563 20.816406 4.941406 20.4375 4.5625 C 20.058594 4.183594 19.523438 4 19 4 Z M 15 6 L 19 6 L 19 7 L 15 7 Z M 10 9 L 24 9 L 24 25 C 24 25.554688 23.554688 26 23 26 L 11 26 C 10.445313 26 10 25.554688 10 25 Z M 12 12 L 12 23 L 14 23 L 14 12 Z M 16 12 L 16 23 L 18 23 L 18 12 Z M 20 12 L 20 23 L 22 23 L 22 12 Z"></path>
                                     </svg>
                                     Remove
                                 </button>
@@ -117,10 +98,10 @@
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
                     <div class="space-y-3">
                         <% if (allCartProducts && allCartProducts.length > 0) { %>
-                            <% allCartProducts.forEach((product, index) => { %>
+                            <% allCartProducts.forEach((product) => { %>
                                 <div class="flex justify-between text-sm text-gray-600">
                                     <span><%= product.name %></span>
-                                    <span>$<%= product.price %></span>
+                                    <span>Rs. <%= product.price %></span>
                                 </div>
                             <% }); %>
                             <div class="flex justify-between text-[12px] text-red-600">
@@ -128,26 +109,37 @@
                                 <% let sum = 0; %>
                                 <% allCartProducts.forEach(p => { sum += p.quantity; }); %>
                                 <span id="totalQty"><%= sum %></span>
-                            </div>                            
+                            </div>
+                            <div class="border-t pt-3">
+                                <div class="flex justify-between text-base font-semibold text-gray-900">
+                                    <span>Total</span>
+                                    <span>Rs. <span id="total-price">
+                                        <% let total = 0; %>
+                                        <% allCartProducts.forEach(p => { total += p.price * p.quantity; }); %>
+                                        <%= total.toFixed(2) %>
+                                    </span></span>
+                                </div>
+                            </div>
                         <% } else { %>
                             <p class="text-sm text-gray-600">No items to summarize</p>
                         <% } %>
-                        <div class="border-t pt-3">
-                            <div class="flex justify-between text-base font-semibold text-gray-900">
-                                <span>Total</span>
-                                <span id="total-price">$0.00</span>
-                            </div>
-                        </div>
+                        <% if(allCartProducts.length > 0 && isAvailableStock) { %>
+                            <button onclick="window.location.href='/read-and-grow/checkout/<%= cartItems._id %>'" 
+                                    class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition-colors font-medium">
+                                Proceed to Checkout
+                            </button>
+                        <% } else { %>
+                            <button onclick="window.location.href='/read-and-grow/checkout/<%= cartItems._id %>'" disabled
+                                    class="w-full mt-6 bg-red-200 hover:bg-green-200 text-white py-2 rounded-md transition-colors font-medium">
+                                Proceed to Checkout
+                            </button>
+                        <% } %>
                     </div>
-                    <button onclick="window.location.href='/read-and-grow/checkout/<%= cartItems._id %>'" 
-                         class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition-colors font-medium">
-                        Proceed to Checkout
-                    </button>
                 </div>
-            </div> 
+            </div>
         </div>
-    </div> 
- 
+    </div>
+
     <script>
         function showToast(message, type = 'error') {
             Toastify({
@@ -155,163 +147,142 @@
                 duration: 2000,
                 gravity: "top",
                 position: "center",
-                backgroundColor: type === 'success' ? "#16a34a" : "#dc2626", // green-600 for success, red-600 for error
+                backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
                 stopOnFocus: true,
             }).showToast();
         }
 
         async function increaseQuantity(productId) {
-                const qtyInput = document.getElementById(`quantity-${productId}`);
-                const increaseQtyBtn = document.getElementById('increaseQtyBtn')
-                if (!qtyInput) {
-                    console.error(`Element with ID quantity-${productId} not found.`);
+            const qtyInput = document.getElementById(`quantity-${productId}`);
+            const increaseQtyBtn = document.getElementById(`increaseQtyBtn-${productId}`);
+            if (!qtyInput) {
+                console.error(`Element with ID quantity-${productId} not found`);
+                return;
+            }
+
+            let quantity = parseInt(qtyInput.value);
+            quantity++;
+
+            try {
+                const response = await fetch(`/read-and-grow/cart/${productId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ quantity: quantity })
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showToast(result.message || "Not enough stock");
+                    increaseQtyBtn.disabled = true;
                     return;
                 }
-                let quantity = parseInt(qtyInput.value);
-                quantity++;
 
-                localStorage.setItem('Qty',quantity)
-                try {
-                    const response = await fetch(`/read-and-grow/cart/${productId}`,{
-                        method:"PUT",
-                        headers:{"Content-Type":"application/json"},
-                        body:JSON.stringify({quantity:quantity})
-                    })
-
-                    const result = await response.json()
-                    if(!response.ok){
-                        showToast(result.message || `Not enough stock`)
-                        increaseQtyBtn.disabled = true;
-                    }
-
-                    if(result.success){
-                        qtyInput.value = quantity;
-                        const totalQtyElement = document.getElementById('totalQty')
-                        const totalQty = Number(totalQtyElement.innerText) + 1;
-                        totalQtyElement.innerText = totalQty;
-
-                        updatePrice(productId, quantity);
-                        updateTotal();
-                    }
-
-                } catch (error) {
-                    console.log(error.message)
+                if (result.success) {
+                    qtyInput.value = quantity;
+                    updateTotal();
                 }
+            } catch (error) {
+                console.error("Increase quantity error:", error.message);
+                showToast("Failed to increase quantity", "error");
+            }finally{
+                const increaseQtyBtn = document.getElementById(`increaseQtyBtn-${productId}`);
+                setTimeout(() => {
+                    increaseQtyBtn.disabled = false   
+                }, 3000);
+            }
+        }
+
+        async function decreaseQuantity(productId) {
+            const qtyInput = document.getElementById(`quantity-${productId}`);
+            if (!qtyInput) {
+                console.error(`Element with ID quantity-${productId} not found`);
+                return;
             }
 
-           async  function decreaseQuantity(productId) {
-                const qtyInput = document.getElementById(`quantity-${productId}`);
-                let quantity = parseInt(qtyInput.value);
-                if (quantity > 1) {
-                    quantity--;
-                    localStorage.setItem('Qty',quantity)
-                    try {
-                        const response = await fetch(`/read-and-grow/cart/${productId}`,{
-                            method:"PUT",
-                            headers:{"Content-Type":"application/json"},
-                            body:JSON.stringify({minusQty:quantity})
-                        })
+            let quantity = parseInt(qtyInput.value);
+            if (quantity > 1) {
+                quantity--;
 
-                        const result = await response.json()
-                        if(!response.ok){
-                            showToast(result.message || `Not enough stock`)
-                            increaseQtyBtn.disabled = true;
-                        }
-
-                        qtyInput.value = quantity;
-                        const totalQtyElement = document.getElementById('totalQty')
-                        const totalQty = Number(totalQtyElement.innerText) - 1;
-                        totalQtyElement.innerText = totalQty;
-                        updatePrice(productId, quantity);
-                        updateTotal();
-                    } catch (error) {
-                        console.log("decrease Qauntity : ",error.message)  
-                    }
-                }
-            }
-            // Update individual product price based on quantity
-            function updatePrice(productId, quantity) {
-                const qtyInput = document.getElementById(`quantity-${productId}`);
-                const priceElement = document.getElementById(`price-${productId}`);
-                const basePrice = parseFloat(qtyInput.getAttribute('data-price'));
-                const newPrice = (basePrice * quantity).toFixed(2);
-                priceElement.textContent = `$${newPrice}`;
-            }
-
-            // Update total price for all products
-            function updateTotal() {
-                const totalPriceElement = document.getElementById('total-price');
-                let total = 0;
-                
-                // Get all quantity inputs and calculate total
-                const quantityInputs = document.querySelectorAll('input[id^="quantity-"]');
-                quantityInputs.forEach(input => {
-                    const productId = input.id.replace('quantity-', '');
-                    const quantity = parseInt(input.value);
-                    const price = parseFloat(input.getAttribute('data-price'));
-                    total += price * quantity;
-                });
-                
-                totalPriceElement.textContent = `$${total.toFixed(2)}`;
-                 
-            }
-
-
-            async function removeFromCart(data) {
                 try {
-                    const confirmation = await Swal.fire({
-                        title: "Are you sure?",
-                        text: "Do you really want to remove this item from the cart?",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#d33",
-                        cancelButtonColor: "#3085d6",
-                        confirmButtonText: "Yes, remove it!"
+                    const response = await fetch(`/read-and-grow/cart/${productId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ minusQty: quantity })
                     });
-
-                    if (!confirmation.isConfirmed) {
-                        return;  
-                    }
-
-                    const response = await fetch(`/read-and-grow/cart/${data}`, {
-                        method: "DELETE",
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-
                     const result = await response.json();
-                    console.log(result);
 
                     if (!response.ok) {
-                        showToast(result.message || 'Failed operation', 'error');
+                        showToast(result.message || "Error decreasing quantity");
                         return;
                     }
 
-                    if (result.success) {
-                        showToast(result.message, 'success');
-                    }
-                    location.reload()
+                    qtyInput.value = quantity;
+                    updateTotal();
                 } catch (error) {
-                    console.log(`remove item from cart: ${error}`);
-                    showToast('Something went wrong', 'error');
+                    console.error("Decrease quantity error:", error.message);
+                    showToast("Failed to decrease quantity", "error");
                 }
             }
+        }
 
+        function updateTotal() {
+            const totalPriceElement = document.getElementById('total-price');
+            const totalQtyElement = document.getElementById('totalQty');
+            let total = 0;
+            let totalQty = 0;
 
-            document.addEventListener('DOMContentLoaded',async () => {
-                updateTotal();
-                try {
-                    const response = await fetch(`/read-and-grow/cart`,{
-                        method:'GET',
-                        headers:{'Content-Type':'application/json'}
-                    })
-                    const result = response.json()
-                } catch (error) {
-                    console.log(error.message)
-                }
+            const quantityInputs = document.querySelectorAll('input[id^="quantity-"]');
+            quantityInputs.forEach(input => {
+                const quantity = parseInt(input.value);
+                const price = parseFloat(input.getAttribute('data-price'));
+                total += price * quantity;
+                totalQty += quantity;
             });
 
-            
-        </script>
-</body>
+            totalPriceElement.textContent = total.toFixed(2);
+            totalQtyElement.textContent = totalQty;
+        }
 
+        async function removeFromCart(productId) {
+            try {
+                const confirmation = await Swal.fire({
+                    title: "Are you sure?",
+                    text: "Do you really want to remove this item from the cart?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, remove it!"
+                });
+
+                if (!confirmation.isConfirmed) return;
+
+                const response = await fetch(`/read-and-grow/cart/${productId}`, {
+                    method: "DELETE",
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showToast(result.message || 'Failed to remove item', 'error');
+                    return;
+                }
+
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    location.reload();  
+                }
+            } catch (error) {
+                console.error(`Remove item from cart: ${error}`);
+                showToast('Something went wrong', 'error');
+            }
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            updateTotal();
+            
+        });
+    </script>
+</body>
 </html>

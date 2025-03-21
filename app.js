@@ -14,7 +14,9 @@ import MongoStore from "connect-mongo"
 
 import adminRoutes from "./routes/adminRoute.js"
 import userRoute from "./routes/userRoute.js"
-import otpRoute from "./routes/otpRoute.js"
+import otpRoute from "./routes/otpRoute.js" 
+import ordersRoute from "./routes/ordersRoute.js"
+import shopingCartRoute from "./routes/shopingCartRoute.js"
 
 // import { errorHandling } from "./middlewares/error_handling.js";
 import nocache from "nocache";
@@ -61,8 +63,11 @@ app.use(morgan("dev"))
 app.use(passport.initialize())
 app.use(passport.session())
 
+//Routes 
 app.use("/admin", adminRoutes)
 app.use("/read-and-grow", userRoute)
+app.use("/read-and-grow", ordersRoute)
+app.use("/read-and-grow", shopingCartRoute)
 app.use("/otp",otpRoute)
 app.use(methodOverride('_method'))
 

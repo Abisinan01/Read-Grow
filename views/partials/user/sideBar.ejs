@@ -9,15 +9,13 @@
             </button>
         </li>
         <li>
-            <button data-section="orders"
-                onclick="window.location.href='/read-and-grow/orders'"
+            <button data-section="orders" onclick="window.location.href='/read-and-grow/orders'"
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
                 Orders
             </button>
         </li>
         <li>
-            <button data-section="address"
-                onclick="window.location.href='/read-and-grow/address/<%= user._id %>'"
+            <button data-section="address" onclick="window.location.href='/read-and-grow/address/<%= user._id %>'"
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
                 Address
             </button>
@@ -29,7 +27,7 @@
             </button>
         </li>
         <li>
-            <button data-section="wallet"
+            <button data-section="wallet" onclick="window.location.href='/read-and-grow/wallet/<%= user._id %>'"
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
                 Wallet
             </button>
@@ -42,7 +40,7 @@
             </button>
         </li>
         <li>
-            <button 
+            <button
                 class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 flex items-center"
                 id="logoutButton">
                 <span class="mr-2"></span> Logout
@@ -90,49 +88,49 @@
     });
 
     //logout
-document.getElementById("logoutButton").addEventListener("click", async () => {
-    const { value: confirmed } = await Swal.fire({
-        title: "Are you sure you want to log out?",
-        text: "You won't be able to log in again unless you provide credentials.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, log me out",
-        cancelButtonText: "Cancel",
-        reverseButtons: true,
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+        const { value: confirmed } = await Swal.fire({
+            title: "Are you sure you want to log out?",
+            text: "You won't be able to log in again unless you provide credentials.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, log me out",
+            cancelButtonText: "Cancel",
+            reverseButtons: true,
+        });
+
+        if (confirmed) {
+            const url = "/read-and-grow/logout"; // Ensure correct API route
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include", // Allow cookies to be sent
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(`Error occurred. HTTP status ${response.status}`);
+                }
+
+
+                if (result.success) {
+                    Swal.fire("Logged out", "You are successfully logged out", "success");
+                    setTimeout(() => {
+                        window.location.href = "/read-and-grow/home";
+                    }, 2000);
+                } else {
+                    Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");
+                }
+            } catch (error) {
+                console.error("Logout error:", error);
+                Swal.fire("Error!", "An error occurred. Please try again later.", "error");
+            }
+        }
     });
 
-    if (confirmed) {
-        const url = "/read-and-grow/logout"; // Ensure correct API route
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include", // Allow cookies to be sent
-            });
-            
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(`Error occurred. HTTP status ${response.status}`);
-            }
-
-
-            if (result.success) {
-                Swal.fire("Logged out", "You are successfully logged out", "success");
-                setTimeout(() => {
-                    window.location.href = "/read-and-grow/home";
-                }, 2000);
-            } else {
-                Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");
-            }
-        } catch (error) {
-            console.error("Logout error:", error);
-            Swal.fire("Error!", "An error occurred. Please try again later.", "error");
-        }
-    }
-});
-
-</script> 
+</script>

@@ -7,6 +7,7 @@
   <title>Order Details - REad & GroW</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen font-sans">
@@ -33,7 +34,8 @@
           <div class="space-y-4 text-gray-700">
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Order Number:</span>
-              <span class="text-gray-900 font-semibold">#<%= order.orderId %></span>
+              <span class="text-gray-900 font-semibold" data-attribute-id="<%= order._id %>">#<%= order.orderId %>
+              </span>
             </div>
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Order Date:</span>
@@ -42,46 +44,80 @@
                   day: 'numeric' }) %>
               </span>
             </div>
-            <div class="flex justify-between items-center">
+            <!-- <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Status:<%= order.status %></span>
               <div class="flex items-center">
-                <!-- <span class="text-green-600 font-medium mr-2">Delivered</span> -->
-                <div class="w-24 h-2 bg-green-200 rounded-full overflow-hidden">
+                <span class="text-green-600 font-medium mr-2">Delivered</span>
+
+                <div class="w-24 h-2 bg-green-400 rounded-full overflow-hidden">
                   <div class="w-full h-full bg--600 rounded-full animate-pulse"></div>
                 </div>
+
               </div>
-            </div>
+            </div> -->
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Total Amount:</span>
-              <span class="text-gray-900 font-semibold">$<%= order.totalAmount %></span>
+              <span class="text-gray-900 font-semibold">Rs. <%= order.totalAmount %></span>
             </div>
           </div>
         </div>
 
         <!-- Ordered Items -->
-
         <div class="mb-8">
           <h2 class="text-xl font-semibold text-gray-900 mb-5 border-b border-gray-200 pb-3">Items</h2>
-          <% orderedProducts.forEach(product=>{ %>
-            <div class="space-y-4">
+          <div class="space-y-4">
+            <% orderedProducts.forEach(item=> { %>
               <div
                 class="flex items-center justify-between p-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-200">
                 <div class="flex items-center space-x-5">
-                  <div class="w-14 h-14 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <img class="fas fa-book text-gray-700 text-xl" src="<%= product.images[0] %>">
+                  <div class="w-14 h-18 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <img class="w-full h-full object-cover rounded-lg" src="<%= item.image || '/default-image.jpg' %>"
+                      alt="<%= item.name %>">
                   </div>
                   <div>
                     <p class="font-medium text-gray-900">
-                      <%= product.name %>
+                      <%= item.name %>
                     </p>
-                    <p class="text-sm text-gray-600">Qty: </p>
+                    <p class="text-sm text-gray-600">Qty: <%= item.quantity %>
+                    </p>
+                    <p class="text-sm text-gray-600 font-medium">Rs. <%= item.price %>/per</p>
+                    <!-- Status Display (Fixed) -->
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="text-sm font-medium text-gray-700">Status:</span>
+                      <span
+                        class="text-sm font-medium <%= order.status === 'Pending' ? 'text-yellow-500' : item.status === 'Shipped' ? 'text-blue-500' : item.status === 'Delivered' ? 'text-green-600' : 'text-red-600' %>">
+                        <%= item.status %>
+                      </span>
+                      <% if (item.status==='Pending' ) { %>
+                        <i class="fas fa-clock text-yellow-500"></i>
+                        <% } else if (item.status==='Shipped' ) { %>
+                          <i class="fas fa-truck text-blue-500"></i>
+                          <% } else if (item.status==='Delivered' ) { %>
+                            <i class="fas fa-check-circle text-green-600"></i>
+                            <% } else if (item.status==='Cancelled' || item.status==='Returned' ) { %>
+                              <i class="fas fa-times-circle text-red-600"></i>
+                        <% } %>
+                    </div>
                   </div>
                 </div>
-                <p class="text-gray-900 font-medium">$<%= product.price %>
-                </p>
+
+                <div class="flex space-x-2">
+                  <% if (item.status==='Pending' && orderedProducts.length>1) { %>
+                    <button id="singleCancel" data-product-id="<%= item.productId %>" data-order-id="<%= order._id %>"
+                      class="cancel-btn text-xs font-medium text-white bg-gray-600 hover:bg-red-600 px-2 py-1 rounded transition duration-200">
+                      Cancel
+                    </button>
+                    <% } %>
+                      <% if (item.status==='Delivered' ) { %>
+                        <button data-product-id="<%= item.productId %>" data-order-id="<%= order._id %>"
+                          class="return-btn text-xs font-medium text-white bg-gray-600 hover:bg-green-600 px-2 py-1 rounded transition duration-200">
+                          Return
+                        </button>
+                        <% } %>
+                </div>
               </div>
-            </div>
-            <% }) %>
+              <% }) %>
+          </div>
         </div>
 
         <!-- Shipping Address -->
@@ -89,16 +125,22 @@
           <h2 class="text-xl font-semibold text-gray-900 mb-5 border-b border-gray-200 pb-3">Shipping Address</h2>
           <div class="text-gray-600 space-y-1">
             <p>
-              <%= deliveryAddress.firstName %>
-                <%= deliveryAddress.lastName %>
+              Frist name : <%= (deliveryAddress)? deliveryAddress?.firstName:"" %>
             </p>
             <p>
-              <%= deliveryAddress.street %>,<%= deliveryAddress.city %>
+              Last name : <%= (deliveryAddress)?deliveryAddress?.lastName:"" %>
             </p>
             <p>
-              <%= deliveryAddress.state %>
+              Street : <%= (deliveryAddress)?deliveryAddress?.street:"" %>,<%=
+                  (deliveryAddress)?deliveryAddress?.city:"" %>
             </p>
-            <p>Phone: <%= deliveryAddress.phoneNumber %>
+            <p>
+              State : <%= (deliveryAddress)?deliveryAddress?.state:"" %>
+            </p>
+            <p>
+              Pincode : <%= (deliveryAddress)?deliveryAddress?.pincode:"" %>
+            </p>
+            <p>Phone : <%= (deliveryAddress)?deliveryAddress?.phoneNumber:"" %>
             </p>
           </div>
         </div>
@@ -113,16 +155,18 @@
 
         <!-- Action Buttons -->
         <div class="flex space-x-6">
-          <button
-            class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 g shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+          <button <% if(order.status !=="Delivered" ){ %>hidden<%}%>
+            class="bg-gray-100 hover:bg-yellow-400 text-gray-400 font-semibold py-3 px-6 g shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
             Return
           </button>
-          <button
-            class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6  shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
-            Cancel
+          <button id="cancelOrders" data-attribute-id="<%= order._id  %>" <% if(order.status !=="Pending" ){ %>hidden
+            <%}%>
+              class="bg-gray-100 hover:bg-red-400 text-gray-400 font-semibold py-3 px-6 shadow-md hover:shadow-lg
+              transition duration-300 transform hover:-translate-y-1">
+              Cancel
           </button>
-          <button id="invoice"
-            class="bg-gray-500 hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+          <button id="invoice" data-order-id="<%= order._id %>"<% if(order.status =="Cancelled" ){ %>hidden<%}%>
+            class="invoice-btn bg-gray-400 align-end hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
             Invoice
           </button>
         </div>
@@ -130,30 +174,227 @@
 
     </div>
     <script>
-      document.getElementById('invoice').addEventListener('click', async function () {
-        const orderId = this.getAttribute('data-order-id');
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.invoice-btn').forEach(button => {
+          button.addEventListener('click', async function () {
+            const orderId = this.getAttribute('data-order-id');
+ 
+            if (!orderId) {
+              console.error("Order ID not found");
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Order ID is missing!',
+              });
+              return;
+            }
 
-        try {
-          const response = await fetch(`/read-and-grow/generate-invoice/${orderId}`, { method: 'GET' });
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = 'Generating...';
 
-          if (!response.ok) {
-            throw new Error('Failed to generate invoice');
+            try {
+              const response = await fetch(`/read-and-grow/generate-invoice/${orderId}`, { method: 'GET' });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to generate invoice');
+              }
+
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `Invoice_${orderId}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Invoice downloaded successfully!',
+                timer: 1500,
+                showConfirmButton: false,
+              });
+            } catch (error) {
+              console.error('Error generating invoice:', error.message);
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Failed to generate invoice: ' + error.message,
+              });
+            } finally {
+              button.disabled = false;
+              button.innerHTML = 'Invoice';
+            }
+          });
+        });
+
+
+        document.getElementById('cancelOrders').addEventListener('click', async function (e) {
+
+          const orderId = this.getAttribute('data-attribute-id')
+          const { value: reason } = await Swal.fire({
+            title: 'Cancel order',
+            html: `
+              <p>Please provide a reason for returning this order:</p>
+              <textarea id="returnReason" class="swal2-textarea w-96 p-2 border rounded" placeholder="Enter your reason here..." rows="4"></textarea>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Submit Cancel',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#000223',
+            cancelButtonColor: '#d33',
+            preConfirm: () => {
+              const reasonText = document.getElementById('returnReason').value.trim();
+              if (!reasonText) {
+                Swal.showValidationMessage('Please enter a reason for the return');
+                return false;
+              }
+              return reasonText;
+            }
+          });
+          if (reason) {
+            Swal.fire({
+              title: 'Are you sure?',
+              text: "You won't be able to revert this!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, delete it!'
+            }).then(async (result) => {
+              if (result.isConfirmed)
+
+                try {
+                  const response = await fetch(`/read-and-grow/cancel-order/${orderId}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason: reason })
+                  })
+
+                  const result = await response.json()
+                  if (!response.ok) {
+
+                    Swal.fire({
+                      icon: "error",
+                      title: "Oops...",
+                      text: result.message,
+                      footer: '<a href="/read-and-grow/shop">Continue shop</a>',
+                      confirmButtonText: "OK"
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        window.location.href = "/read-and-grow/orders";  // Redirect after clicking "OK"
+                      }
+                    });
+                  }
+
+                  Swal.fire({
+                    title: result.message,
+                    text: "You order another one",
+                    icon: "success"
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+
+                      window.location.href = "/read-and-grow/orders"
+                    }
+                  });
+
+                } catch (error) {
+
+                }
+            })
           }
+        })
+        //==============single cancellation======
 
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
 
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `Invoice_${orderId}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-        } catch (error) {
-          console.error('Error generating invoice:', error);
-          alert('Failed to generate invoice.');
-        }
-      })
+        document.getElementById('singleCancel').addEventListener('click', async function (e) {
+
+          const productId = this.getAttribute('data-product-id')
+          console.log(1111, productId)
+          const orderId = this.getAttribute('data-order-id')
+
+          const { value: reason } = await Swal.fire({
+            title: 'Cancel order',
+            html: `
+            <p>Please provide a reason for returning this order:</p>
+            <textarea id="returnReason" class="swal2-textarea w-96 p-2 border rounded" placeholder="Enter your reason here..." rows="4"></textarea>
+          `,
+            showCancelButton: true,
+            confirmButtonText: 'Submit Cancel',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#000223',
+            cancelButtonColor: '#d33',
+            preConfirm: () => {
+              const reasonText = document.getElementById('returnReason').value.trim();
+              if (!reasonText) {
+                Swal.showValidationMessage('Please enter a reason for the return');
+                return false;
+              }
+              return reasonText;
+            }
+          });
+          if (reason) {
+            Swal.fire({
+              title: 'Are you sure?',
+              text: "You won't be able to revert this!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, delete it!'
+            }).then(async (result) => {
+              if (result.isConfirmed)
+
+                try {
+                  const response = await fetch(`/read-and-grow/single-cancel-order/${orderId}/${productId}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason: reason })
+                  })
+
+                  const result = await response.json()
+                  if (!response.ok) {
+
+                    Swal.fire({
+                      icon: "error",
+                      title: "Oops...",
+                      text: result.message,
+                      footer: '<a href="/read-and-grow/shop">Continue shop</a>',
+                      confirmButtonText: "OK"
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        window.location.href = "/read-and-grow/orders";  // Redirect after clicking "OK"
+                      }
+                    });
+                  }
+
+                  Swal.fire({
+                    title: result.message,
+                    text: "You order another one",
+                    icon: "success"
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+
+                      window.location.href = "/read-and-grow/orders"
+                    }
+                  });
+
+                } catch (error) {
+
+                }
+            })
+          }
+        })
+      });
+
+
+
+
     </script>
 </body>
 

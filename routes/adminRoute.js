@@ -23,8 +23,10 @@ import {
     renderUserPanel,
     searchCategory,
  
-} from "../controllers/adminController.js"
+} from "../controllers/admin/adminController.js"
 import upload from '../utils/multer.js';
+import { getOrderPage, getViewOrder } from '../controllers/admin/orderController.js';
+ 
 
 //========Login
 router.get('/login', adminLoginGet) 
@@ -34,6 +36,7 @@ router.get('/dashboard', adminAuth, adminDashboardGet)
 
 //======users
 router.get('/users', adminAuth, renderUserPanel)
+
 
 router.put('/blockUser/:id', adminAuth, blockUser)
 
@@ -57,7 +60,11 @@ router.patch("/product/:id",upload.array('images',3),editProduct)
 router.delete('/product/:id',adminAuth ,deleteProduct)
 router.put('/block-product/:id',adminAuth,blockProduct)
 
+router.get('/orders',adminAuth,getOrderPage)
+router.get('/view-order/:orderId/:productId',adminAuth,getViewOrder)
  
+
+
 //======logout=============
 router.post("/logout", adminLogout)
 //=============for handling random routes===============
