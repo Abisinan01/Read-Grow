@@ -35,7 +35,8 @@ const orderSchema = new Schema({
     }],
     totalAmount: { type: Number, required: true },
     paymentStatus: { type: String },
-    reason: { type: String, default: null }
+    reason: { type: String, default: null },
+    updatedAt:{ type: Date, default: Date.now }
 
 }, { timestamps: true })
 

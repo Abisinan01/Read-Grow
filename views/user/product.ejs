@@ -272,10 +272,14 @@
                                         <img src="<%= product.images[0] %>" alt="Rich Dad Poor Dad"
                                             class="w-auto h-52 md:h-64 object-cover rounded-md">
                                     </a>
-                                    <button
-                                        class="absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
-                                        aria-label="Add Rich Dad Poor Dad to wishlist">
-                                        <i class="far fa-heart text-gray-600"></i>
+                                    <button onclick="toggleWishlist(this, '<%= product._id %>')" 
+                                        class="wishlist-btn absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                                        data-product-id="<%= product._id %>">
+                                        <% if (wishlistItems.includes(product._id.toString())) { %>
+                                            <i class="fas fa-heart text-red-500"></i> <!-- Filled heart -->
+                                        <% } else { %>
+                                            <i class="far fa-heart text-gray-600"></i> <!-- Empty heart -->
+                                        <% } %>
                                     </button>
                                 </div>
                                 <div class="p-4">

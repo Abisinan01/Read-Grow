@@ -49,7 +49,7 @@
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
-    <div class="container-fluid  ">
+    <div class="container-fluid flex ">
         <!-- Sidebar -->
         <%- include("../partials/admin/adminSideBar.ejs") %>
 
@@ -304,9 +304,9 @@
            const paginationNav = document.querySelector('.flex.space-x-2');
            let currentQuery = '';
            let currentPage = 1;
-           const limit = 5;  
+           const limit = 5; // You can adjust this or make it dynamic if needed
        
-        
+           // Load initial data from URL
            const urlParams = new URLSearchParams(window.location.search);
            currentQuery = urlParams.get('query') || '';
            currentPage = parseInt(urlParams.get('page')) || 1;

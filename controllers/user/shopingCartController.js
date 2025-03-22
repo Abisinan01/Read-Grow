@@ -225,7 +225,8 @@ export const addToCart = async (req, res, next) => {
             return next(new AppError(`Out of stock`, 400))
         }
         let cart = await Cart.findOne({ userId: user.id })
-
+   
+        
         if (cart) {
             const existItemIndex = cart.items.findIndex(
                 item => item.productId.toString() === productId.toString()
@@ -237,7 +238,7 @@ export const addToCart = async (req, res, next) => {
                     })  
                 }
                 cart.items[existItemIndex].quantity += 1;
-                // product.stock -= 1
+     
 
             } else {
                 cart.items.push({
@@ -245,7 +246,7 @@ export const addToCart = async (req, res, next) => {
                     quantity: 1,
                     stock: parseInt(product.stock)
                 })
-                // product.stock -= 1
+ 
             }
             const saveCart = (await cart.save()) ? true : false
             if (!saveCart) {
@@ -253,7 +254,7 @@ export const addToCart = async (req, res, next) => {
                     success: false, message: "Maximum limit reached"
                 })
             }
-            // await product.save()
+    
         } else {
             const addCart = new Cart({
                 userId: new mongoose.Types.ObjectId(user.id),
@@ -266,10 +267,11 @@ export const addToCart = async (req, res, next) => {
                         }
                     ]
             })
-            // product.stock -= 1
             await addCart.save()
             await product.save()
         }
+
+        await Wishlist.findOneAndUpdate({userId:user.id},{$unset:{items:""}})
 
         return res.status(200).json({
             success: true,
@@ -454,7 +456,6 @@ export const confirmOrder = async (req, res, next) => {
 
         let address = await Address.findById(addressId)
         console.log('Delivery Address :', address)
-        console.log(1,address)
 
         if (!address) {
             address = await Address.findOne({ userId: user.id, isDefault: true });

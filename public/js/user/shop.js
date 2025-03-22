@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         event.preventDefault();
         const searchInput = document.querySelector('input[name="search"]').value.trim();
         const url = `/read-and-grow/shop?page=1&limit=${limit}${searchInput ? `&search=${encodeURIComponent(searchInput)}` : ''}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}${currentAuthor ? `&author=${encodeURIComponent(currentAuthor)}` : ''}${currentPrice ? `&price=${encodeURIComponent(currentPrice)}` : ''}`;
+
         await fetchAndUpdate(url);
     }
 

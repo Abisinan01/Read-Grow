@@ -59,7 +59,11 @@ const userSchema = new Schema({
     isEmailVerfied: {
         type: Boolean,
         default: false
-    } 
+    },
+    profileImage:{
+        type:String
+    }
+
 
 }, { timestamps: true })
 

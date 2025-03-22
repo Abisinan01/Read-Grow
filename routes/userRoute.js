@@ -30,8 +30,10 @@ import {
 } from "../controllers/user/userController.js"
 import passport from "passport"
 import jwt from "jsonwebtoken"
-import { renderHomePage, renderProductDetails, renderShopPage } from "../controllers/user/shopController.js"
+import { renderHomePage, renderProductDetails, renderShopPage, sortProducts } from "../controllers/user/shopController.js"
 import { renderWallet } from "../controllers/user/walletController.js"
+import uploadProfileImage from "../utils/profileMulter.js"
+import User from "../models/userSchema.js"
 
 router.get('/login', renderLoginPage)
 router.post('/login', handleLoginPage)
@@ -44,14 +46,6 @@ router.post('/requestPasswordReset', requestPasswordReset)
 router.get('/resetPassword', renderResetPassword)
 router.post('/resetPassword', resetPassword)
 
-router.get('/home', renderHomePage)
-
-router.get('/product-details/:id', userAuth, renderProductDetails)
-
-router.get("/shop", userAuth, renderShopPage)
-
-router.get('/profile/:id', userAuth, renderProfilePage)
-router.patch('/profile/:id', userAuth, editProfile)
 
 router.get('/change-password/:id', userAuth, renderChangePassword)
 router.post('/change-password', userAuth, changePasswordRequest)
@@ -70,7 +64,37 @@ router.patch('/address/:id/select-address', selectAddress)
 
 router.get('/wallet/:id',userAuth,renderWallet)
 
- 
+router.get('/home', renderHomePage)
+router.get('/product-details/:id', userAuth, renderProductDetails)
+router.get("/shop", userAuth, renderShopPage)
+router.get('/profile/:id', userAuth, renderProfilePage)
+router.patch('/profile/:id', userAuth, editProfile)
+router.get('/sort/:sort',userAuth,sortProducts)
+
+
+router.post("/upload-profile",userAuth, uploadProfileImage.single("profileImage"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const userId = req.user; 
+        const filePath = `/profile_images/${req.file.filename}`;
+
+        // Update user profile image in database
+        const user = await User.findByIdAndUpdate(userId.id, { profileImage: filePath }, { new: true });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({ message: "Profile image uploaded successfully", filePath });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 //================logout========
 router.post('/logout', logout)
 // ================google auth setting for signup======================

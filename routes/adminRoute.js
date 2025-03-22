@@ -25,7 +25,7 @@ import {
  
 } from "../controllers/admin/adminController.js"
 import upload from '../utils/multer.js';
-import { getOrderPage, getViewOrder } from '../controllers/admin/orderController.js';
+import { getOrderPage, updateStatus, viewOrder } from '../controllers/admin/orderController.js';
  
 
 //========Login
@@ -61,10 +61,11 @@ router.delete('/product/:id',adminAuth ,deleteProduct)
 router.put('/block-product/:id',adminAuth,blockProduct)
 
 router.get('/orders',adminAuth,getOrderPage)
-router.get('/view-order/:orderId/:productId',adminAuth,getViewOrder)
+router.get('/view-order/:orderId/:productId',adminAuth,viewOrder)
+
+router.put('/update-orders/:orderId',adminAuth,updateStatus)
+
  
-
-
 //======logout=============
 router.post("/logout", adminLogout)
 //=============for handling random routes===============

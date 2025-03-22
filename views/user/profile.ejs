@@ -15,51 +15,74 @@
 </head>
 
 <body class="bg-gray-300">
-    <!-- Navbar - positioned at the very top, not fixed -->
-    <%- include("../partials/user/navBar.ejs") %>
+    <!-- Navbar - positioned at the very top -->
+    <div class="w-full">
+        <%- include("../partials/user/navBar.ejs") %>
+    </div>
 
-        <!-- Centered Content -->
-        <div class="flex items-center justify-center min-h-[calc(100vh-64px)]">
+    <!-- Centered Content -->
+    <div class="flex items-center justify-center min-h-[calc(100vh-64px)]">
+        <div class="bg-white w-[750px] p-8 rounded-lg shadow-lg my-10">
             <!-- Profile Section -->
-            <div class="bg-white w-[750px] p-8 rounded-lg shadow-lg my-10">
-                <h2 class="text-xl font-semibold mb-6">Your Account</h2>
-                <div class="flex">
-                    <!-- Sidebar -->
-                    <%- include("../partials/user/sideBar.ejs") %>
+            <div class="flex items-center justify-between mb-6">
+                <!-- Profile Image Section -->
+                <div class="relative w-32 h-32">
+                    <img id="profile-preview" src="<%= user?.profileImage || '/default-profile.png' %>" 
+                        alt="Profile Picture" 
+                        class="w-full h-full rounded-full border border-gray-300 object-cover">
+                    
+                    <!-- Hidden File Input -->
+                    <input type="file" id="profile-image" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    
+                    <!-- Camera Icon for Upload -->
+                    <label for="profile-image" class="absolute bottom-0 right-0 bg-gray-700 text-white p-2 rounded-full cursor-pointer">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                </div>
+                
+                <!-- Upload Button -->
+                <button id="upload-btn" class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-red-400 transition duration-300">
+                    Upload Profile Image
+                </button>
+            </div>
 
-                        <!-- Profile Form -->
-                        <div class="w-2/3 pl-6">
-                            <div class="flex flex-col space-y-4">
-                                <!-- Form for Username and Mobile Number -->
-                                <form id="profile-form" class="flex flex-col space-y-4">
-                                    <div class="mb-4">
-                                        <label class="block text-gray-700">Username</label>
-                                        <input type="text" name="username" value="<%= user.username %>" readonly
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
-                                    </div>
-                                    <div class="flex-1 mb-4">
-                                        <label class="block text-gray-700">Email</label>
-                                        <input type="email" value="<%= user.email %>" readonly name="email" required
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="block text-gray-700">Mobile Number</label>
-                                        <input type="text" value="<%= user.phoneNumber %>" readonly name="mobile" required
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
-                                    </div>
-                                    <div class="">
-                                        <button type="button" onclick='editData(<%= JSON.stringify(user) %>)'
-                                            class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300 self-end">
-                                            Edit
-                                        </button>
-                                    </div>
-                                </form>
+            <h2 class="text-xl font-semibold mb-6">Your Account</h2>
+            <div class="flex">
+                <!-- Sidebar -->
+                <%- include("../partials/user/sideBar.ejs") %>
+
+                <!-- Profile Form -->
+                <div class="w-2/3 pl-6">
+                    <div class="flex flex-col space-y-4">
+                        <!-- Form for Username and Mobile Number -->
+                        <form id="profile-form" class="flex flex-col space-y-4">
+                            <div class="mb-4">
+                                <label class="block text-gray-700">Username</label>
+                                <input type="text" name="username" value="<%= user.username %>" readonly
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
                             </div>
-                        </div>  
+                            <div class="flex-1 mb-4">
+                                <label class="block text-gray-700">Email</label>
+                                <input type="email" value="<%= user.email %>" readonly name="email" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700">Mobile Number</label>
+                                <input type="text" value="<%= user.phoneNumber %>" readonly name="mobile" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" onclick='editData(<%= JSON.stringify(user) %>)'
+                                    class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
+                                    Edit
+                                </button>
+                            </div>
+                        </form>
                     </div>
+                </div>  
             </div>
         </div>
-
+    </div>
 
         <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
         <script>
@@ -179,7 +202,45 @@
                 editData(user);
             });
 
+            function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
+        const reader = new FileReader();
+        reader.onload = function () {
+            document.getElementById("profile-preview").src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.getElementById("upload-btn").addEventListener("click", function () {
+        const fileInput = document.getElementById("profile-image");
+        if (fileInput.files.length === 0) {
+            Swal.fire("Error", "Please select an image first!", "error");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("profileImage", fileInput.files[0]);
+
+        fetch("/read-and-grow/upload-profile", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.filePath) {
+                document.getElementById("profile-preview").src = data.filePath;
+                Swal.fire("Success", "Profile image updated successfully!", "success");
+            } else {
+                Swal.fire("Error", data.message || "Something went wrong!", "error");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire("Error", "Failed to upload image!", "error");
+        });
+    });
 
 
         </script>

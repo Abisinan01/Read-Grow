@@ -6,6 +6,8 @@
     <title>Order Management - Read & Grow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
     <!-- Sidebar -->
@@ -22,14 +24,7 @@
         <div class="flex justify-between items-center mb-2">
             <h2 class="text-lg font-semibold text-gray-700">Order List</h2>
             <div class="flex space-x-2">
-                <div class="relative">
-                    <input type="text" placeholder="Search orders..." class="border border-gray-300 rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        <i class="fas fa-search"></i>
-                    </span>
-                </div>
-                <button class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">Search</button>
-                <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200">Reset</button>
+                <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200" onclick="window.location.href='/admin/orders'">Reset</button>
             </div>
         </div>
 
@@ -50,16 +45,18 @@
                         <% allOrders.forEach(order => { %>
                             <% order.items.forEach(item => { %>
                                 <tr class="border-b bg-white hover:bg-gray-50">
-                                    <td class="py-4 px-6 text-sm text-gray-700"><%= order.orderId %></td>
                                     <td class="py-4 px-6 text-sm text-gray-700">
-                                        <%= new Date(order.createdAt).toLocaleString('en-US', {
+                                        <%= order.orderId %>
+                                    </td>
+                                    <td class="py-4 px-6 text-sm text-gray-700">
+                                        <%= new Date(order.createdAt).toLocaleString('en-US', { 
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric',
                                             hour: '2-digit',
                                             minute: '2-digit',
                                             second: '2-digit',
-                                            hour12: true
+                                            hour12: true 
                                         }) %>
                                     </td>
                                     <td class="py-4 px-6 text-sm">
@@ -75,14 +72,16 @@
                                         <% } else { %>
                                             <% statusClass = "bg-gray-100 text-gray-800"; %>
                                         <% } %>
-                                        <span class="status-display text-xs font-medium px-2.5 py-0.5 rounded-full <%= statusClass %>" data-order-id="<%= order._id %>" data-item-id="<%= item.productId %>">
+                                        <span class="status-display text-xs font-medium px-2.5 py-0.5 rounded-full <%= statusClass %>"
+                                            data-order-id="<%= order._id %>"
+                                            data-item-id="<%= item.productId %>">
                                             <%= item.status || "Unknown" %>
                                         </span>
                                     </td>
                                     <td class="py-4 px-6 text-sm">
-                                        <select class="status-select border border-gray-300 rounded-lg py-1 px-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                                data-order-id="<%= order._id %>" 
-                                                data-item-id="<%= item.productId %>">
+                                        <select class="status-select border border-gray-300 rounded-lg py-1 px-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            data-order-id="<%= order._id %>"
+                                            data-item-id="<%= item.productId %>">
                                             <option value="Pending" <%= item.status === "Pending" ? "selected" : "" %>>Pending</option>
                                             <option value="Delivered" <%= item.status === "Delivered" ? "selected" : "" %>>Delivered</option>
                                             <option value="Cancelled" <%= item.status === "Cancelled" ? "selected" : "" %>>Cancelled</option>
@@ -90,7 +89,8 @@
                                         </select>
                                     </td>
                                     <td class="py-4 px-6 text-sm">
-                                        <a href="/admin/view-order/<%= order._id %>/<%= item.productId %>" class="bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition duration-200">View Details</a>
+                                        <a href="/admin/view-order/<%= order._id %>/<%= item.productId %>"
+                                            class="bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition duration-200">View Details</a>
                                     </td>
                                 </tr>
                             <% }) %>
@@ -102,57 +102,97 @@
                     <% } %>
                 </tbody>
             </table>
+            <div class="flex space-x-4">
+                <% if (page > 1) { %>
+                    <a href="/admin/orders?page=<%= page - 1 %>&limit=<%= limit %>"
+                        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                        disabled>
+                        Previous
+                    </a>
+                <% } else { %>
+                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>
+                <% } %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="/admin/orders/?page=<%= i %>&limit=<%= limit %>"
+                        class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50' %>">
+                        <%= i %>
+                    </a>
+                <% } %>
+                <% if (page < totalPages) { %>
+                    <a href="/admin/orders?page=<%= page + 1 %>&limit=<%= limit %>"
+                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Next</a>
+                <% } else { %>
+                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>
+                <% } %>
+            </div>
         </div>
     </div>
+        <!-- JavaScript for Sidebar Navigation and Status Updates -->
+        <script>
 
-    <!-- JavaScript for Sidebar Navigation and Status Updates -->
-    <script>
-        // Sidebar Navigation
-        document.querySelectorAll('.nav-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const path = this.getAttribute('data-path');
-                if (path) {
-                    window.location.href = path;
-                }
-            });
-        });
-
-        document.getElementById('logoutButton').addEventListener('click', function() {
-            alert('Logging out...');
-            window.location.href = '/logout';
-        });
-
-        document.querySelectorAll('.status-select').forEach(select => {
-            select.addEventListener('change', async function() {
-                const orderId = this.getAttribute('data-order-id');
-                const newStatus = this.value;
-
-                try {
-                    const response = await fetch(`/admin/orders/update/${orderId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ status: newStatus }),
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert(`Order ${orderId} status updated to ${newStatus}!`);
-                        window.location.reload(); // Keep this as per your request
-                    } else {
-                        alert('Failed to update status: ' + result.message);
-                        this.value = result.previousStatus || 'Pending';
+            function showToast(message, type = 'error') {
+                Toastify({
+                    text: message,
+                    duration: 2000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
+                    stopOnFocus: true,
+                }).showToast();
+            }
+            // Sidebar Navigation
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', function () {
+                    const path = this.getAttribute('data-path');
+                    if (path) {
+                        window.location.href = path;
                     }
-                } catch (err) {
-                    console.error('Error updating status:', err);
-                    alert('An error occurred while updating the status.');
-                    this.value = this.dataset.previousValue || 'Pending';
-                }
-
-                this.dataset.previousValue = newStatus;
+                });
             });
-        });
-    </script>
+
+            document.getElementById('logoutButton').addEventListener('click', function () {
+                alert('Logging out...');
+                window.location.href = '/logout';
+            });
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', async function () {
+                    const orderId = this.getAttribute('data-order-id');
+                    const productId = this.getAttribute('data-item-id');
+
+                    const newStatus = this.value;
+
+                    try {
+                        const response = await fetch(`/admin/update-orders/${orderId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ action: newStatus, productId: productId }),
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showToast(result.message, 'success')
+
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            showToast(result.message, 'error')
+                            this.value = result.previousStatus || 'Pending';
+                        }
+                    } catch (err) {
+                        console.error('Error updating status:', err);
+                        showToast('An error occurred while updating the status.');
+                        this.value = this.dataset.previousValue || 'Pending';
+                    }
+
+                    this.dataset.previousValue = newStatus;
+                });
+            });
+
+        </script>
 </body>
+
 </html>
