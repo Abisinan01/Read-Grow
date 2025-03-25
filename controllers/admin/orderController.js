@@ -152,7 +152,7 @@ export const updateStatus = async (req, res, next) => {
             default:
                 return res.status(400).json({ success: false, message: "Invalid Entries" });
         }
-
+        
         // if (order.items.every(item => item.status === "Delivered")) {
         //     order.status = "Delivered";
         // } else if (order.items.every(item => item.status === "Cancelled")) {

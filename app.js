@@ -41,7 +41,7 @@ connectDb().catch((error) => {
 const app = express()//express
 app.set("views", path.resolve("views"))//view engine set up
 app.set("view engine", "ejs")
-app.use(express.static(path.join(__dirname, "public")))
+app.use(express.static(path.join(__dirname, "public"))) 
  
 app.use(cookieParser())
 app.use(express.json())//parsing json data

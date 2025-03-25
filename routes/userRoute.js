@@ -72,6 +72,9 @@ router.patch('/profile/:id', userAuth, editProfile)
 router.get('/sort/:sort',userAuth,sortProducts)
 
 
+
+
+//=================================
 router.post("/upload-profile",userAuth, uploadProfileImage.single("profileImage"), async (req, res) => {
     try {
         if (!req.file) {
@@ -94,6 +97,7 @@ router.post("/upload-profile",userAuth, uploadProfileImage.single("profileImage"
         res.status(500).json({ message: "Server error" });
     }
 });
+
 
 //================logout========
 router.post('/logout', logout)

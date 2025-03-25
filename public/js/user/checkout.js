@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const phone = paragraphs[3].textContent.replace('Phone:', '').trim();
             const zipElement = document.querySelector('#editAddressForm input[name="zip"]');
             const zip = zipElement ? zipElement.value.trim() : "234343";
-            
+
             editForm.querySelector('input[name="firstName"]').value = firstName;
             editForm.querySelector('input[name="lastName"]').value = lastName;
             editForm.querySelector('input[name="street"]').value = street;
@@ -295,9 +295,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!response.ok) throw new Error(result.message || 'Failed to select address');
 
                 showToast(result.message, 'success');
-                localStorage.setItem('addressId',addressId)//temperory
+                localStorage.setItem('addressId', addressId)//temperory
                 console.log(`Selected address ID: ${addressId}`);
- 
+
                 if (isChecked) {
                     document.querySelectorAll('.selectAddress').forEach(cb => {
                         if (cb !== this) {
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-  
+
     const paymentOptions = document.querySelectorAll('input[name="paymentMethod"]');
     paymentOptions.forEach(option => {
         option.addEventListener('change', function () {
@@ -339,83 +339,194 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-//===============================CHECKOUT FORM CONFIRM ORDER================================
+    //===============================CHECKOUT FORM CONFIRM ORDER================================
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             if (isProcessing) return;
-            
-            const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+
+            const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const subTotal = parseFloat(document.getElementById('subTotal')?.textContent) || 0;
+
+            const discount = document.getElementById('discount').textContent || 0;
+            const shippingCharge = document.getElementById('shipping').textContent || 0;
+            const finalPriceElement = document.querySelector('.text-xl.font-bold.text-red-500');
+            let finalPrice;
+            if (finalPriceElement) {
+                finalPrice = parseFloat(finalPriceElement.dataset.price) || 0;
+                console.log(finalPrice);
+            }
+
+            console.log(selectedPayment, subTotal, discount, shippingCharge, finalPrice);
+
             if (!selectedPayment) {
                 showToast('Please select a payment method', 'error');
                 return;
             }
-            
-            const selectedAddress = localStorage.getItem('addressId')
-            localStorage.removeItem('addressId')
+
+            const selectedAddress = localStorage.getItem('addressId');
+             
+            localStorage.removeItem('addressId');
             if (!selectedAddress) {
-                showToast('Please select a address', 'error');
+                showToast('Please select an address', 'error');
                 return;
             }
 
-            isProcessing = true;
-    
-            try {
-                const orderData = {
-                    addressId:selectedAddress,
-                    paymentMethod: selectedPayment.value,
-                };
+            if (selectedPayment === 'COD') {
+                isProcessing = true;
+                try {
+                    const orderData = {
+                        addressId: selectedAddress,
+                        paymentMethod: selectedPayment,
+                        addressId: selectedAddress,
+                        paymentMethod: selectedPayment,
+                        subTotal,
+                        shippingCharge,
+                        finalPrice,
+                        discount,
+                    };
 
-                console.log('Submitting order:', orderData);
+                    console.log('Submitting order:', orderData);
 
-                const response = await fetch('/read-and-grow/confirm-order', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(orderData)
-                });
+                    const response = await fetch('/read-and-grow/confirm-order', {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(orderData)
+                    });
 
-                const result = await response.json();
+                    const result = await response.json();
 
-                if (!response.ok) {
-                    const confirmOrderBtn = document.getElementById('confirmOrderBtn')
-                    // showToast(result.message || 'Out of stock','error')
-                    confirmOrderBtn.style.background = 'red'
-                    confirmOrderBtn.disabled = true
+                    if (!response.ok) {
+                        const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+                        confirmOrderBtn.style.background = 'red';
+                        confirmOrderBtn.disabled = true;
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text: result.message,
+                            footer: '<a href="/read-and-grow/shop">Continue shop</a>',
+                            confirmButtonText: "OK"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "/read-and-grow/shop";  // Redirect after clicking "OK"
+                            }
+                        });
+
+                        return;
+                    }
+
                     Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "OUT OF STOCK!",
-                        footer: '<a href="/read-and-grow/shop">Continue shop</a>',
-                        confirmButtonText: "OK"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = "/read-and-grow/shop";  // Redirect after clicking "OK"
+                        title: 'Loading...',
+                        text: 'Please wait while we fetch your orders',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            setTimeout(() => {
+                                window.location.href = '/read-and-grow/success';
+                            }, 2000);
                         }
                     });
-                    
-                    return
+
+                } catch (err) {
+                    showToast(err.message, 'error');
+                    console.error('Error placing order:', err);
+                } finally {
+                    isProcessing = false;
                 }
+            }
 
-                // showToast(result.message, 'success');
-                Swal.fire({
-                    title: 'Loading...',
-                    text: 'Please wait while we fetch your orders',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                        setTimeout(() => {
-                window.location.href = '/read-and-grow/confirm-order'
+            if (selectedPayment === 'Razorpay') {
+                isProcessing = true;
+                try {
+                    const orderData = {
+                        addressId: selectedAddress,
+                        paymentMethod: selectedPayment,
+                        subTotal,
+                        shippingCharge,
+                        finalPrice,
+                        discount,
+                        receipt: 'receipt#1',
+                        notes: {},
+                        currency: "INR"
+                    };
 
-                        }, 2000);
+                    console.log('Submitting order:', orderData);
+
+                    const response = await fetch('/read-and-grow/create-order', {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(orderData)
+                    });
+
+                    const order = await response.json();
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        return Swal.fire({
+                            title: "Warning!",
+                            text: "Are you sure you want to proceed?",
+                            icon: "warning",
+                            confirmButtonText: "OK",
+                        });
                     }
-                  });
-                  
-            } catch (err) {
-                showToast(err.message, 'error');
-                console.error('Error placing order:', err);
-            } finally {
-                isProcessing = false;
+
+                    const options = {
+                        key: 'rzp_test_ft2g0i6HYiyfqh', // Replace with your Razorpay key_id
+                        amount: order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                        currency: order.currency,
+                        name: 'Read-and-grow',
+                        description: 'Transaction',
+                        order_id: order.id, // This is the order_id created in the backend
+                        callback_url: 'http://localhost:3999/read-and-grow/success', // Your success URL
+                        prefill: {
+                            name: 'Abisinan',
+                            email: 'abisinanabisinan9@gmail.com',
+                            contact: '8086001138'
+                        },
+                        theme: {
+                            color: '#F37254'
+                        },
+
+                        handler: function (response) {
+                            fetch('/read-and-grow/verify-payment', {
+                                method: "POST",
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            }).then(res => res.json())
+                                .then(data => {
+                                    if (data.status === 'Ok') {
+                                        window.location.href = '/read-and-grow/success';
+                                        placeorder("paid");
+                                    } else {
+                                        console.log(data.message);
+                                        showToast('Payment verification failed', 'error');
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error("Error:", error);
+                                    showToast("Payment verification failed", "error");
+                                });
+                        }
+                    };
+                    console.log(options,1111111111)
+                    // Initialize Razorpay payment
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                    return;
+
+                } catch (err) {
+                    showToast(err.message || 'Failed to process Razorpay payment', 'error');
+                    console.error('Error processing Razorpay payment:', err);
+                } finally {
+                    isProcessing = false;
+                }
             }
         });
     }

@@ -62,15 +62,15 @@ export const renderOrdersPage = async (req, res, next) => {
 export const renderOrderDetailsPage = async (req, res, next) => {
   try {
     const user = req.user
-    const addressId = req.session.order?.addressId
-
+    // const addressId = req.session.order
+    // console.log(" addresssId", addressId)
     const orderId = req.params.id
     const order = await Order.findOne({ orderId: orderId })
     if (!order) {
       return res.status(400).redirect("/read-and-grow/orders")
     }
-    const deliveryAddress = await Address.findById(addressId)
-
+    const deliveryAddress = await Address.findById(order.addressId)
+    console.log(deliveryAddress)
     let orderedProducts = []
     for (let item of order.items) {
       const product = await Product.findById(item.productId)
@@ -96,88 +96,6 @@ export const renderOrderDetailsPage = async (req, res, next) => {
     next(new AppError(`Order details page : ${error}`, 500))
   }
 }
-
-
-// export const cancelOrders = async (req, res, next) => {
-//   try {
-//     const orderId = req.params.orderId
-//     const reason = req.body.reason
-//     const user = req.user
-//     const order = await Order.findById(orderId)
-
-//     if (!order) return res.status(400).json({ success: false, message: "Order not found" })
-//     if (order.isCancelled) return res.status(400).json({ success: false, message: "Order already cancelled." })
-
-//     let refundAmount = 0
-//     for (let item of order.items) {
-//       const product = await Product.findById(item.productId)
-//       if (!product) return res.json({ message: "Product not found" })
-//       if (item.isCancelled) return res.status(400).json({ message: "Product already cancelled" })
-
-//       product.stock += item.quantity
-//       refundAmount += product.price
-
-//       order.items.forEach(item => {
-//         if (item.productId.toString() == product._id.toString()) {
-//           item.status = "Cancelled"
-
-//         }
-//       })
-//       item.reason = reason
-//       await product.save()
-//     }
-
-//     try {
-//       let userWallet = await Wallet.findOne({ userId: user.id })
-//       console.log(userWallet)
-
-
-//       if (!userWallet) {
-//         const newUserWallet = new Wallet({
-//           userId: user.id,
-//           balance: Number(refundAmount),
-//           transactions: [{
-//             orderId: order._id,
-//             amount: Number(refundAmount),
-//             transactionType: 'credit',
-//             createdAt: new Date()
-//           }]
-//         })
-//         await newUserWallet.save()
-//       } else {
-//         userWallet.balance += Number(refundAmount);
-//         userWallet.transactions.push({
-//           orderId: order._id,
-//           amount: Number(refundAmount || 0),
-//           transactionType: 'credit',
-//           createdAt: new Date()
-//         })
-//         await userWallet.save()
-//       }
-
-
-//     } catch (walletError) {
-//       console.error("Wallet updation failed : ", walletError)
-//     }
-
-//     const isCancelled = order.items.every(item => item.status == 'Cancelled')
-//     if (isCancelled) {
-//       order.status = "Cancelled"
-//     }
-
-//     const saveOrder = await order.save()
-//     console.log(`Order cancelled..`)
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Order cancelled successfully"
-//     })
-
-//   } catch (error) {
-//     next(new AppError(`Order cancellation failed `, 500))
-//   }
-// }
-
 
 
 export const singleCancelOrder = async (req, res, next) => {
@@ -253,11 +171,11 @@ export const singleCancelOrder = async (req, res, next) => {
 
 
 export const returnOrder = async (req, res, next) => {
-  try { 
+  try {
 
     const orderId = req.params.orderId
-    console.log(orderId)
     const productId = req.params.productId
+    console.log(productId)
     const order = await Order.findById(orderId)
     const product = await Product.findById(productId)
     const user = req.user
@@ -288,10 +206,9 @@ export const returnOrder = async (req, res, next) => {
       $set: { paymentStatus: 'refunded' }
     })
 
-
     for (let item of order.items) {
-     const update = await Order.findByIdAndUpdate(product._id ,{
-        $set: { status: "Returned", isReturned: true }
+      const update = await Order.findOneAndUpdate({ "items.productId": item.productId }, {
+        $set: { "items.$.status": "Returned", "items.$.isReturned": true }
       })
       console.log(update)
       await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } })
@@ -306,14 +223,6 @@ export const returnOrder = async (req, res, next) => {
     next(new AppError(`return order failed : ${error}`, 500))
   }
 }
-
-
-
-
-
-
-
-
 
 
 

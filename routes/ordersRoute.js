@@ -9,11 +9,24 @@ import {
    returnOrder,
    singleCancelOrder
 } from "../controllers/user/orderController.js"
+import {
+   confirmOrder,
+   renderCheckoutPage,
+   successPage
+} from "../controllers/user/checkoutController.js"
+import { createOrder, verifyPayment } from "../controllers/user/paymentController.js"
 
+
+router.get('/checkout/:id', userAuth, renderCheckoutPage)
+router.post('/confirm-order', userAuth, confirmOrder)
+router.get('/success', userAuth, successPage)
+
+router.post('/create-order', userAuth, createOrder)
+router.post('/verify-payment', userAuth, verifyPayment)
+ 
 
 router.get('/orders', userAuth, renderOrdersPage)
 router.get('/order-details/:id', userAuth, renderOrderDetailsPage)
-// router.delete('/cancel-order/:orderId', userAuth, cancelOrders)
 router.delete('/single-cancel-order/:orderId/:productId', userAuth, singleCancelOrder)
 
 router.get('/generate-invoice/:orderId', userAuth, generateInvoice)

@@ -51,7 +51,7 @@
                                     <p class="text-sm font-medium <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %> mt-1">
                                         <%= product.stock > 0   ? 'In Stock' : 'Out of Stock' %>
                                     </p>
-
+                                    <p id="eachProductPrice-<%= product._id %>"><%= product.quantity  %> X <%= product.price %> = <%= product.price*product.quantity %></p>
                                     <!-- Quantity Controls -->
                                     <div class="flex items-center gap-2 mt-3">
                                         <button onclick="decreaseQuantity('<%= product._id %>')"
@@ -155,8 +155,9 @@
         async function increaseQuantity(productId) {
             const qtyInput = document.getElementById(`quantity-${productId}`);
             const increaseQtyBtn = document.getElementById(`increaseQtyBtn-${productId}`);
-            if (!qtyInput) {
-                console.error(`Element with ID quantity-${productId} not found`);
+            const eachProductPriceElement = document.getElementById(`eachProductPrice-${productId}`);
+            if (!qtyInput || !eachProductPriceElement) {
+                console.error(`Element with ID quantity-${productId} or eachProductPrice-${productId} not found`);
                 return;
             }
 
@@ -172,30 +173,33 @@
                 const result = await response.json();
 
                 if (!response.ok) {
-                    showToast(result.message || "Not enough stock");
+                    showToast(result.message || "Failed quantity updation", "error");
                     increaseQtyBtn.disabled = true;
                     return;
                 }
 
                 if (result.success) {
                     qtyInput.value = quantity;
+                    const price = parseFloat(qtyInput.getAttribute('data-price'));
+                    const newProductTotal = (price * quantity).toFixed(2);
+                    eachProductPriceElement.textContent = `${quantity} X ${price} = ${newProductTotal}`; // Update individual product price
                     updateTotal();
                 }
             } catch (error) {
                 console.error("Increase quantity error:", error.message);
-                showToast("Failed to increase quantity", "error");
-            }finally{
-                const increaseQtyBtn = document.getElementById(`increaseQtyBtn-${productId}`);
+                showToast("Failed quantity updation", "error");
+            } finally {
                 setTimeout(() => {
-                    increaseQtyBtn.disabled = false   
+                    increaseQtyBtn.disabled = false;
                 }, 3000);
             }
         }
 
         async function decreaseQuantity(productId) {
             const qtyInput = document.getElementById(`quantity-${productId}`);
-            if (!qtyInput) {
-                console.error(`Element with ID quantity-${productId} not found`);
+            const eachProductPriceElement = document.getElementById(`eachProductPrice-${productId}`);
+            if (!qtyInput || !eachProductPriceElement) {
+                console.error(`Element with ID quantity-${productId} or eachProductPrice-${productId} not found`);
                 return;
             }
 
@@ -212,15 +216,18 @@
                     const result = await response.json();
 
                     if (!response.ok) {
-                        showToast(result.message || "Error decreasing quantity");
+                        showToast(result.message || "Failed quantity updation", "error");
                         return;
                     }
 
                     qtyInput.value = quantity;
+                    const price = parseFloat(qtyInput.getAttribute('data-price'));
+                    const newProductTotal = (price * quantity).toFixed(2);
+                    eachProductPriceElement.textContent = `${quantity} X ${price} = ${newProductTotal}`; // Update individual product price
                     updateTotal();
                 } catch (error) {
                     console.error("Decrease quantity error:", error.message);
-                    showToast("Failed to decrease quantity", "error");
+                    showToast("Failed quantity updation", "error");
                 }
             }
         }
@@ -278,10 +285,8 @@
             }
         }
 
-        
         document.addEventListener('DOMContentLoaded', function () {
             updateTotal();
-            
         });
     </script>
 </body>

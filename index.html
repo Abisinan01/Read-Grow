@@ -1,87 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details - Read & Grow</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Razorpay Payment</title>
 </head>
-<body class="bg-gray-100 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
-    <div class="fixed md:sticky top-0 left-0 w-full md:w-[16%] h-auto md:h-screen bg-gray-400 py-5 shadow-lg flex flex-col">
-        <div class="px-5 text-2xl font-bold text-gray-700 pb-6">Read & Grow</div>
-        <div class="flex flex-col flex-grow">
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">Dashboard</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">Product</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">User</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-600 hover:bg-gray-700 transition duration-200">Orders</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">Category</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">Offers</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">Coupons</button>
-            <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 transition duration-200">Banner</button>
-        </div>
-        <button class="nav-button w-full px-5 py-4 text-left text-base text-white bg-gray-500 hover:bg-gray-600 mt-auto border-t border-gray-500 transition duration-200">Logout</button>
-    </div>
 
-    <div class="md:ml-[16%] p-4 flex-1 flex flex-col overflow-hidden">
-        <div class="flex justify-between items-center mb-2">
-            <h1 class="text-2xl font-bold text-gray-800">Order Details - ORD12345</h1>
-            <a href="/admin/orders" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">Back to Orders</a>
-        </div>
+<body>
+  <h1>Razorpay Payment Gateway Integration</h1>
+  <form id="payment-form">
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" name="amount" required>
+    <button type="button" onclick="payNow()">Pay Now</button>
+  </form>
 
-        <div class="bg-white shadow-md rounded-lg p-6 mb-4">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4">Order Overview</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-sm text-gray-600"><strong>Order ID:</strong> ORD12345</p>
-                    <p class="text-sm text-gray-600"><strong>Order Date:</strong> March 15, 2025, 10:30:00 AM</p>
-                    <p class="text-sm text-gray-600">
-                        <strong>Status:</strong>
-                        <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800">Delivered</span>
-                    </p>
-                    <p class="text-sm text-gray-600"><strong>Total Amount:</strong> ₹1500.00</p>
-                    <p class="text-sm text-gray-600"><strong>Payment Method:</strong> Credit Card</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600"><strong>Notes:</strong> Deliver before 5 PM</p>
-                </div>
-            </div>
-        </div>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    async function payNow() {
+      const amount = document.getElementById('amount').value;
 
-        <div class="bg-white shadow-md rounded-lg p-6 mb-4">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4">Customer Information</h2>
-            <p class="text-sm text-gray-600"><strong>Name:</strong> John Doe</p>
-            <p class="text-sm text-gray-600"><strong>Email:</strong> john.doe@example.com</p>
-            <p class="text-sm text-gray-600"><strong>Shipping Address:</strong> 123 Main St, City, Country</p>
-        </div>
+      // Create order by calling the server endpoint
+      const response = await fetch('/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ amount, currency: 'INR', receipt: 'receipt#1', notes: {} })
+      });
 
-        <div class="bg-white shadow-md rounded-lg p-6 flex-1 overflow-y-auto">
-            <h2 class="text-lg font-semibold text-gray-700 mb-4">Ordered Products</h2>
-            <table class="w-full">
-                <thead class="bg-gray-200 sticky top-0">
-                    <tr>
-                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
-                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="bg-white border-b hover:bg-gray-100">
-                        <td class="py-4 px-6 text-sm text-gray-700">Book: "The Great Gatsby"</td>
-                        <td class="py-4 px-6 text-sm text-gray-700">2</td>
-                        <td class="py-4 px-6 text-sm text-gray-700">₹500.00</td>
-                        <td class="py-4 px-6 text-sm text-gray-700">₹1000.00</td>
-                    </tr>
-                    <tr class="bg-gray-50 border-b hover:bg-gray-100">
-                        <td class="py-4 px-6 text-sm text-gray-700">Book: "1984"</td>
-                        <td class="py-4 px-6 text-sm text-gray-700">1</td>
-                        <td class="py-4 px-6 text-sm text-gray-700">₹500.00</td>
-                        <td class="py-4 px-6 text-sm text-gray-700">₹500.00</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+      const order = await response.json();
+
+      // Open Razorpay Checkout
+      const options = {
+        key: 'YOUR_KEY_ID', // Replace with your Razorpay key_id
+        amount: '50000', // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+        currency: 'INR',
+        name: 'Acme Corp',
+        description: 'Test Transaction',
+        order_id: 'order_IluGWxBm9U8zJ8', // This is the order_id created in the backend
+        callback_url: 'http://localhost:3000/payment-success', // Your success URL
+        prefill: {
+          name: 'Gaurav Kumar',
+          email: 'gaurav.kumar@example.com',
+          contact: '9999999999'
+        },
+        theme: {
+          color: '#F37254'
+        },
+
+        handler: function (response) {
+          fetch('/verify-payment', {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          }).then(res => res.json())
+            .then(data => {
+              if (data.status === 'Ok') {
+                window.location.href = '/read-and-grow/payment-success';
+                placeorder("paid");
+              } else {
+                console.log(error.message)
+                showtoa
+              }
+            })
+        }
+
+      }
+    }
+  </script>
 </body>
+
 </html>

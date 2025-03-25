@@ -11,7 +11,7 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/js/user/checkout.js"></script>
 </head>
 
@@ -147,6 +147,14 @@
                                     <input type="radio" name="paymentMethod" value="COD" class="sr-only" required>
                                     <span class="font-bold text-sm" id="COD">COD</span>
                                 </label>
+                                <label
+                                        class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
+                                <input type="radio" name="paymentMethod" value="Razorpay" class="sr-only"
+                                    required>
+                                <div class="flex space-x-1">
+                                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="Razorpay--Streamline-Simple-Icons" height="24" width="24"><desc>Razorpay Streamline Icon: https://streamlinehq.com</desc><title>Razorpay</title><path d="m22.436 0 -11.91 7.773 -1.174 4.276 6.625 -4.297L11.65 24h4.391l6.395 -24zM14.26 10.098 3.389 17.166 1.564 24h9.008l3.688 -13.902Z" fill="#2855f7d1" stroke-width="1"></path></svg>
+                                </div>
+                            </label>
                             </div>
                         </div>
 
@@ -159,10 +167,10 @@
             </div>
                     <!-- Right Side - Order Summary -->
                     <div class="bg-white p-6 rounded-lg shadow-sm w-full md:w-96">
-                        <!-- <div class="flex items-center mb-6">
+                        <div class="flex items-center mb-6">
                     <div class="text-red-500 mr-2"><i class="fas fa-tags"></i></div>
                     <span class="text-red-500 font-medium">Coupon Available</span>
-                </div> -->
+                </div>
 
                         <!-- Product List with -->
                         <div class="space-y-4 mb-6">
@@ -191,33 +199,36 @@
                         </div>
 
                         <!-- Coupon Code Input -->
-                        <!-- <div class="flex items-center mb-6">
+                        <div class="flex items-center mb-6">
                     <input type="text" placeholder="Discount coupon code" class="w-full border border-gray-300 rounded-l-md p-2 text-sm focus:outline-none">
                     <button class="bg-gray-700 text-white rounded-r-md px-4 py-2 text-sm hover:bg-black">Apply</button>
-                </div> -->
+                </div>
 
                         <!-- Order Summary -->
                         <div class="space-y-2 border-t pt-3 border-gray-200">
                             <div class="flex justify-between text-sm">
-                                <span>Subtotal</span>
-                                <span>Rs. <% checkoutProducts.forEach(p=>p.price) %></span>
+                                <span >Subtotal</span>
+                                <span id="subTotal"><%= subTotal.toFixed(2) %></span>
                             </div>
-                            <!-- <div class="flex justify-between text-sm">
-                        <span>Shipping</span>
-                        <span></span>
-                    </div> -->
+                            <div class="flex justify-between text-sm">
+                        <span >Shipping</span>
+                        <span id="shipping">0</span>
+                    </div>
 
-                            <!-- <div class="flex justify-between text-sm text-red-500">
+                            <div class="flex justify-between text-sm text-red-500">
                         <span>Discount</span>
-                        <span></span>
-                    </div> -->
+                        <span id="discount">0%</span>
+                    </div>
 
                         </div>
 
                         <!-- Total -->
                         <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-4">
                             <h3 class="text-lg font-bold">Total</h3>
-                            <span class="text-xl font-bold text-red-500">Rs. <%= checkoutTotal.toFixed(2) %></span>
+                            <span class="text-xl font-bold text-red-500" data-price="<%= finalPrice.toFixed(2) %>">
+                                Rs. <%= finalPrice.toFixed(2) %>
+                            </span>
+                            
                         </div>
                     </div>
                 </div>

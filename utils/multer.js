@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const directory = path.join(__dirname, "../public/temp/uploads");
 
-const FILE_TYPE_MAP = {
+const FILE_TYPE_MAP = { 
     'image/png': 'png',
     'image/jpg': 'jpg',
     'image/jpeg:': 'jpeg'

@@ -89,12 +89,12 @@ export const otpVerifyPost = async (req, res, next) => {
             
             // console.log("getOtp : ", getOtp)
     
-            if (!getOtp.length) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Otp is not valid"
-                })
-            } 
+            // if (!getOtp[0].otp.length==0) {
+            //     return res.status(400).json({
+            //         success: false,
+            //         message: "Otp is not valid"
+            //     })
+            // } 
     
             const expire = Date.now() + 30*1000
             if (getOtp[0].createdAt.getTime() > expire) {
@@ -129,7 +129,7 @@ export const otpVerifyPost = async (req, res, next) => {
         console.log("temp session otp", req.session.temp)
 
         const getOtp = await OTP.find({ email: email }).sort({ createdAt: -1 }).limit(1)
-        // console.log("getOtp : ", getOtp)
+        console.log("getOtp : ", getOtp)
 
         if (!getOtp[0].otp.length) {
             return res.status(400).json({
@@ -146,12 +146,12 @@ export const otpVerifyPost = async (req, res, next) => {
             })
         }
 
-        if (getOtp[0].otp !== otp) {
-            return res.status(400).json({
-                success:false,
-                message:"Otp is not valid"
-            })
-        }
+        // if (getOtp[0].otp !== otp) {
+        //     return res.status(400).json({
+        //         success:false,
+        //         message:"Otp is not valid"
+        //     })
+        // }
 
             const newUser = new User({
                 username,

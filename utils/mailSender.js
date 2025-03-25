@@ -5,7 +5,7 @@ const mailSender = async (email, title, body) => {
         let transporter = nodemailer.createTransport({
             host:'smtp.gmail.com',
             port:587,
-            secure:false,
+            secure:false, 
             auth:{
                 user:process.env.MAIL_USER,
                 pass:process.env.MAIL_PASS
@@ -24,5 +24,5 @@ const mailSender = async (email, title, body) => {
         console.log(`Error mailSender ${error.message}`)
     }
 }
-
+ 
 export default mailSender
