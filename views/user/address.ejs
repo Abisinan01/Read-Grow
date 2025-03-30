@@ -24,7 +24,7 @@
             <button id="addAddressBtn" class="mb-6 bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
                 Add New Address
             </button>
-        
+            <% if(address && address.length>0) {%>
             <% address.forEach(address => { %>
                 <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-start mb-4">
                     <div class="w-full">
@@ -64,6 +64,9 @@
                     </div>
                 </div>
             <% }) %>
+            <% }else{ %>
+                <p class="text-center relative text-gray-600 left-[100px]" >No address added</p>
+            <% } %>
         </div>
         <div class="mt-4 md:mt-0">
             <button class=" py-2 px-6 rounded-lg   transition duration-300" onclick="window.location.href='/read-and-grow/profile/<%= user.id %>'">Go Back</button>
@@ -249,7 +252,7 @@
                     editForm.querySelector('input[name="street"]').value = street;
                     editForm.querySelector('input[name="city"]').value = city;
                     editForm.querySelector('input[name="state"]').value = state;
-                    editForm.querySelector('input[name="zip"]').value = zip;
+                    editForm.querySelector('input[name="zip"]').value = zip.replace(/\D/g, '');
                     editForm.querySelector('input[name="phone"]').value = phone;
                     editForm.querySelector('select[name="addressType"]').value = addressType.toLowerCase();
                     editForm.setAttribute('data-address-id', addressId);
@@ -262,23 +265,39 @@
             addForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 if (isProcessing) return;
-                
+
+                const formData = new FormData(this);
+                const addressData = {
+                    firstName: formData.get('firstName').trim(),
+                    lastName: formData.get('lastName').trim(),
+                    street: formData.get('street').trim(),
+                    city: formData.get('city').trim(),
+                    state: formData.get('state').trim(),
+                    zip: formData.get('zip').trim(),
+                    phone: formData.get('phone').trim(),
+                    addressType: formData.get('addressType').trim()
+                };
+
+                // Validation
+                if (!addressData.firstName || !addressData.lastName || !addressData.street ||
+                    !addressData.city || !addressData.state || !addressData.zip || !addressData.phone || !addressData.addressType) {
+                    showToast('All fields are required.', 'error');
+                    return;
+                }
+
+                if (!/^\d{5,}$/.test(addressData.zip)) {
+                    showToast('Zip code must be at least 5 digits.', 'error');
+                    return;
+                }
+
+                if (!/^\d{10,}$/.test(addressData.phone)) {
+                    showToast('Phone number must be at least 10 digits.', 'error');
+                    return;
+                }
+
                 isProcessing = true;
                 saveAddBtn.disabled = true;
                 saveAddBtn.innerHTML = 'Saving...';
-                
-                const formData = new FormData(this);
-                const userId = document.getElementById('userId').textContent.trim();
-                const addressData = {
-                    firstName: formData.get('firstName'),
-                    lastName: formData.get('lastName'),
-                    street: formData.get('street'),
-                    city: formData.get('city'),
-                    state: formData.get('state'),
-                    zip: formData.get('zip'),
-                    phone: formData.get('phone'),
-                    addressType: formData.get('addressType')
-                };
 
                 try {
                     const response = await fetch('/read-and-grow/address', {
@@ -286,13 +305,13 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(addressData)
                     });
+
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.message || 'Failed to add address');
+
                     showToast('Address added successfully!', 'success');
                     addModal.classList.add('hidden');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                    setTimeout(() => location.reload(), 2000);
                 } catch (err) {
                     showToast(err.message, 'error');
                     console.error('Error adding address:', err);
@@ -303,42 +322,59 @@
                 }
             });
 
+
             // Edit address submission
             editForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 if (isProcessing) return;
-                
-                isProcessing = true;
-                saveEditBtn.disabled = true;
-                saveEditBtn.innerHTML = 'Saving...';
-                
-                const userId = document.getElementById('userId').textContent.trim();
+
                 const formData = new FormData(this);
                 const addressId = this.getAttribute('data-address-id');
                 const addressData = {
-                    firstName: formData.get('firstName'),
-                    lastName: formData.get('lastName'),
-                    street: formData.get('street'),
-                    city: formData.get('city'),
-                    state: formData.get('state'),
-                    zip: formData.get('zip'),
-                    phone: formData.get('phone'),
-                    addressType: formData.get('addressType')
+                    firstName: formData.get('firstName').trim(),
+                    lastName: formData.get('lastName').trim(),
+                    street: formData.get('street').trim(),
+                    city: formData.get('city').trim(),
+                    state: formData.get('state').trim(),
+                    zip: formData.get('zip').trim(),
+                    phone: formData.get('phone').trim(),
+                    addressType: formData.get('addressType').trim()
                 };
-                
+
+                // Validation
+                if (!addressData.firstName || !addressData.lastName || !addressData.street ||
+                    !addressData.city || !addressData.state || !addressData.zip || !addressData.phone || !addressData.addressType) {
+                    showToast('All fields are required.', 'error');
+                    return;
+                }
+
+                if (!/^\d{5,}$/.test(addressData.zip)) {
+                    showToast('Zip code must be at least 5 digits.', 'error');
+                    return;
+                }
+
+                if (!/^\d{10,}$/.test(addressData.phone)) {
+                    showToast('Phone number must be at least 10 digits.', 'error');
+                    return;
+                }
+
+                isProcessing = true;
+                saveEditBtn.disabled = true;
+                saveEditBtn.innerHTML = 'Saving...';
+
                 try {
                     const response = await fetch(`/read-and-grow/address/${userId}/${addressId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(addressData)
                     });
+
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.message || 'Failed to update address');
+
                     showToast('Address updated successfully!', 'success');
                     editModal.classList.add('hidden');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                    setTimeout(() => location.reload(), 2000);
                 } catch (err) {
                     showToast(err.message, 'error');
                     console.error('Error updating address:', err);

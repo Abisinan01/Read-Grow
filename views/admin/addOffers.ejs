@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Offer - Read & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <%- include("../partials/admin/adminSideBar.ejs") %>
+
+    <!-- Main Content -->
+    <div class="w-full md:w-[84%] p-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold">Add Offer</h1>
+                <a href="/admin/offers" class="text-gray-600 hover:text-gray-900 flex items-center">
+                    <i data-feather="arrow-left" class="w-5 h-5 mr-2"></i> Go back
+                </a>
+            </div>
+
+            <!-- Add Offer Form -->
+            <form id="addOfferForm" class="space-y-4">
+                <!-- Offer Name -->
+                <div>
+                    <label for="offerName" class="block text-gray-700 font-semibold mb-1">Offer Name</label>
+                    <input 
+                        type="text" 
+                        id="offerName" 
+                        name="offerName" 
+                        placeholder="Enter Offer Name"
+                        class="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                        maxlength="100"
+                    >
+                </div>
+            
+                <!-- Offer Type and Target Selection -->
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                    <!-- Offer Type -->
+                    <div class="w-full">
+                        <label for="applyTo" class="block text-gray-700 font-semibold mb-1">Offer Type</label>
+                        <select 
+                            id="applyTo" 
+                            name="offerType"
+                            class="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                        >
+                            <option value="" disabled selected>Select Offer Type</option>
+                            <option value="Product">Product</option>
+                            <option value="Category">Category</option>
+                        </select>
+                    </div>
+            
+                    <!-- Dynamic Dropdown for Product/Category -->
+                    <div class="w-full">
+                        <label for="targetSelection" class="block text-gray-700 font-semibold mb-1">Select Target</label>
+                        <select 
+                            id="targetSelection" 
+                            name="targetSelection"
+                            class="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                            disabled
+                        >
+                            <option value="" selected>Select a target</option>
+                        </select> 
+                    </div>
+                </div>
+            
+                <!-- Discount Percentage -->
+                <div>
+                    <label for="discountPercentage" class="block text-gray-700 font-semibold mb-1">Discount Percentage</label>
+                    <input 
+                        type="number" 
+                        id="discountPercentage" 
+                        name="discountPercentage" 
+                        min="0" 
+                        max="100" 
+                        step="1"
+                        placeholder="Enter Discount Percentage (0-100)"
+                        class="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    >
+                </div>
+            
+                <!-- Valid From Date -->
+                <div>
+                    <label for="validFrom" class="block text-gray-700 font-semibold mb-1">Valid From</label>
+                    <input 
+                        type="date" 
+                        id="validFrom" 
+                        name="validFrom" 
+                        min="2025-03-27"
+                        class="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    >
+                </div>
+            
+                <!-- Valid To Date -->
+                <div>
+                    <label for="validTo" class="block text-gray-700 font-semibold mb-1">Valid To</label>
+                    <input 
+                        type="date" 
+                        id="validTo" 
+                        name="validTo" 
+                        min="2025-03-27"
+                        class="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    >
+                </div>
+            
+                <!-- Status Checkbox -->
+                <div>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            id="status" 
+                            name="status" 
+                            class="sr-only peer" 
+                            checked
+                        >
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-900">Status (Active)</span>
+                    </label>
+                </div>
+            
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3 mt-6">
+                    <a 
+                        href="/admin/offers" 
+                        class="bg-pink-400 text-white px-4 py-2 rounded hover:bg-pink-500 transition"
+                    >
+                        Cancel
+                    </a>
+                    <button
+                        type="submit"
+                        class="bg-[#4A2C2A] text-white px-4 py-2 rounded hover:bg-[#3A1F1D] transition"
+                    >
+                        ADD OFFER
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather icons
+        feather.replace();
+
+        // Get form elements
+        const applyToSelect = document.getElementById('applyTo');
+        const targetSelection = document.getElementById('targetSelection');
+        const offerNameInput = document.getElementById('offerName');
+        const discountPercentageInput = document.getElementById('discountPercentage');
+        const validFromInput = document.getElementById('validFrom');
+        const validToInput = document.getElementById('validTo');
+
+        // Variables to store fetched data
+        let products = [];
+        let categories = [];
+
+        // Enhanced data fetching function
+        async function fetchData() {
+            try {
+                // Fetch products
+                const productsResponse = await fetch('/admin/select-product', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const productResult = await productsResponse.json();
+                
+                // Enhanced error handling for products
+                if (!productResult.success) {
+                    console.error('Product fetch error:', productResult);
+                    showToast(`Failed to fetch products: ${productResult.message || 'Unknown error'}`, 'error');
+                    products = [];
+                } else {
+                    products = productResult.product || [];
+                    console.log('Fetched Products:', products);
+                }
+
+                // Fetch categories
+                const categoriesResponse = await fetch('/admin/select-category', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const categoriesResult = await categoriesResponse.json();
+                
+                // Enhanced error handling for categories
+                if (!categoriesResult.success) {
+                    console.error('Category fetch error:', categoriesResult);
+                    showToast(`Failed to fetch categories: ${categoriesResult.message || 'Unknown error'}`, 'error');
+                    categories = [];
+                } else {
+                    categories = categoriesResult.categories || [];
+                    console.log('Fetched Categories:', categories);
+                }
+
+                // Update dropdown after data is fetched
+                updateTargetSelection();
+            } catch (error) {
+                console.error('Complete data fetch error:', error);
+                showToast(`Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Enhanced target selection update function
+        function updateTargetSelection() {
+            const offerType = applyToSelect.value;
+            targetSelection.innerHTML = '<option value="" disabled selected>Select an option</option>';
+            
+            console.log('Updating target selection. Offer Type:', offerType);
+            console.log('Products:', products);
+            console.log('Categories:', categories);
+
+            if (offerType === 'Product') {
+                if (products.length === 0) {
+                    console.warn('No products available');
+                    showToast('No products found', 'error');
+                    return;
+                }
+                
+                products.forEach(product => {
+                    if (!product || !product._id || !product.name) {
+                        console.warn('Invalid product:', product);
+                        return;
+                    }
+                    const option = document.createElement('option');
+                    option.value = product._id;
+                    option.textContent = product.name;
+                    option.className = 'text-gray-700 bg-white';  
+                    targetSelection.appendChild(option);
+                });
+            } else if (offerType === 'Category') {
+                if (categories.length === 0) {
+                    console.warn('No categories available');
+                    showToast('No categories found', 'error');
+                    return;
+                }
+                
+                categories.forEach(category => {
+                    if (!category || !category._id || !category.categoryName) {
+                        console.warn('Invalid category:', category);
+                        return;
+                    }
+                    const option = document.createElement('option');
+                    option.value = category._id;
+                    option.textContent = category.categoryName;
+                    option.className = 'text-gray-700 bg-white';  
+                    targetSelection.appendChild(option);
+                });
+            }
+
+            // Enable/disable based on selection
+            targetSelection.disabled = offerType ? false : true;
+        }
+
+        // Add input validations
+        // offerNameInput.addEventListener('input', function() {
+        //     this.value = this.value.replace(/[^a-zA-Z0-9 ]/g, '');
+        // });
+
+        discountPercentageInput.addEventListener('input', function() {
+            // Ensure only numbers between 0-100
+            const value = parseInt(this.value);
+            if (isNaN(value) || value < 0) {
+                this.value = 0;
+            } else if (value > 100) {
+                this.value = 100;
+            }
+        });
+
+        // Set min date for date inputs
+        const today = new Date().toISOString().split('T')[0];
+        validFromInput.setAttribute('min', today);
+        validToInput.setAttribute('min', today);
+
+        // Date validation
+        validFromInput.addEventListener('change', function() {
+            validToInput.setAttribute('min', this.value);
+        });
+
+        // Fetch data on page load and set up event listener
+        fetchData().then(() => {
+            applyToSelect.addEventListener('change', updateTargetSelection);
+        });
+
+        // Form submission handler
+        document.getElementById('addOfferForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const offerName = offerNameInput.value.trim();
+            const offerType = applyToSelect.value;
+            const targetSelectionValue = targetSelection.value;
+            const discountPercentage = parseInt(discountPercentageInput.value);
+            const validFrom = validFromInput.value;
+            const validTo = validToInput.value;
+            const status = document.getElementById('status').checked;
+
+            // Comprehensive Validation
+            if (!offerName) {
+                showToast('Offer name is required', 'error');
+                return;
+            }
+            if (offerName.length < 3) {
+                showToast('Offer name must be at least 3 characters', 'error');
+                return;
+            }
+            if (!offerType) {
+                showToast('Offer type is required', 'error');
+                return;
+            }
+            if (!targetSelectionValue) {
+                showToast(`Please select a ${offerType.toLowerCase()}`, 'error');
+                return;
+            }
+            if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+                showToast('Discount percentage must be between 0 and 100', 'error');
+                return;
+            }
+            if (!validFrom || !validTo) {
+                showToast('Start and End dates are required', 'error');
+                return;
+            }
+            if (new Date(validFrom) > new Date(validTo)) {
+                showToast('Start date must be before end date', 'error');
+                return;
+            }
+
+            const offerData = {
+                offerName,
+                offerType,
+                productId: offerType === 'Product' ? targetSelectionValue : undefined,
+                categoryId: offerType === 'Category' ? targetSelectionValue : undefined,
+                discountPercentage,
+                validFrom,
+                validTo,
+                status
+            };
+
+            try {
+                const response = await fetch('/admin/add-offers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(offerData)
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    showToast(result.message || 'Failed to add offer', 'error');
+                    return;
+                }
+
+                showToast('Offer added successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = '/admin/offers';
+                }, 1500);
+            } catch (error) {
+                console.error('Error adding offer:', error);
+                showToast(`Failed to add offer: ${error.message}`, 'error');
+            }
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'error') {
+            Toastify({
+                text: message,
+                duration: 2000,
+                gravity: "top",
+                position: "center",
+                backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
+                stopOnFocus: true,
+            }).showToast();
+        }
+    </script>
+</body>
+</html>

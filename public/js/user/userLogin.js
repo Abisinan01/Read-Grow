@@ -51,6 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
             showError(username, "Please enter a valid username")
         }
 
+        if(username.value.length < 3){
+            isValid = false,
+            showError(username,'Username must me 3 charecters')
+        }
+
         if (!isRequired(password.value)) {
             isValid = false
             showError(password, "Please enter a valid password")

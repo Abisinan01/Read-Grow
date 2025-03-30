@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupons - Read & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sidebar-gray': '#a0a0a0',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex">
+     <!-- Sidebar -->
+     <%- include("../partials/admin/adminSideBar.ejs") %>
+
+    <!-- Main Content -->
+    <div class="flex-grow p-6 bg-gray-100 min-h-screen">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Coupons</h1>
+                <a href="/admin/add-coupons" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-200">ADD</a>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="flex space-x-4 mb-6">
+                <input 
+                    type="text" 
+                    placeholder="Search Coupons" 
+                    class="flex-grow px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200">
+                    Search
+                </button>
+                <button class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-200">
+                    Reset
+                </button>
+            </div>
+
+            <!-- Coupons Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-3 text-left">NO.</th>
+                            <th class="p-3 text-left">Coupon Code</th>
+                            <th class="p-3 text-left">Discount</th>
+                            <th class="p-3 text-left">Expiry Date</th>
+                            <th class="p-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b hover:bg-gray-50 transition duration-200">
+                            <% if(coupons && coupons.length > 0){ %>
+                                <% for(let i=0 ; i<coupons.length; i++) {%>
+                                    <td class="p-3 text-gray-700"><%= i+1  %></td>
+                                    <td class="p-3 text-gray-600"><%= coupons[i].couponCode %></td>
+                                    <td class="p-3 text-green-600 font-semibold"><%= coupons[i].discountValue %></td>
+                                    <td class="p-3 text-gray-700">
+                                        <%= new Date(coupons[i].expiryDate).toLocaleDateString('en-US', { 
+                                            year: 'numeric', 
+                                            month: '2-digit', 
+                                            day: '2-digit' 
+                                        }) %>
+                                    </td>
+                                    <td class="p-3 flex justify-center space-x-4">
+                                        <a href="/admin/edit-coupon/<%= coupons[i]._id %>" class="text-blue-500 hover:text-blue-700 transition duration-200 group">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 group-hover:scale-110">
+                                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                            </svg>
+                                        </a>
+                                        <button onclick="deleteCoupon('<%= coupons[i]._id %>')" class="text-red-500 hover:text-red-700 transition duration-200 group">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2 group-hover:scale-110">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            <% }else{ %>
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td colspan="5" class="align-center text-center">No coupons are available</td>
+                                </tr>
+                            <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center items-center space-x-4 py-4">
+                <% if (page > 1) { %>
+                    <a href="/admin/coupons?page=<%= page - 1 %>&limit=<%= limit %>"
+                        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                        disabled>
+                        Previous
+                    </a>
+                <% } else { %>
+                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>
+                <% } %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="/admin/coupons/?page=<%= i %>&limit=<%= limit %>"
+                        class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50' %>">
+                        <%= i %>
+                    </a>
+                <% } %>
+                <% if (page < totalPages) { %>
+                    <a href="/admin/coupons?page=<%= page + 1 %>&limit=<%= limit %>"
+                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Next</a>
+                <% } else { %>
+                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function deleteCoupon(couponId){
+            console.log(couponId)
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "Do you really want to remove this item from your list?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, remove it!"
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch(`/admin/coupons/${couponId}`, {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                               
+                            })
+
+                            const result = await response.json()
+
+                            console.log(result)
+                            if (!response.ok) {
+                                throw Error(result.message || 'Not deleted')
+                                return
+                            }
+
+                            Swal.fire({
+                                title: "Removed!",
+                                text: result.message || "Coupon is removed from list.",
+                                icon: "success",
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            setTimeout(() => {
+                                location.reload()
+                            }, 1200);
+                        } catch (error) {
+                            Swal.fire({
+                                title: "Error!",
+                                text: error.message || "Something went wrong.",
+                                icon: "error"
+                            });
+                        }
+                    }
+                });
+        }
+  
+    </script>
+</body>
+</html>

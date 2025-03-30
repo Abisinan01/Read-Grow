@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', function () {
             showError(username, "User name is requried")
         }
 
+        if(username.value.length < 3){
+            isValid = false,
+            showError(username,'Username must me 3 charecters')
+        }
+
         if (!isRequired(email.value)) {
             isValid = false
             showError(email, "Email required")

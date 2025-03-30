@@ -13,8 +13,9 @@ const categorySchema = new Schema({
     status:{    
         type:String,
         default:"Active"
-    }  
+    } ,
+    offers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Offer" }] 
 },{timestamps:true})
 
-const Category= mongoose.model('category',categorySchema)
+const Category = mongoose.model('Category', categorySchema);
 export default Category

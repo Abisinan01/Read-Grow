@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="/stylesheets/admin/salesReport.css">
+
+<div class="header">
+    <h1>Sales Report</h1>
+    <div class="filter-container">
+        <div class="filter-button">
+            <button class="filter-btn" onclick="filterOrders('daily')">Daily</button>
+            <button class="filter-btn" onclick="filterOrders('weekly')">Weekly</button>
+            <button class="filter-btn" onclick="filterOrders('monthly')">Monthly</button>
+            <button class="filter-btn" onclick="filterOrders('yearly')">Yearly</button>
+        </div>
+        <div class="custom-date-filter">
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date">
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date">
+            <button class="filter-btn" id="custom-filter-btn">Filter</button>
+        </div>
+        <div class="custom-date-filter">
+            <button class="filter-btn" id="download-pdf-btn">Pdf</button>
+            <button class="filter-btn" id="download-excel-btn">Excel</button>
+        </div>
+    </div>
+</div>
+
+<p>Sales Count: 150</p>
+<p>Total Amount: $25,000</p>
+<p>Total Discount: $2,500</p>
+
+<table class="user-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Order Id</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Qty</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>2024-03-28</td>
+            <td>ORD12345</td>
+            <td>John Doe</td>
+            <td>Delivered</td>
+            <td>Credit Card</td>
+            <td>2</td>
+            <td>$500</td>
+        </tr>
+        <tr>
+            <td>2024-03-27</td>
+            <td>ORD12346</td>
+            <td>Jane Smith</td>
+            <td>Shipped</td>
+            <td>PayPal</td>
+            <td>1</td>
+            <td>$300</td>
+        </tr>
+        <tr>
+            <td>2024-03-26</td>
+            <td>ORD12347</td>
+            <td>Mark Lee</td>
+            <td>Processing</td>
+            <td>Debit Card</td>
+            <td>3</td>
+            <td>$750</td>
+        </tr>
+    </tbody>
+</table>
+
+<script src="/javascripts/admin/salesReport.js"></script>

@@ -14,31 +14,89 @@ const app = express()
 
 export const createOrder = async (req, res) => {
     try {
-
-        console.log(req.body)
+        
+        console.log("createOrder",req.body)
         const user = req.user
+        const {
+            finalPrice,
+            currency,
+            receipt,
+            notes
+
+        } = req.body 
+        
+        const options = {
+            amount:Math.round(finalPrice * 100),
+            currency,
+            receipt,
+            notes
+        } 
+ 
+        console.log(options,'options')
+        const order = await razorpay.orders.create(options);
+ 
+        const orders = readData();
+        orders.push({
+            order_id: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            receipt: order.receipt,
+            status: 'created'
+        })
+
+        writeData(orders)
+        res.json(order)
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send("Error on creating order")
+    }
+}    
+  
+export const verifyPayment = async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
+    console.log('verify payment', req.body)
+    const secret = razorpay.key_secret
+    const body = razorpay_order_id + '|' + razorpay_payment_id
+    try {
+        const isValidSignature = validateWebhookSignature(body, razorpay_signature, secret)
+        if (isValidSignature) {
+            const orders = readData()
+            const order = orders.find(o => o.order_id === razorpay_order_id)
+
+            if (order) {
+                order.status = 'paid',
+                    order.payment_id = razorpay_payment_id,
+                    writeData(orders)
+            }
+
+            res.status(200).json({ status: "Ok" })
+
+        } else {
+            res.status(400).json({ message: "payment verification failed" })
+        }
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({ status: "error", message: "Error verifying payment" })
+    }
+}
+
+
+export const failedPayment = async (req,res)=>{
+    try {
         const {
             addressId,
             paymentMethod,
             subTotal,
             shippingCharge,
             finalPrice,
-            discount,
-            currency,
-            receipt,
-            notes
-
+            discount, 
+            paymentStatus
         } = req.body
- 
-
-        const options = {
-            amount: finalPrice * 100,
-            currency,
-            receipt,
-            notes
-        }
-
-
+        console.log("failed",req.session.order)
+         
+        const user = req.user
         let address = await Address.findById(addressId)
         console.log('Delivery Address :', address)
 
@@ -77,6 +135,7 @@ export const createOrder = async (req, res) => {
                 })
             }
 
+            console.log(items,'items')
             items.push({
                 productId: product._id,
                 productName: product.name,
@@ -84,10 +143,9 @@ export const createOrder = async (req, res) => {
                 quantity: item.quantity,
             })
 
-            product.stock -= item.quantity
-            await product.save()
-        }
 
+        }
+        
         const newOrder = new Order({
             userId: user.id,
             orderId: orderID,
@@ -97,75 +155,70 @@ export const createOrder = async (req, res) => {
             shippingCharge: parseInt(shippingCharge),
             discount: parseInt(discount),
             subTotal: parseInt(subTotal),
-            paymentStatus:"paid",
-            totalAmount: parseInt(finalPrice)
+            totalAmount: parseInt(finalPrice),
+            paymentStatus : "failed"
         })
 
+
         const saveOrder = await newOrder.save()
-        req.session.order = newOrder;
-        req.session.save((err) => {
-            if (err) {
-                console.log("Session save error:", err);
-            }
-            console.log('Session saved')
-        });
-
-
+        console.log(`New order saved ${saveOrder}`)
+        
         if (!saveOrder) {
             return res.json({
                 success: false, message: "Order failed"
             })
-        }
+        } 
 
- 
-        //========
-        const order = await razorpay.orders.create(options);
-        const orders = readData();
-        orders.push({
-            order_id: order.id,
-            amount: order.amount,
-            currency: order.currency,
-            receipt: order.receipt,
-            status: 'created'
+        await Cart.findByIdAndUpdate(cart._id,{$set:{items:[]}})
+        req.session.order = saveOrder 
+        return res.status(400).json({
+            success: true, message: "Payment failed"
         })
-        writeData(orders)
-        res.json(order)
-
+         
     } catch (error) {
         console.log(error.message)
-        res.status(500).send("Error on creating order")
+        res.status(500).json({success:false,message:"Failed payment something went wrong"})
     }
+} 
+ 
 
-}
-
-export const verifyPayment = async (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
-    console.log('verify payment', req.body)
-
-    const secret = razorpay.key_secret
-    const body = razorpay_order_id + '|' + razorpay_payment_id
+export const retryPayment = async (req, res) => {
     try {
-        const isValidSignature = validateWebhookSignature(body, razorpay_signature, secret)
-        if (isValidSignature) {
-            const orders = readData()
-            const order = orders.find(o => o.order_id === razorpay_order_id)
+        const { orderId } = req.body;
+        console.log(orderId, 'retrypayment');
 
-            if (order) {
-                order.status = 'paid',
-                    order.payment_id = razorpay_payment_id,
-                    writeData(orders)
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        for (let item of order.items) {
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(404).json({ success: false, message: "Product not found" });
             }
 
-            const temp = req.session.order// come from create order     
-            req.session.order = temp
-            res.status(200).json({ status: "Ok" })
-        } else {
-            res.status(400).json({ message: "payment verification failed" })
+            if (product.stock === 0) {
+                return res.status(400).json({ success: false, message: "Out of stock" });
+            } else if (item.quantity > product.stock) {
+                return res.status(400).json({ success: false, message: "Insufficient quantity" });
+            }
         }
 
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({ status: "error", message: "Error verifying payment" })
-    }
-}
+        for (let item of order.items) {
+            await Product.findByIdAndUpdate(item.productId, {
+                $inc: { stock: -item.quantity }
+            });
+        }
 
+        await Order.findByIdAndUpdate(order._id, {
+            $set: { paymentStatus: "paid" }
+        });
+
+        return res.status(200).json({ success: true, message: "Payment successfully done" });
+
+    } catch (error) {
+        console.error("Error in retryPayment:", error.message);
+        return res.status(500).json({ success: false, message: "Retry payment failed" });
+    }
+};

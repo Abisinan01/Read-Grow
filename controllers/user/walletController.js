@@ -6,6 +6,7 @@ export const renderWallet = async (req,res,next)=>{
     try {
         const user = req.user
         const wallet = await Wallet.findOne({userId:user.id})
+            .sort({createdAt:-1})
         res.render("user/wallet",{user,wallet})
     } catch (error) {
         next(new AppError(`user Wallet : ${error}`,500))

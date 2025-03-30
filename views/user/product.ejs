@@ -87,50 +87,67 @@
                 <li class="text-gray-900 font-semibold"><%= product.name %></li>
             </ol>
         </nav>
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8 flex flex-col lg:flex-row gap-8">
-            <div class="w-full lg:w-1/3 relative">
-                <!-- Main Product Image with Magnification -->
-                <img id="main-image" src="<%= product.images[0] || 'https://via.placeholder.com/300x400' %>" 
-                     alt="<%= product.name %> by <%= product.authorName %>" 
-                     class="w-full h-96 object-contain rounded-lg shadow-md">
-                <div id="magnify-lens" class="hidden absolute border-2 border-gray-300 bg-white bg-opacity-50 rounded-lg pointer-events-none"></div>
-                <div class="flex mt-4 gap-2">
-                    <% product.images.forEach((img, i) => { %>
-                        <img src="<%= img %>" alt="Image <%= i + 1 %>" 
-                             class="w-1/4 h-24 object-cover rounded-lg shadow-sm cursor-pointer hover:shadow-md transition"
-                             onclick="changeMainImage('<%= img %>')">
-                    <% }); %>
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8 flex flex-col lg:flex-row gap-8">
+                <div class="w-full lg:w-1/3 relative">
+                    <!-- Main Product Image with Magnification -->
+                    <img id="main-image" src="<%= product.images[0] || 'https://via.placeholder.com/300x400' %>" 
+                        alt="<%= product.name %> by <%= product.authorName %>" 
+                        class="w-full h-96 object-contain rounded-lg shadow-md">
+                    <!-- Wishlist Icon -->
+                    <button 
+                        onclick="addToWishlist('<%= product._id %>')" 
+                        id="wishlistIcon"
+                        class="absolute top-4 right-4 bg-white bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all duration-200"
+                        aria-label="Add <%= product.name %> to wishlist">
+                        <i id="wishlistHeart" class="<%= wishlistItems.includes(product._id) ? 'far fa-heart text-red text-lg' : 'far fa-heart text-gray-800 text-lg' %>"></i>
+
+                    </button>
+                    <div id="magnify-lens" class="hidden absolute border-2 border-gray-300 bg-white bg-opacity-50 rounded-lg pointer-events-none"></div>
+                    <div class="flex mt-4 gap-2">
+                        <% product.images.forEach((img, i) => { %>
+                            <img src="<%= img %>" alt="Image <%= i + 1 %>" 
+                                class="w-1/4 h-24 object-cover rounded-lg shadow-sm cursor-pointer hover:shadow-md transition"
+                                onclick="changeMainImage('<%= img %>')">
+                        <% }); %>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="w-full lg:w-2/3">
-                <h1 class="text-2xl font-semibold text-gray-800"><%= product.name %> (Paperback)</h1>
-                <h2 class="text-lg text-gray-600 mb-4">by <%= product.authorName %></h2>
-                <div class="flex items-center mb-4">
+                
+                <div class="w-full lg:w-2/3">
+                    <h1 class="text-2xl font-semibold text-gray-800"><%= product.name %> (Paperback)</h1>
+                    <h2 class="text-lg text-gray-600 mb-4">by <%= product.authorName %></h2>
+                    <div class="flex items-center mb-4">
                         <div class="text-yellow-400 space-x-1">
                             <% for (let i = 0; i < 5; i++) { %>
                                 <% if( i < Math.floor(product.rating)){ %>
-                                        <i class="fas fa-star"></i>
-                                    <% }else{%>
-                                        <i class="far fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                <% }else{%>
+                                    <i class="far fa-star"></i>
                                 <% } %>
                             <% } %>
                         </div>
-                    <span class="text-gray-500 ml-2 text-sm"><%= product.rating %> ratings</span>
+                        <span class="text-gray-500 ml-2 text-sm"><%= product.rating %> ratings</span>
+                    </div>
+                    <p class="text-xl font-bold text-gray-900">
+                        Price: Rs. <%= product.price %>
+                        
+                        <% if (user && bestOffer) { %>
+                            <span class="text-sm text-red-500"><%= bestOffer.discountPercentage %>% offer</span>
+                        <% } %>
+                    </p>                                     
+                    <p class="mt-4 text-gray-600"><%= product.description %></p>
+                    <div class="mt-4">
+                        <button 
+                            onclick="addToCart('<%= product._id %>')" 
+                            id="addToCart"
+                            <%= product.stock > 0 ? "" : "disabled" %>
+                            class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
+                            aria-label="Add <%= product.name %> to cart">
+                            ADD CART
+                        </button>
+                    </div>
+                    <p class="mt-4 <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %>"><%= product.stock > 0 ? 'In Stock' : 'Out of Stock' %></p>
                 </div>
-                <p class="text-xl font-bold text-gray-900">Price: $<%= product.price %> <span class="text-sm text-red-500">(10% off)</span></p>
-                <p class="mt-4 text-gray-600"><%= product.description %></p>
-                <button 
-                    onclick="addToCart('<%= product._id %>')" 
-                    id="addToCart"
-                    <%= product.stock > 0 ? "" : "disabled" %>
-                    class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
-                    aria-label="Add <%= product.name %> to cart">
-                    ADD CART
-                </button>
-                <p class="mt-4 <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %>"><%= product.stock > 0 ? 'In Stock' : 'Out of Stock' %></p>
             </div>
-        </div>
 
                 <!-- Specifications -->
                 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -373,6 +390,43 @@
             img.addEventListener('touchstart', () => lens.classList.remove('hidden'));
             img.addEventListener('touchend', () => lens.classList.add('hidden'));
         }
+
+        async function addToWishlist(productId) {
+        try {
+            const button = document.getElementById('wishlistIcon');
+            const heartIcon = document.getElementById('wishlistHeart');
+            button.disabled = true;
+            heartIcon.classList.remove('far');
+            heartIcon.classList.add('fas', 'text-red-500', 'animate-pulse');
+
+            const response = await fetch(`/read-and-grow/wishlist/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body:JSON.stringify({productId})
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                showToast(result.message || 'Failed to add to wishlist', 'error');
+                button.disabled = false;
+                // heartIcon.classList.remove('fas', 'text-red-500', 'animate-pulse');
+                // heartIcon.classList.add('far');
+                return;
+            }
+
+            showToast('Added to wishlist successfully', 'success'); 
+            // heartIcon.classList.remove('animate-pulse');
+            // heartIcon.classList.add('fas', 'text-red-500');
+        } catch (error) {
+            console.error('Error adding to wishlist:', error);
+            showToast('Failed to add to wishlist', 'error');
+            const button = document.getElementById('wishlistIcon');
+            const heartIcon = document.getElementById('wishlistHeart');
+            button.disabled = false;
+            // heartIcon.classList.remove('fas', 'text-red-500', 'animate-pulse');
+            // heartIcon.classList.add('far');
+        }
+    }
 
         // Initialize magnification when the page loads
         document.addEventListener('DOMContentLoaded', setupMagnification);

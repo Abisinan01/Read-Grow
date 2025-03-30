@@ -102,29 +102,37 @@
                     <% } %>
                 </tbody>
             </table>
-            <div class="flex space-x-4">
+            <div class="flex justify-center items-center space-x-4 py-4">
                 <% if (page > 1) { %>
                     <a href="/admin/orders?page=<%= page - 1 %>&limit=<%= limit %>"
-                        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
-                        disabled>
+                        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
                         Previous
                     </a>
                 <% } else { %>
-                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>
+                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">
+                        Previous
+                    </span>
                 <% } %>
+            
                 <% for (let i = 1; i <= totalPages; i++) { %>
-                    <a href="/admin/orders/?page=<%= i %>&limit=<%= limit %>"
+                    <a href="/admin/orders?page=<%= i %>&limit=<%= limit %>"
                         class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50' %>">
                         <%= i %>
                     </a>
                 <% } %>
+            
                 <% if (page < totalPages) { %>
                     <a href="/admin/orders?page=<%= page + 1 %>&limit=<%= limit %>"
-                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Next</a>
+                        class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
+                        Next
+                    </a>
                 <% } else { %>
-                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>
+                    <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">
+                        Next
+                    </span>
                 <% } %>
             </div>
+            
         </div>
     </div>
         <!-- JavaScript for Sidebar Navigation and Status Updates -->

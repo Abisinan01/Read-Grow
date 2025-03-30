@@ -29,7 +29,7 @@
         <div>
           <h3 class="font-medium text-blue-800">Estimated Delivery</h3>
           <p class="text-sm text-blue-600">
-            <%= new Date(orders.createdAt).toLocaleString('en-US', {
+            <% new Date(orders.createdAt).toLocaleString('en-US', {
                 year: 'numeric',
                 month: 'long',  // Example: "January", "February"
                 day: 'numeric',

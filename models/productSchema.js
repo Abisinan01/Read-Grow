@@ -32,9 +32,11 @@ const productSchema = new mongoose.Schema({
     },
     rating:{
         type:Number
-    }
+    },
+    offers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Offer" }],
+    bestOffer: {type:Number}
 
 },{timestamps : true})
 
-const Product = mongoose.model('products',productSchema)
+const Product = mongoose.model('Product',productSchema)
 export default Product

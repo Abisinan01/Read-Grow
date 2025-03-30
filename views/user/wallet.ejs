@@ -79,15 +79,9 @@
           <p class="text-3xl font-bold text-gray-900 mt-2">Rs. 0.00</p>
         <% } %>
         </div>
-        <div class="flex space-x-3 mt-4 sm:mt-0">
-          <button class="bg-[#0D849F] hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition duration-200">
-            Add Funds
-          </button>
-          <button class="bg-green-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition duration-200">
-            Withdraw Funds
-          </button>
-        </div>
-      </div>
+        <!-- <div class="flex space-x-3 mt-4 sm:mt-0">
+          <img src="https://www.flaticon.com/free-icon/wallet-filled-money-tool_60484" alt="">
+      </div> -->
     </div>
 
     <!-- Transaction History -->
@@ -106,7 +100,7 @@
                 <div>
                 <p class="font-medium text-gray-900">Added funds</p>
                 <p class="text-sm text-gray-600">              
-                    <%= (wallet.createdAt).toLocaleString() %></p>
+                    <%= (trans.createdAt).toLocaleString() %></p>
                 </div>
             </div>
             <p class="text-lg font-semibold text-green-600">+ Rs. <%= (trans.amount).toFixed(2) %></p>

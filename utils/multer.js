@@ -10,7 +10,7 @@ const directory = path.join(__dirname, "../public/temp/uploads");
 const FILE_TYPE_MAP = { 
     'image/png': 'png',
     'image/jpg': 'jpg',
-    'image/jpeg:': 'jpeg'
+    'image/jpeg': 'jpeg'
 }
 
 

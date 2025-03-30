@@ -16,8 +16,12 @@
     <script src="/js/user/shop.js" defer></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col">
- 
+<body class="bg-gray-50 min-h-screen flex flex-col"
+        data-search="<%= search || '' %>" 
+        data-category="<%= category || '' %>" 
+        data-author="<%= author || '' %>" 
+        data-price="<%= price || '' %>">
+        
     <!-- Navbar -->
 <nav class="bg-white shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

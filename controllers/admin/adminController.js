@@ -61,13 +61,7 @@ export const adminLoginPost = async (req, res, next) => {
 }
 
 //================admin Get method=======================
-export const adminDashboardGet = async (req, res, next) => {
-    try {
-        return res.render("admin/dashboard")
-    } catch (error) {
-        return next(new AppError(`admin dashboard ${req.method} method failed `, 500))
-    }
-}
+
 
 //=================admin_users_get=========================
 export const renderUserPanel = async (req, res, next) => {
@@ -188,7 +182,7 @@ export const categoryManagment = async (req, res, next) => {
 //===================Add category====================
 export const addCategoryGet = async (req, res, next) => {
     try {
-        return res.render('admin/categoryAdd')
+        return res.render('admin/categoryAdd',)
     } catch (error) {
         console.log(`add category getting failed ${error.message}`)
         return next(new AppError(`admin category add ${req.method} method failed `, 500))
@@ -401,7 +395,8 @@ export const renderProductPage = async (req, res, next) => {
 
 export const addProducts = async (req, res, next) => {
     try {
-        res.render("admin/addProducts")
+        const category =await Category.find()
+        res.render("admin/addProducts",{category})
     } catch (error) {
         console.log("Product adding failed ", error.message)
 

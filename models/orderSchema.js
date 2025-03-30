@@ -6,7 +6,7 @@ const orderSchema = new Schema({
     userId: {
         type: mongoose.Types.ObjectId,
         required: true,
-    },  
+    },
     orderId: {
         type: String
         , required: true
@@ -31,16 +31,21 @@ const orderSchema = new Schema({
         price: Number,
         isCancelled: { type: Boolean, default: false },
         isReturned: { type: Boolean, default: false },
+        isRequested:{type:Boolean,default:false},
         status: { type: String, default: "Pending" },
-        reason: { type: String, default: null }
+        paymentStatus: { type: String, default: false },
+        reason: { type: String, default: null },
     }],
     subTotal: { type: Number },
-    shippingCharge: { type: Number },
+    shippingCharge: { type: Number, default: 99 },
     discount: { type: Number },
     totalAmount: { type: Number, required: true },
-    paymentStatus: { type: String, default:false },
+    paymentStatus: { type: String, default: false },
     reason: { type: String, default: null },
     updatedAt: { type: Date, default: Date.now },
+    coupon: {
+        type: mongoose.Schema.Types.ObjectId, ref: "Coupon"
+    },
 
 }, { timestamps: true })
 

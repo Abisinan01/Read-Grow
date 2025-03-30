@@ -17,10 +17,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const pagination = document.querySelector('.flex.space-x-2');
     const limit = document.getElementById('limit').value
     const totalPages = document.getElementById('totalPages').value
-    const currentSearch = "<%= search || '' %>";
-    const currentCategory = "<%= category || '' %>";
-    const currentAuthor = "<%= author || '' %>";
-    const currentPrice = "<%= price || '' %>";
+    const body = document.body; 
+    const currentSearch = body.getAttribute("data-search");
+    const currentCategory = body.getAttribute("data-category");
+    const currentAuthor = body.getAttribute("data-author");
+    const currentPrice = body.getAttribute("data-price");
+    
 
     // Handle form submission
     searchForm.addEventListener("submit", filterProducts);

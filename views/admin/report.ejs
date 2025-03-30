@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            color: #555;
+            margin: 0;
+            padding: 0;
+        }
+
+        .report-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            font-size: 16px;
+            line-height: 24px;
+            background: #fff;
+        }
+
+        .report-box h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .summary-section p {
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table td, table th {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table th {
+            background: #eee;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+
+        table tr.item td {
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            font-size: 18px;
+            border-top: 2px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-box">
+        <h1>Sales Report</h1>
+
+        <div class="summary-section">
+            <p>Sales Count: 120</p>
+            <p>Total Amount: ₹250,000</p>
+            <p>Total Discount: ₹15,000</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Order Id</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="item">
+                    <td>2024-03-25</td>
+                    <td>ORD12345</td>
+                    <td>John Doe</td>
+                    <td>Delivered</td>
+                    <td>Credit Card</td>
+                    <td>3</td>
+                    <td>₹7,500</td>
+                </tr>
+                <tr class="item">
+                    <td>2024-03-26</td>
+                    <td>ORD12346</td>
+                    <td>Jane Smith</td>
+                    <td>Pending</td>
+                    <td>UPI</td>
+                    <td>2</td>
+                    <td>₹5,000</td>
+                </tr>
+                <tr class="item">
+                    <td>2024-03-27</td>
+                    <td>ORD12347</td>
+                    <td>Michael Lee</td>
+                    <td>Cancelled</td>
+                    <td>Net Banking</td>
+                    <td>1</td>
+                    <td>₹2,500</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="5"></td>
+                    <td><strong>Total:</strong></td>
+                    <td><strong>₹15,000</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

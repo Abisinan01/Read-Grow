@@ -106,6 +106,7 @@
                                                     </button>
                                                 </div>
                                             </div>
+
                                             <% }) %>
                                     </div>
 
@@ -122,7 +123,7 @@
                         <div class="mb-6">
                             <h3 class="text-lg font-medium mb-3 flex items-center">Payment Method</h3>
                             <div class="flex space-x-4">
-                                <label
+                                <!-- <label
                                     class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
                                     <input type="radio" name="paymentMethod" value="PayPal" class="sr-only" required>
                                     <span class="font-bold text-purple-800">P</span>
@@ -136,25 +137,25 @@
                                         <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
                                         <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
                                     </div>
-                                </label>
-                                <label
+                                </label> -->
+                                <!-- <label
                                     class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
                                     <input type="radio" name="paymentMethod" value="UPI" class="sr-only" required>
                                     <span class="font-bold text-sm" id="UPI">UPI</span>
-                                </label>
+                                </label> -->
                                 <label
                                     class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
                                     <input type="radio" name="paymentMethod" value="COD" class="sr-only" required>
                                     <span class="font-bold text-sm" id="COD">COD</span>
                                 </label>
                                 <label
-                                        class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
-                                <input type="radio" name="paymentMethod" value="Razorpay" class="sr-only"
-                                    required>
-                                <div class="flex space-x-1">
-                                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="Razorpay--Streamline-Simple-Icons" height="24" width="24"><desc>Razorpay Streamline Icon: https://streamlinehq.com</desc><title>Razorpay</title><path d="m22.436 0 -11.91 7.773 -1.174 4.276 6.625 -4.297L11.65 24h4.391l6.395 -24zM14.26 10.098 3.389 17.166 1.564 24h9.008l3.688 -13.902Z" fill="#2855f7d1" stroke-width="1"></path></svg>
-                                </div>
-                            </label>
+                                    class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
+                                    <input type="radio" name="paymentMethod" value="Razorpay" class="sr-only"
+                                        required>
+                                    <div class="flex space-x-1">
+                                        <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="Razorpay--Streamline-Simple-Icons" height="24" width="24"><desc>Razorpay Streamline Icon: https://streamlinehq.com</desc><title>Razorpay</title><path d="m22.436 0 -11.91 7.773 -1.174 4.276 6.625 -4.297L11.65 24h4.391l6.395 -24zM14.26 10.098 3.389 17.166 1.564 24h9.008l3.688 -13.902Z" fill="#2855f7d1" stroke-width="1"></path></svg>
+                                    </div>
+                                </label>
                             </div>
                         </div>
 
@@ -168,9 +169,45 @@
                     <!-- Right Side - Order Summary -->
                     <div class="bg-white p-6 rounded-lg shadow-sm w-full md:w-96">
                         <div class="flex items-center mb-6">
-                    <div class="text-red-500 mr-2"><i class="fas fa-tags"></i></div>
-                    <span class="text-red-500 font-medium">Coupon Available</span>
-                </div>
+                        <div class="text-red-500 mr-2"><i class="fas fa-tags"></i></div>
+                        <span class="text-red-500 font-medium">Coupon Available</span>
+                    </div>
+                    
+                        <!-- Coupon Code Input -->
+                        <div class="mb-6">
+                            <div class="mt-3">
+                                <h4 class="text-sm font-medium mb-2">Available Coupons:</h4>
+                                <ul class="space-y-2">
+                                    <% coupons.forEach(coupon => { %>
+                                        <li class="flex justify-between items-center border border-gray-200 rounded p-2 text-sm">
+                                            <span class="font-medium"><%= coupon.couponCode %></span>
+                                            <span class="text-green-600">Rs. <%= coupon.discountValue %> off</span>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                            <form class="flex items-center mb-2 w-full" id="applyCoupon">
+                                <input id="totalAmount" type="hidden" value="<%= finalPrice %>">                           
+                                <input type="text" id="couponCode" 
+                                       value="<%= appliedCoupon ? appliedCoupon.couponCode : '' %>" 
+                                       placeholder="Discount coupon code" 
+                                       class="flex-grow border border-gray-300 p-2 text-sm focus:outline-none rounded-l-md h-full">
+                            
+                                <% if (!appliedCoupon) { %>
+                                    <button type="submit" 
+                                            class="bg-gray-700 text-white px-4 py-2 text-sm hover:bg-black rounded-r-md h-full">
+                                        Apply
+                                    </button>
+                                <% } else { %>
+                                    <button type="button" 
+                                            onclick="removeCoupon('<%= appliedCoupon._id %>')" 
+                                            class="bg-red-700 text-white px-4 py-2 text-sm hover:bg-black rounded-r-md h-full">
+                                        Remove
+                                    </button>
+                                <% } %>
+                            </form>                            
+                            
+                        </div>
 
                         <!-- Product List with -->
                         <div class="space-y-4 mb-6">
@@ -187,10 +224,13 @@
                                                 <p class="font-small">
                                                     <%= product.name %>
                                                 </p>
-                                                <p class="text-sm text-gray-500">Qty: <span id="quantity">
-                                                        <%= cartItem ? cartItem.quantity : 0 %>
-                                                    </span></p>
-                                                <p class="text-red-500">Rs. <%= product.price %>
+                                                    <p class="text-sm text-gray-500">Qty: <span id="quantity">
+                                                            <%= cartItem ? cartItem.quantity : 0 %>
+                                                        </span></p>
+                                                <p class="font-small text-red-500">
+                                                    <%= product.bestOffer %>% off
+                                                </p>
+                                                <p class="text-black">Rs. <%= product.price %>
                                                 </p>
                                             </div>
                                         </div>
@@ -198,11 +238,6 @@
                                 <% }) %>
                         </div>
 
-                        <!-- Coupon Code Input -->
-                        <div class="flex items-center mb-6">
-                    <input type="text" placeholder="Discount coupon code" class="w-full border border-gray-300 rounded-l-md p-2 text-sm focus:outline-none">
-                    <button class="bg-gray-700 text-white rounded-r-md px-4 py-2 text-sm hover:bg-black">Apply</button>
-                </div>
 
                         <!-- Order Summary -->
                         <div class="space-y-2 border-t pt-3 border-gray-200">
@@ -211,21 +246,26 @@
                                 <span id="subTotal"><%= subTotal.toFixed(2) %></span>
                             </div>
                             <div class="flex justify-between text-sm">
-                        <span >Shipping</span>
-                        <span id="shipping">0</span>
-                    </div>
-
+                                <span >Shipping</span>
+                                <span id="shipping"><%= shippingCharge %></span>
+                            </div>
+                            <% if(appliedCoupon) {%>
+                                <div class="flex justify-between text-sm text-red-500">
+                                    <span>Coupon</span>
+                                    <span id="coupon">-<%= appliedCoupon.discountValue %></span>
+                                </div>
+                            <% } %>
                             <div class="flex justify-between text-sm text-red-500">
-                        <span>Discount</span>
-                        <span id="discount">0%</span>
-                    </div>
+                                <span>Discount</span>
+                                <span id="discount"><%= totalDiscount.toFixed(2) %></span>
+                            </div>
 
                         </div>
 
                         <!-- Total -->
                         <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-4">
                             <h3 class="text-lg font-bold">Total</h3>
-                            <span class="text-xl font-bold text-red-500" data-price="<%= finalPrice.toFixed(2) %>">
+                            <span class="text-xl font-bold text-red-500" data-price="<%= finalPrice %>">
                                 Rs. <%= finalPrice.toFixed(2) %>
                             </span>
                             
@@ -233,6 +273,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- Add Address Modal -->
             <div id="addAddressModal"

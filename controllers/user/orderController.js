@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose, { skipMiddlewareFunction } from "mongoose"
 import User from "../../models/userSchema.js"
 import AppError from "../../utils/errorHandler.js"
 import Product from "../../models/productSchema.js"
@@ -12,10 +12,20 @@ import PDFDocument from 'pdfkit'
 
 export const renderOrdersPage = async (req, res, next) => {
   try {
+    let { page, limit } = req.query
+    page = parseInt(page) || 1
+    limit = parseInt(limit) || 5
+    let skip = (page - 1) * limit
+
     const user = req.user;
     const orders = await Order.find({ userId: user.id })
       .sort({ createdAt: -1 })
-      .lean();
+      .lean()
+      .skip(skip)
+      .limit(limit)
+    let count = 0
+    const totalOrders = await Order.find({ userId: user.id }).countDocuments()
+    const totalPages = Math.ceil(totalOrders / limit)
 
     if (orders.length === 0) {
       return res.status(200).render('user/order', { orders: [], user });
@@ -52,6 +62,8 @@ export const renderOrdersPage = async (req, res, next) => {
     res.render('user/order', {
       orders: allOrders,
       user,
+      page, limit,
+      totalOrders, totalPages
     });
   } catch (error) {
     console.error('Error rendering orders page:', error);
@@ -100,15 +112,22 @@ export const renderOrderDetailsPage = async (req, res, next) => {
 
 export const singleCancelOrder = async (req, res, next) => {
   try {
-
     const productId = req.params.productId
     const orderId = req.params.orderId
     const user = req.user
     const reason = req.body.reason
 
-    const orders = await Order.findById(orderId)
-    console.log(orders, "orders")
-    if (!orders) return res.status(404).json({ success: false, message: "Order not found" });
+    const orders = await Order.findById(orderId).populate('coupon');
+
+    let applyCouponAmount = 0
+    if (!orders) {
+      console.error("Order not found");
+    } else if (!orders.coupon) {
+      console.error("No coupon applied to this order");
+    } else {
+     applyCouponAmount = orders.coupon.discountValue;
+      console.log("Discount Value:", applyCouponAmount);
+    }
 
     const userWallet = await Wallet.findOne({ userId: user.id })
     if (!userWallet) {
@@ -130,23 +149,27 @@ export const singleCancelOrder = async (req, res, next) => {
           item.isCancelled = true
         item.reason = reason
 
-        refundAmount += Number(product.price || 0)// For adding to wallet 
+        if (orders.paymentStatus !== 'failed') { // checking not failed for ensure add money to wallet
 
-        await Product.findByIdAndUpdate(productId, { $inc: { stock: item.quantity } })
-        console.log("hello")
+          refundAmount += Number(product.price || 0)// For adding to wallet 
 
-        userWallet.balance = Number(userWallet.balance || 0) + Number(refundAmount);
-        userWallet.transactions.push({
-          orderId: orders._id,
-          amount: Number(refundAmount),
-          transactionType: 'credit',
-          createdAt: new Date(),
-        });
+          await Product.findByIdAndUpdate(productId, { $inc: { stock: item.quantity } })
+
+          userWallet.balance = Number(userWallet.balance || 0) + Number(refundAmount);
+          userWallet.transactions.push({
+            orderId: orders._id,
+            amount: Number(refundAmount),
+            transactionType: 'credit',
+            createdAt: new Date(),
+          });
+        }
       }
     }
-    await Order.findByIdAndUpdate(orderId, {
-      $set: { paymentStatus: 'refunded' }
-    })
+    if (orders.paymentStatus !== 'failed') {
+      await Order.findByIdAndUpdate(orderId, {
+        $set: { paymentStatus: 'refunded' }
+      })
+    }
 
     if (orders.items.every(item => item.status === "Delivered")) {
       orders.status = "Delivered";
@@ -169,58 +192,78 @@ export const singleCancelOrder = async (req, res, next) => {
 }
 
 
-
 export const returnOrder = async (req, res, next) => {
   try {
-
-    const orderId = req.params.orderId
     const productId = req.params.productId
-    console.log(productId)
-    const order = await Order.findById(orderId)
-    const product = await Product.findById(productId)
+    const orderId = req.params.orderId
     const user = req.user
+    const reason = req.body.reason
 
-    const wallet = await Wallet.findOne({ userId: order.userId })
-    console.log("wallet ", wallet)
+    const orders = await Order.findById(orderId)
+    console.log(orders, "orders")
 
-    const transaction = {
-      orderId: new mongoose.Types.ObjectId(orderId),
-      amount: Number(order.totalAmount),
-      transactionType: "credit",
-      createdAt: Date.now()
-    }
-    console.log(transaction)
-    if (!wallet) {
+    if (!orders) return res.status(404).json({ success: false, message: "Order not found" });
+
+    const userWallet = await Wallet.findOne({ userId: user.id })
+    if (!userWallet) {
       await Wallet.create({
         userId: user.id,
-        balance: Number(order.totalAmount)
+        balance: Number(0),
+        transactions: []
       })
     }
 
-    await Wallet.findByIdAndUpdate(wallet._id, {
-      $push: { transactions: transaction },
-      $inc: { balance: Number(order.totalAmount) }
-    })
+    console.log("new wallet ", userWallet)
 
-    await Order.findByIdAndUpdate(orderId, {
-      $set: { paymentStatus: 'refunded' }
-    })
+    let refundAmount = 0
+    if (orders.paymentStatus !== 'falied') {
+      for (let item of orders.items) {
 
-    for (let item of order.items) {
-      const update = await Order.findOneAndUpdate({ "items.productId": item.productId }, {
-        $set: { "items.$.status": "Returned", "items.$.isReturned": true }
-      })
-      console.log(update)
-      await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } })
+        if (item.productId.toString() === productId.toString() && !item.isRequested) {
+          const product = await Product.findById(productId)
+          // item.status = 'Requested',
+          item.isRequested = true
+          item.reason = reason
+
+          // if (orders.paymentStatus !== 'failed') {
+          //   refundAmount += Number(product.price || 0)// For adding to wallet 
+
+          //   await Product.findByIdAndUpdate(productId, { $inc: { stock: item.quantity } })
+
+          //   userWallet.balance = Number(userWallet.balance || 0) + Number(refundAmount);
+          //   userWallet.transactions.push({
+          //     orderId: orders._id,
+          //     amount: Number(refundAmount),
+          //     transactionType: 'credit',
+          //     createdAt: new Date(),
+          //   });
+          // }
+        }
+      }
     }
+    // if (orders.paymentStatus !== 'failed') {
+    //   await Order.findByIdAndUpdate(orderId, {
+    //     $set: { paymentStatus: 'refunded' }
+    //   })
+    // }
 
-    return res.status(200).json({
-      success: true, message: "Order returned successfully"
-    })
+    // if (orders.items.every(item => item.status === "Delivered")) {
+    //   orders.status = "Delivered";
+    // } else if (orders.items.every(item => item.status === "Cancelled")) {
+    //   orders.status = "Cancelled";
+    // } else if (orders.items.some(item => item.status === "Returned")) {
+    //   orders.status = "Returned";
+    // }
 
+    await orders.save()
+    await userWallet.save()
+    // console.log(`Order cancelled ${refundAmount}`)
+    return res.status(200).json({ success: true, message: "Return request has done" })
+
+    // return res.status(404).json({ success: false, message: "Product not found in order" })
 
   } catch (error) {
-    next(new AppError(`return order failed : ${error}`, 500))
+    next(new AppError(`Single order cancellation : ${error}`, 500))
   }
 }
 
