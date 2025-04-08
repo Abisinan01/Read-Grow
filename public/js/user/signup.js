@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmPassword = document.getElementById("confirmPassword")
     const password = document.getElementById("password")
     const loginButton = document.getElementById("loginButton")
+    const referalCode = document.getElementById('referalCode')
+    console.log(referalCode)
 
     const notyf = new Notyf({
         duration: 3000,
@@ -131,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     phoneNumber: phoneNumber.value,
                     password: password.value,
                     confirmPassword: confirmPassword.value
+                    ,referralCode:referalCode.value
                 })
             })
 

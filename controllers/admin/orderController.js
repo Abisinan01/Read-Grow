@@ -12,14 +12,21 @@ import Wallet from "../../models/walletSchema.js"
 export const getOrderPage = async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
+        const limit = parseInt(req.query.limit) || 10;
         let skip = (page - 1) * limit;
 
-        const allOrders = await Order.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .lean();
+        // const allOrders = await Order.find()
+        //     .sort({ createdAt: -1 })
+        //     .skip(skip)
+        //     .limit(limit)
+        //     .lean();
+
+        const allOrders = await Order.aggregate([
+            {$unwind:"$items"},
+            {$sort:{createdAt:-1}},
+            {$skip:skip},
+            {$limit:limit}
+        ])
 
         if (!allOrders.length) {
             return res.status(404).render('admin/orders', {
@@ -179,96 +186,107 @@ export const acceptReturn = async (req, res, next) => {
         try {
             console.log(productId, orderId, 'req.params');
 
-            const order = await Order.findById(orderId).populate('coupon');
+            const orders = await Order.findById(orderId).populate('coupon');
             const product = await Product.findById(productId);
-            const user = req.user;
+            const user = orders.userId;
 
-            let wallet = await Wallet.findOne({ userId: order.userId });
+            const transactionID = `TRANS-${Date.now()}`;
+            console.log(transactionID)
+            let wallet = await Wallet.findOne({ userId: orders.userId });
             console.log("wallet", wallet);
 
-            const remainingItems = order.items.filter(item =>
-                item.status !== 'Cancelled' && item.status !== 'Returned'
-            );
-            console.log("remainingItems", remainingItems);
+            let applyCouponAmount = 0
+            applyCouponAmount = orders.coupon?.discountValue;
+            console.log("Discount coupon Value:", applyCouponAmount);
 
-            const totalOfRemaining = remainingItems.reduce((total, item) => 
-                total + (item.price * item.quantity), 0
-            );
-            console.log("totalOfRemaining", totalOfRemaining);
-
-            const meetsMinimumAmount = totalOfRemaining >= (order?.coupon?.minPurchase || 0);
-            console.log("meetsMinimumAmount", meetsMinimumAmount);
-
-            let refundAmount = 0;
-
-            if (!meetsMinimumAmount && order.discount) {
-                refundAmount = order.discount; 
-                order.discount = 0;
-            } else {
-                const returnedItem = order.items.find(item => item.productId.toString() === productId);
-                refundAmount = returnedItem ? returnedItem.price * returnedItem.quantity : 0;
-            }
-
-            const transaction = {
-                orderId: new mongoose.Types.ObjectId(orderId),
-                amount: Number(refundAmount),
-                transactionType: "credit",
-                createdAt: Date.now()
-            };
-            console.log('transaction', transaction);
-
-            if (!wallet) {
-                wallet = await Wallet.create({
+            const userWallet = await Wallet.findOne({ userId: orders.userId })
+            if (!userWallet) {
+                await Wallet.create({
                     userId: user.id,
-                    balance: Number(refundAmount),
-                    transactions: [transaction]
-                });
-            } else {
-                await Wallet.findByIdAndUpdate(wallet._id, {
-                    $push: { transactions: transaction },
-                    $inc: { balance: Number(refundAmount) }
-                });
+                    balance: Number(0),
+                    transactions: []
+                })
             }
 
-            for (let item of order.items) {
-                if (item.productId.toString() === productId) {
-                    await Order.findOneAndUpdate(
-                        { _id: order._id, "items.productId": item.productId },
-                        {
-                            $set: {
-                                "items.$.isRequested": false,
-                                "items.$.status": "Returned",
-                                "items.$.isReturned": true,
-                                "items.$.paymentStatus": 'refunded'
-                            }
-                        },
-                        { new: true }
+            let refundAmount = 0
+            for (let item of orders.items) {
+                if (item.productId.toString() === productId.toString()) {
+                    const product = await Product.findById(productId)
+
+                    const remainingItems = orders.items.filter(item =>
+                        !(item.productId.toString() === productId) &&
+                        item.status !== 'Cancelled' &&
+                        item.status !== 'Returned'
                     );
+                    console.log("remainingItems ", remainingItems)
+
+                    let remainingItemsTotal = 0
+                    for (let item of remainingItems) {
+                        remainingItemsTotal += item.price * item.quantity - (item?.discountPrice || 0)
+                    }
+                    console.log("remainingItemsTotal ", remainingItemsTotal)
+
+                    if (orders.coupon && remainingItemsTotal >= orders.coupon.minPurchase) {
+                        refundAmount = Number(item.price * item.quantity - (item?.discountPrice || 0))
+                        console.log(refundAmount, "refundAmount without coupon")
+                    } else {
+                        if (orders.coupon) {
+                            await Coupon.findByIdAndUpdate(
+                                orders.coupon._id,
+                                { $pull: { isUsed: user.id } }
+                            );
+                            console.log("Coupon usage reverted");
+                            await Order.findByIdAndUpdate(orders._id, { $unset: { coupon: "" } })
+                        }
+
+                        if (remainingItems.length === 0) {
+                            refundAmount = Number(orders.totalAmount - orders.shippingCharge);
+                        } else if (item.discountPrice > 0) {
+                            refundAmount = Number(item.price * item.quantity - (item?.discountPrice || 0));
+                        } else {
+                            refundAmount = Number((orders.totalAmount - orders.shippingCharge) - remainingItemsTotal);
+                        }
+                        console.log(refundAmount, "refundAmount without coupon")
+                    }
+
+                    await Product.findByIdAndUpdate(productId, { $inc: { stock: item.quantity } })
+
+                    item.status = 'Returned',
+                    item.isReturned = true
+
+                    userWallet.balance += Number(refundAmount);
+                    userWallet.transactions.push({
+                        orderId: orders._id,
+                        transactionId: transactionID,
+                        amount: Number(refundAmount),
+                        transactionType: 'credit',
+                        source:'refund',
+                        createdAt: new Date(),
+                        productId
+                    });
                 }
-
-                await Product.findByIdAndUpdate(item.productId, {
-                    $inc: { stock: item.quantity }
-                });
+                console.log("userWallet ", userWallet)
             }
 
-            if (order.items.every(item => item.status === "Delivered")) {
-                order.status = "Delivered";
-            } else if (order.items.every(item => item.status === "Cancelled")) {
-                order.status = "Cancelled";
-            } else if (order.items.every(item => item.status === "Returned")) {
-                order.status = "Returned";
-            } else if (order.items.some(item => item.status === "Returned")) {
-                order.status = "Partial Return";
+            if (orders.items.every(item => item.status === 'Returned' || item.status === 'Cancelled')) {
+                orders.paymentStatus = "Refunded";
             }
 
-            await order.save();
-
+            if (orders.items.every(item => item.status === "Delivered")) {
+            } else if (orders.items.every(item => item.status === "Cancelled")) {
+              orders.status = "Cancelled";
+            } else if (orders.items.some(item => item.status === "Returned")) {
+              orders.status = "Returned";
+            }
+        
+            await orders.save();
+            await userWallet.save()
             return res.status(200).json({
                 success: true,
                 message: "Order returned successfully",
                 refundAmount,
                 walletBalance: wallet.balance,
-                order
+                order:orders
             });
 
         } catch (error) {

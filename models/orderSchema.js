@@ -5,6 +5,7 @@ import { type } from "os";
 const orderSchema = new Schema({
     userId: {
         type: mongoose.Types.ObjectId,
+        ref:"User",
         required: true,
     },
     orderId: {
@@ -25,15 +26,16 @@ const orderSchema = new Schema({
         default: "COD"
     },
     items: [{
-        productId: String,
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
         productName: String,
         quantity: Number,
         price: Number,
+        discountPrice:{type:Number},
         isCancelled: { type: Boolean, default: false },
         isReturned: { type: Boolean, default: false },
-        isRequested:{type:Boolean,default:false},
+        isRequested: { type: Boolean, default: false },
         status: { type: String, default: "Pending" },
-        paymentStatus: { type: String, default: false },
+        paymentStatus: { type: String, default:'Pending'},
         reason: { type: String, default: null },
     }],
     subTotal: { type: Number },

@@ -17,7 +17,7 @@ export const renderOffersPage = async (req, res, next) => {
             .populate('productId')
             .populate('categoryId')
 
-        console.log("offers :", offers)
+        // console.log("offers :", offers)
         let currentDate = new Date
         for (let offer of offers) {
             if (currentDate > offer.validTo) {
@@ -25,9 +25,48 @@ export const renderOffersPage = async (req, res, next) => {
             }
         }
 
+        const products = await Product.find()
+                .populate('offers')
+        const categories = await Category.find()
+                .populate('offers')
+
+        let bestOffer = 0;
+        for (let product of products) {
+            let productOffer = (product.offers.length > 0) ?
+                product.offers.filter(o => o.status !== false)
+                    .reduce((acc, curr) => curr.discountPercentage > acc.discountPercentage ? curr: acc, { discountPercentage: 0 }) : null
+                    console.log('productOffers', productOffer)
+   
+            let categoryOffer
+            for (let category of categories) {
+                if (category.categoryName === product.category) {
+                    categoryOffer = (category?.offers.length > 0) ?
+                        category.offers.filter(o => o.status !== false)
+                         .reduce((acc, curr) => curr.discountPercentage > acc.discountPercentage ? curr : acc, { discountPercentage: 0 }) : null;
+                } 
+            }
+            console.log(categoryOffer,'category offer')
+           
+            productOffer = productOffer && productOffer.discountPercentage > 0 ? productOffer : null;
+            categoryOffer = categoryOffer && categoryOffer.discountPercentage > 0 ? categoryOffer : null;
+
+            if (productOffer && categoryOffer) {
+                bestOffer = (productOffer.discountPercentage > categoryOffer.discountPercentage) ? productOffer : categoryOffer;
+            } else {
+                bestOffer = productOffer || categoryOffer;
+            }
+
+            if(bestOffer){
+                await Product.findByIdAndUpdate(product._id, { $set: { bestOffer: bestOffer?.discountPercentage } })
+            }
+            console.log("product with Bestoffer:", bestOffer);
+ 
+          
+        }
+
+
         const totalOffers = await Offer.find().countDocuments()
         const totalPages = Math.ceil(totalOffers / limit)
-
         res.render("admin/offers", {
             totalOffers, totalPages, page, limit, offers
         })
@@ -41,7 +80,6 @@ export const renderAddOffers = async (req, res, next) => {
     try {
         const product = await Product.find().sort({ createdAt: -1 })
         const category = await Category.find()
-
         res.render('admin/addOffers', { product, category })
 
     } catch (error) {
@@ -75,24 +113,26 @@ export const addOffers = async (req, res, next) => {
             validFrom,
             validTo,
             status,
-            status
         })
 
         const saveOffer = await newOffer.save()
+        console.log(saveOffer, 'saved offer')
 
         if (!saveOffer) {
             return res.status(400).json({ success: false, message: "offer is can't saved" })
         }
 
         const offer = await Offer.findOne({ offerName: newOffer?.offerName }) || ''
-        if (offerType === 'Category') {
+        if (saveOffer.offerType === 'Category') {
             const category = await Category.findByIdAndUpdate(categoryId, {
                 $push: { offers: offer?._id }
             })
-        } else if (offerType === 'Product') {
+        } else if (saveOffer.offerType === 'Product') {
             const product = await Product.findByIdAndUpdate(productId, {
                 $push: { offers: offer?._id }
             })
+            console.log(product)
+
         }
 
         return res.status(200).json({

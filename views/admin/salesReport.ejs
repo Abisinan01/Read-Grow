@@ -1,73 +1,161 @@
-<link rel="stylesheet" href="/stylesheets/admin/salesReport.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body class="bg-gray-100 font-sans flex min-h-screen">
+        <!-- Sidebar -->
+        <%- include("../partials/admin/adminSideBar.ejs") %>
 
-<div class="header">
-    <h1>Sales Report</h1>
-    <div class="filter-container">
-        <div class="filter-button">
-            <button class="filter-btn" onclick="filterOrders('daily')">Daily</button>
-            <button class="filter-btn" onclick="filterOrders('weekly')">Weekly</button>
-            <button class="filter-btn" onclick="filterOrders('monthly')">Monthly</button>
-            <button class="filter-btn" onclick="filterOrders('yearly')">Yearly</button>
-        </div>
-        <div class="custom-date-filter">
-            <label for="start-date">Start Date:</label>
-            <input type="date" id="start-date">
-            <label for="end-date">End Date:</label>
-            <input type="date" id="end-date">
-            <button class="filter-btn" id="custom-filter-btn">Filter</button>
-        </div>
-        <div class="custom-date-filter">
-            <button class="filter-btn" id="download-pdf-btn">Pdf</button>
-            <button class="filter-btn" id="download-excel-btn">Excel</button>
-        </div>
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header Section -->
+        <header class="bg-white shadow-md p-6">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">Sales Report</h1>
+                <button id="sidebar-toggle" class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        
+            <!-- Filter Container -->
+            <div class="filter-container mt-4 flex flex-col md:flex-row gap-4">
+                <!-- Predefined Filter Buttons -->
+                <div class="filter-button flex gap-2">
+                    <button onclick="filterOrders('daily')" class="filter-btn h-8 px-3 text-sm bg-gray-400 text-white hover:bg-blue-600 transition" data-filter="daily">Daily</button>
+                    <button onclick="filterOrders('weekly')" class="filter-btn h-8 px-3 text-sm bg-gray-400 text-white hover:bg-blue-600 transition" data-filter="weekly">Weekly</button>
+                    <button onclick="filterOrders('monthly')" class="filter-btn h-8 px-3 text-sm bg-gray-400 text-white hover:bg-blue-600 transition" data-filter="monthly">Monthly</button>
+                    <button onclick="filterOrders('yearly')" class="filter-btn h-8 px-3 text-sm bg-gray-400 text-white hover:bg-blue-600 transition" data-filter="yearly">Yearly</button>
+                </div>
+        
+                <!-- Custom Date Filter -->
+                <div class="custom-date-filter flex flex-col sm:flex-row gap-2 items-center">
+                    <label for="start-date" class="text-sm font-medium text-gray-700">Start Date:</label>
+                    <input type="date" id="start-date" class="h-8 px-2 py-1 border border-gray-300 rounded-md text-sm">
+                    <label for="end-date" class="text-sm font-medium text-gray-700">End Date:</label>
+                    <input type="date" id="end-date" class="h-8 px-2 py-1 border border-gray-300 rounded-md text-sm">
+                    <button id="custom-filter-btn" class="filter-btn h-8 px-3 text-sm bg-red-400 text-white hover:bg-blue-600 transition">Filter</button>
+                </div>
+        
+                <!-- Download Buttons -->
+                <div class="custom-date-filter flex gap-2">
+                    <button id="download-pdf-btn" class="filter-btn h-8 px-3 text-sm bg-green-500 text-white hover:bg-green-600 transition">PDF</button>
+                    <button id="download-excel-btn" class="filter-btn h-8 px-3 text-sm bg-green-500 text-white hover:bg-green-600 transition">Excel</button>
+                    <button onclick="window.location.href='/admin/sales-report'" class="filter-btn h-8 px-3 text-sm bg-green-500 text-white hover:bg-green-600 transition">Reset</button>
+                </div>
+            </div>
+        </header>
+        
+
+        <!-- Main Content -->
+        <main class="container mx-auto p-6 flex-1">
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <p class="text-sm text-gray-500">Sales Count</p>
+                    <p id="sales-count" class="text-xl font-semibold text-blue-600"><%= salesCount  %></p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <p class="text-sm text-gray-500">Total Amount</p>
+                    <p id="total-amount" class="text-xl font-semibold text-blue-600">Rs. <%= Number(totalAmount) %></p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <p class="text-sm text-gray-500">Total Discount</p>
+                    <p id="total-discount" class="text-xl font-semibold text-blue-600"><%= discountedAmount %></p>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="overflow-x-auto">
+                <table class="user-table w-full bg-white shadow-md rounded-lg">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-3 px-4 text-left text-gray-700">Date</th>
+                            <th class="py-3 px-4 text-left text-gray-700">Order Id</th>
+                            <th class="py-3 px-4 text-left text-gray-700">Customer</th>
+                            <th class="py-3 px-4 text-left text-gray-700">Status</th>
+                            <th class="py-3 px-4 text-left text-gray-700">Payment</th>
+                            <th class="py-3 px-4 text-left text-gray-700">Qty</th>
+                            <th class="py-3 px-4 text-left text-gray-700">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <% if(orders.length>0){%>
+                            <% orders.forEach(order=>{%>
+                                <tr class="border-b">
+                                    <td class="py-3 px-4"><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                    <td class="py-3 px-4"><%= order.orderId %></td>
+                                    <td class="py-3 px-4"><%= order.userId?.username %></td>
+                                    <td class="py-3 px-4"><%= order.status %></td>
+                                    <td class="py-3 px-4"><%= order.payment %></td>
+                                    <td class="py-3 px-4"><%= order.items.reduce((acc,curr)=>acc+=curr.quantity,0) %></td>
+                                    <td class="py-3 px-4">Rs <%= order.totalAmount %></td>
+                                </tr>
+                            <% })  %>
+                        <% }else{%>
+                            <tr>
+                                <td colspan="7" class="text-gray-500 py-6 justify-center text-center">No sales report</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
-</div>
 
-<p>Sales Count: 150</p>
-<p>Total Amount: $25,000</p>
-<p>Total Discount: $2,500</p>
+    <!-- Font Awesome for Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        function showToast(message, bgColor) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                backgroundColor: bgColor,
+            }).showToast();
+        }
+        function filterOrders(filter){
+            window.location.href = `/admin/sales-report?filter=${filter}`
+        }
+        document.getElementById('custom-filter-btn').addEventListener('click', function(){
+            const startDate = document.getElementById('start-date').value
+            const endDate = document.getElementById('end-date').value
+            if(startDate && endDate){
+                window.location.href = `/admin/sales-report?startDate=${startDate}&endDate=${endDate}`
+            }else{
+                showToast('Please select both start-date and end-date')
+            }
+        })
 
-<table class="user-table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Order Id</th>
-            <th>Customer</th>
-            <th>Status</th>
-            <th>Payment</th>
-            <th>Qty</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>2024-03-28</td>
-            <td>ORD12345</td>
-            <td>John Doe</td>
-            <td>Delivered</td>
-            <td>Credit Card</td>
-            <td>2</td>
-            <td>$500</td>
-        </tr>
-        <tr>
-            <td>2024-03-27</td>
-            <td>ORD12346</td>
-            <td>Jane Smith</td>
-            <td>Shipped</td>
-            <td>PayPal</td>
-            <td>1</td>
-            <td>$300</td>
-        </tr>
-        <tr>
-            <td>2024-03-26</td>
-            <td>ORD12347</td>
-            <td>Mark Lee</td>
-            <td>Processing</td>
-            <td>Debit Card</td>
-            <td>3</td>
-            <td>$750</td>
-        </tr>
-    </tbody>
-</table>
+        document.getElementById("download-pdf-btn").addEventListener('click', function (){
+            const filter = new URLSearchParams(window.location.search).get('filter');
+            const startDate = new URLSearchParams(window.location.search).get('startDate')
+            const endDate = new URLSearchParams(window.location.search).get('endDate')
 
-<script src="/javascripts/admin/salesReport.js"></script>
+            let url = `/admin/download-pdf-report?filter=${filter || 'daily'}`
+            if(startDate && endDate){
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+
+            window.location.href = url
+        })
+
+        document.getElementById('download-excel-btn').addEventListener('click', function() {
+            const filter = new URLSearchParams(window.location.search).get('filter');
+            const startDate = new URLSearchParams(window.location.search).get('startDate');
+            const endDate = new URLSearchParams(window.location.search).get('endDate');
+            
+            let url = `/admin/download-excel-report?filter=${filter || ''}`;
+            if (startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+            
+            window.location.href = url;
+        });
+    </script>
+</body>
+</html>

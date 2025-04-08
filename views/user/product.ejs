@@ -115,6 +115,7 @@
                 <div class="w-full lg:w-2/3">
                     <h1 class="text-2xl font-semibold text-gray-800"><%= product.name %> (Paperback)</h1>
                     <h2 class="text-lg text-gray-600 mb-4">by <%= product.authorName %></h2>
+               
                     <div class="flex items-center mb-4">
                         <div class="text-yellow-400 space-x-1">
                             <% for (let i = 0; i < 5; i++) { %>
@@ -125,27 +126,43 @@
                                 <% } %>
                             <% } %>
                         </div>
-                        <span class="text-gray-500 ml-2 text-sm"><%= product.rating %> ratings</span>
+                        <span class="text-gray-500 ml-2 text-sm"><%= product.rating || 0 %> ratings</span>
                     </div>
                     <p class="text-xl font-bold text-gray-900">
                         Price: Rs. <%= product.price %>
                         
-                        <% if (user && bestOffer) { %>
-                            <span class="text-sm text-red-500"><%= bestOffer.discountPercentage %>% offer</span>
+                        <% if (user && product.bestOffer) { %>
+                            <span class="text-sm text-red-500"><%= product?.bestOffer %>% offer</span>
                         <% } %>
                     </p>                                     
                     <p class="mt-4 text-gray-600"><%= product.description %></p>
                     <div class="mt-4">
-                        <button 
-                            onclick="addToCart('<%= product._id %>')" 
-                            id="addToCart"
-                            <%= product.stock > 0 ? "" : "disabled" %>
-                            class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
-                            aria-label="Add <%= product.name %> to cart">
-                            ADD CART
-                        </button>
-                    </div>
-                    <p class="mt-4 <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %>"><%= product.stock > 0 ? 'In Stock' : 'Out of Stock' %></p>
+                        <% if (!cartItems.map(String).includes(product._id.toString())) { %>
+                            <button 
+                                onclick="addToCart('<%= product._id %>')" 
+                                id="addToCart-<%= product._id %>"
+                                <%= product.stock > 0 ? '' : 'disabled="disabled"' %>
+                                class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded' %>"
+                                aria-label="Add <%= product.name %> to cart">
+                                ADD TO CART
+                            </button>
+                        <% } else { %>
+                            <button 
+                                onclick="addToCart('<%= product._id %>')" 
+                                id="addToCart-<%= product._id %>"
+                                <%= product.stock > 0 ? '' : 'disabled="disabled"' %>
+                                class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded' %>"
+                                aria-label="Add <%= product.name %> to cart">
+                                GO TO CART
+                            </button>
+                        <% } %>
+                        
+                    </div> 
+                    <% if(product.stock > 0){%>
+                        <p class="mt-4 text-green-600 ">In Stock</p>
+                    <% }else{%>
+                        <p class="mt-4 text-red-600 ">Out of stock</p>
+                    <% } %>
                 </div>
             </div>
 

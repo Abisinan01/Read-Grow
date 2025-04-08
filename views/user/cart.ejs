@@ -48,9 +48,22 @@
                                 <div class="flex-grow flex flex-col">
                                     <h2 class="text-lg font-bold text-gray-800"><%= product.name %></h2>
                                     <p class="text-sm font-medium text-black">Rs. <%= product.price %></p>
-                                    <p class="text-sm font-medium <%= product.stock > 0 ? 'text-green-600' : 'text-red-600' %> mt-1">
-                                        <%= product.stock > 0   ? 'In Stock' : 'Out of Stock' %>
-                                    </p>
+                                    <% if (product.stock > 0) { %>
+                                        <div class=" text-green-600 flex items-center gap-2">
+                                          In Stock
+                                          <div class="h-6 w-12 border-2 border-dashed border-red-300 flex justify-center items-center text-gray-500">
+                                            <%= product.stock %> left
+                                          </div>
+                                        </div>
+                                      <% } else { %>
+                                        <div class=" text-green-600 flex items-center gap-2">
+                                        <div class="h-6 w-12 border-2 border-dashed border-red-300 flex justify-center items-center text-gray-500">
+                                            <%= product.stock %> left
+                                          </div>
+                                        <p class=" text-red-600">Out of Stock</p>
+                                        </div>
+                                      <% } %>
+                                      
                                     <p id="eachProductPrice-<%= product._id %>"><%= product.quantity  %> X <%= product.price %> = <%= product.price*product.quantity %></p>
                                     <!-- Quantity Controls -->
                                     <div class="flex items-center gap-2 mt-3">

@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/admin/dashboard.js" defer></script> <!-- External JS -->
     <style>
         .table-container {
             overflow-x: auto;
@@ -24,6 +26,13 @@
                 padding: 1rem;
             }
         }
+        .sidebar-link:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .sidebar-link.active {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-left: 4px solid #3b82f6;
+        }
     </style>
 </head>
 <body class="font-sans bg-gray-100">
@@ -32,50 +41,39 @@
         <%- include("../partials/admin/adminSideBar.ejs") %>
 
         <!-- Main Content -->
-        <div class="flex-1 main-content p-6 bg-gray-50" style="margin-left: calc(0% + 0px);">
+        <div class="flex-1 main-content p-6 bg-gray-50">
             <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6">
                 <h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
-                <div class="relative">
-                    <button id="downloadReportDropdown" class="px-5 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
-                        Download Report
-                    </button>
-                    <ul class="dropdown-menu absolute hidden bg-white shadow-md rounded-md mt-2 z-10">
-                        <li><a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Export Excel</a></li>
-                        <li><a href="/admin/download/pdf" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Export PDF</a></li>
-                    </ul>
-                </div>
+
             </div>
 
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h6 class="text-sm text-gray-500">Total Sales</h6>
-                    <h4 class="text-2xl font-semibold text-blue-600">₹<%= totalSales %></h4>
+                    <h4 id="totalSales" class="text-2xl font-semibold text-blue-600">₹0</h4>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h6 class="text-sm text-gray-500">Total Orders</h6>
-                    <h4 class="text-2xl font-semibold text-blue-600"><%= deliveredOrdersCount %></h4>
+                    <h4 id="totalOrders" class="text-2xl font-semibold text-blue-600">0</h4>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h6 class="text-sm text-gray-500">Total Coupons</h6>
-                    <h4 class="text-2xl font-semibold text-blue-600"><%= totalCoupons %></h4>
-
+                    <h4 id="totalCoupons" class="text-2xl font-semibold text-blue-600">0</h4>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h6 class="text-sm text-gray-500">Total Products Sold</h6>
-                    <h4 class="text-2xl font-semibold text-blue-600">
-                        <%= countProducts.length > 0 ? countProducts[0].totalSoldProducts : 0 %>
-                    </h4>
+                    <h4 id="totalProductSold" class="text-2xl font-semibold text-blue-600">0</h4>
                 </div>
             </div>
 
             <!-- Filter Form -->
             <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-                <form action="#" method="GET" id="filterForm" onsubmit="return validateForm(event)">
+                <form action="#" method="POST" id="filterForm">
                     <div class="flex flex-col sm:flex-row gap-4">
                         <div class="flex-1">
                             <label class="block text-sm font-medium text-gray-700">Filter</label>
-                            <select name="filter" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" onchange="toggleDateInputs(this)">
+                            <select name="filter" id="filterSelect" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
                                 <option value="daily">Daily</option>
                                 <option value="weekly">Weekly</option>
                                 <option value="monthly" selected>Monthly</option>
@@ -85,163 +83,58 @@
                         </div>
                         <div class="flex-1 hidden" id="startDateDiv">
                             <label class="block text-sm font-medium text-gray-700">Start Date</label>
-                            <input type="date" name="startDate" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <input type="date" name="startDate" id="startDate" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
                             <div id="startDateError" class="text-red-500 text-sm hidden"></div>
                         </div>
                         <div class="flex-1 hidden" id="endDateDiv">
                             <label class="block text-sm font-medium text-gray-700">End Date</label>
-                            <input type="date" name="endDate" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <input type="date" name="endDate" id="endDate" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
                             <div id="endDateError" class="text-red-500 text-sm hidden"></div>
                         </div>
                         <div class="flex items-end">
-                            <button type="submit" class="px-5 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">Apply Filter</button>
+                            <button type="submit" class="px-5 py-2 bg-gray-700 text-white  hover:bg-green-600 transition">Apply Filter</button>
                         </div>
                     </div>
                 </form>
             </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-book mr-2 text-blue-500"></i>
+                        Top Selling Books
+                    </h3>
+                    <ul id="topSellingBooks" class="space-y-3">
+                        <!-- Book items will be added dynamically -->
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Top Selling Categories</h3>
+                    <div class="flex justify-center">
+                        <div class="w-64 h-64">
+                            <canvas id="myDoughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Table -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Sales Overview</h3>
+                </div>
+                <div class="table-container">
+                    <div class="h-96">
+                        <canvas id="salesOverview"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- External Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.5.0/dist/sweetalert2.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script>
-        // Dropdown toggle for Download Report
-        document.getElementById('downloadReportDropdown').addEventListener('click', function () {
-            const dropdownMenu = this.nextElementSibling;
-            dropdownMenu.classList.toggle('hidden');
-        });
-    
-        document.addEventListener('click', function (event) {
-            const dropdown = document.getElementById('downloadReportDropdown');
-            const menu = dropdown.nextElementSibling;
-            if (!dropdown.contains(event.target)) {
-                menu.classList.add('hidden');
-            }
-        });
-    
-        // Toggle custom date inputs
-        function toggleDateInputs(select) {
-            const startDateDiv = document.getElementById('startDateDiv');
-            const endDateDiv = document.getElementById('endDateDiv');
-            const isCustom = select.value === 'custom';
-            startDateDiv.classList.toggle('hidden', !isCustom);
-            endDateDiv.classList.toggle('hidden', !isCustom);
-        }
-    
-        // Fetch sales data from backend
-        async function fetchSalesData(filter, startDate = '', endDate = '') {
-            try {
-                let url = `/admin/sales?filter=${filter}`;
-                if (filter === 'custom') {
-                    url += `&startDate=${startDate}&endDate=${endDate}`;
-                }
-    
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Failed to fetch data');
-                const data = await response.json();
-    
-                updateDashboard(data);
-            } catch (error) {
-                console.error(error);
-                Toastify({
-                    text: 'Error fetching sales data',
-                    duration: 3000,
-                    backgroundColor: 'red',
-                }).showToast();
-            }
-        }
-    
-        // Update dashboard with fetched data
-        function updateDashboard(data) {
-            const { orders, summary } = data;
-    
-            // Update summary cards
-            document.querySelector('.text-2xl.text-blue-600:nth-child(2)').textContent = `₹${summary.totalSales.toFixed(2)}`;
-            document.querySelector('.text-2xl.text-blue-600:nth-child(4)').textContent = summary.totalOrders;
-            document.querySelector('.text-2xl.text-blue-600:nth-child(6)').textContent = `₹${summary.totalDiscount.toFixed(2)}`;
-            document.querySelector('.text-2xl.text-blue-600:nth-child(8)').textContent = summary.totalProductsSold;
-    
-            // Update order table
-            const tbody = document.querySelector('tbody');
-            tbody.innerHTML = ''; // Clear existing rows
-    
-            orders.forEach(order => {
-                const row = document.createElement('tr');
-                row.classList.add('hover:bg-gray-50', 'transition');
-                row.innerHTML = `
-                    <td class="py-3 px-4 border-b">${order._id || 'N/A'}</td>
-                    <td class="py-3 px-4 border-b">${new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td class="py-3 px-4 border-b">${order.products?.map(p => `${p.name} (Qty: ${p.quantity})`).join(', ') || 'N/A'}</td>
-                    <td class="py-3 px-4 border-b">₹${(order.totalAmount || 0).toFixed(2)}</td>
-                    <td class="py-3 px-4 border-b">₹${(order.discount || 0).toFixed(2)}</td>
-                    <td class="py-3 px-4 border-b">${order.paymentStatus || 'N/A'}</td>
-                    <td class="py-3 px-4 border-b">${order.paymentType || 'N/A'}</td>
-                    <td class="py-3 px-4 border-b">
-                        <span class="px-3 py-1 rounded-full text-sm ${
-                            order.orderStatus === 'Delivered' ? 'bg-teal-500 text-white' : 'bg-yellow-400 text-gray-700'
-                        }">${order.orderStatus || 'Pending'}</span>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-    
-        // Form validation and submission
-        function validateForm(event) {
-            event.preventDefault();
-            const filter = document.querySelector('select[name="filter"]').value;
-            const startDateInput = document.querySelector('input[name="startDate"]');
-            const endDateInput = document.querySelector('input[name="endDate"]');
-            const startDateError = document.getElementById('startDateError');
-            const endDateError = document.getElementById('endDateError');
-    
-            startDateError.classList.add('hidden');
-            endDateError.classList.add('hidden');
-            startDateError.textContent = '';
-            endDateError.textContent = '';
-    
-            if (filter === 'custom') {
-                const startDate = startDateInput.value;
-                const endDate = endDateInput.value;
-                const today = new Date().toISOString().split('T')[0];
-    
-                if (!startDate) {
-                    startDateError.textContent = 'Start date is required.';
-                    startDateError.classList.remove('hidden');
-                    return false;
-                }
-                if (!endDate) {
-                    endDateError.textContent = 'End date is required.';
-                    endDateError.classList.remove('hidden');
-                    return false;
-                }
-                if (new Date(endDate) < new Date(startDate)) {
-                    endDateError.textContent = 'End date cannot be before start date.';
-                    endDateError.classList.remove('hidden');
-                    return false;
-                }
-                if (startDate > today) {
-                    startDateError.textContent = 'Start date cannot be in the future.';
-                    startDateError.classList.remove('hidden');
-                    return false;
-                }
-                if (endDate > today) {
-                    endDateError.textContent = 'End date cannot be in the future.';
-                    endDateError.classList.remove('hidden');
-                    return false;
-                }
-    
-                fetchSalesData(filter, startDate, endDate);
-            } else {
-                fetchSalesData(filter);
-            }
-    
-            return true;
-        }
-    
-        // Initial load with default filter (monthly)
-        window.onload = () => fetchSalesData('monthly');
-    </script>
 </body>
 </html>

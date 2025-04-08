@@ -26,11 +26,11 @@
                 <h2 class="text-lg font-semibold text-gray-700 mb-4">Order Overview</h2>
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700  "><strong>Order ID :</strong></span>
-                        <p class="text-sm text-gray-600"> #<%= order.orderId  %></p>
+                        <span class="text-sm font-medium text-gray-700 "><strong>Order ID :</strong></span>
+                        <p class="text-sm font-medium text-gray-700 "> #<%= order.orderId  %></p>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700  "><strong>Order Date :</strong></span>
+                        <span class="text-sm font-medium text-gray-700  "><strong>Order Date :</strong></span>
                     <p class="text-sm text-gray-600">
                         Placed on: <%= new Date(order.createdAt).toLocaleString('en-US', {
                           year: 'numeric',
@@ -87,6 +87,16 @@
                         <span class="text-sm text-gray-700  ">Total items :</span>
                         <span class="text-sm text-gray-700"> <%= order.items.length %></span>
                     </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700  ">Total items i :</span>
+                        <span class="text-sm text-gray-700"> <%= order.items.length %></span>
+                    </div>
+                    <% if(order.discount) {%>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-700  ">Total discount:</span>
+                            <span class="text-sm text-gray-700"> -<%= order.discount %></span>
+                        </div>
+                    <% } %>
                     <% if(order.coupon) {%>
                         <div class="flex justify-between items-center">
                             <span class="text-sm text-gray-700  ">Applied Coupon amount:</span>
@@ -131,7 +141,7 @@
                     </div>
 
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600"><strong>Status:</strong> </span>
+                        <span class="text-sm font-medium text-gray-600">Status: </span>
                         <p class="text-sm text-gray-600">
                             <% 
                             let statusClass2 = "";
@@ -159,7 +169,7 @@
 
                     <% if(viewOrder.bestOffer){%>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-700  ">Discount of product:</span>
+                            <span class="text-sm font-medium text-gray-700  ">Discount of product:</span>
                             <span class="text-sm text-gray-700"><%= viewOrder.bestOffer %>%</span>
                         </div>
                     <% } %>

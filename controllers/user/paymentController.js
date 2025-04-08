@@ -14,7 +14,6 @@ const app = express()
 
 export const createOrder = async (req, res) => {
     try {
-        
         console.log("createOrder",req.body)
         const user = req.user
         const {

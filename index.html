@@ -1,171 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <title>Sales Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body {
+        font-size: 12px;
+        color: #000;
+        background: #fff;
+      }
+      .no-print {
+        display: none !important;
+      }
+      table, th, td {
+        border: 1px solid #000 !important;
+        border-collapse: collapse !important;
+      }
+    }
+  </style>
 </head>
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f4;
-        color: #333;
-    }
+<body class="p-10 bg-white text-black font-sans">
 
-    .header {
-        background: #007bff;
-        color: white;
-        padding: 20px;
-        text-align: center;
-        font-size: 24px;
-    }
+  <!-- Company Info / Title -->
+  <div class="text-center mb-10">
+    <h1 class="text-3xl font-bold">Sales Report</h1>
+    <p class="text-sm mt-1">REad & GroW</p>
+    <p class="text-xs text-gray-700">Date Range: 01-Apr-2025 to 07-Apr-2025</p>
+  </div>
 
-    .filter-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px;
-        background: white;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    }
 
-    .filter-button {
-        display: flex;
-        gap: 10px;
-    }
-
-    .filter-btn {
-        background: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 15px;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: 0.3s;
-    }
-
-    .filter-btn:hover {
-        background: #0056b3;
-    }
-
-    .custom-date-filter {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .custom-date-filter input {
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    .user-table {
-        width: 90%;
-        margin: 20px auto;
-        border-collapse: collapse;
-        background: white;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .user-table th,
-    .user-table td {
-        border: 1px solid #ddd;
-        padding: 12px;
-        text-align: left;
-    }
-
-    .user-table th {
-        background: #007bff;
-        color: white;
-        font-weight: bold;
-    }
-
-    .user-table tr:nth-child(even) {
-        background: #f9f9f9;
-    }
-
-    .user-table tr:hover {
-        background: #f1f1f1;
-    }
-</style>
-
-<body>
-
-    <div class="header">
-        <h1>Sales Report</h1>
-        <div class="filter-container">
-            <div class="filter-button">
-                <button class="filter-btn" onclick="filterOrders('daily')">Daily</button>
-                <button class="filter-btn" onclick="filterOrders('weekly')">Weekly</button>
-                <button class="filter-btn" onclick="filterOrders('monthly')">Monthly</button>
-                <button class="filter-btn" onclick="filterOrders('yearly')">Yearly</button>
-            </div>
-            <div class="custom-date-filter">
-                <label for="start-date">Start Date:</label>
-                <input type="date" id="start-date">
-                <label for="end-date">End Date:</label>
-                <input type="date" id="end-date">
-                <button class="filter-btn" id="custom-filter-btn">Filter</button>
-            </div>
-            <div class="custom-date-filter">
-                <button class="filter-btn" id="download-pdf-btn">Pdf</button>
-                <button class="filter-btn" id="download-excel-btn">Excel</button>
-            </div>
-        </div>
-    </div>
-    
-    <p>Sales Count: 150</p>
-    <p>Total Amount: $25,000</p>
-    <p>Total Discount: $2,500</p>
-    
-    <table class="user-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Order Id</th>
-                <th>Customer</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Qty</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>2024-03-28</td>
-                <td>ORD12345</td>
-                <td>John Doe</td>
-                <td>Delivered</td>
-                <td>Credit Card</td>
-                <td>2</td>
-                <td>$500</td>
-            </tr>
-            <tr>
-                <td>2024-03-27</td>
-                <td>ORD12346</td>
-                <td>Jane Smith</td>
-                <td>Shipped</td>
-                <td>PayPal</td>
-                <td>1</td>
-                <td>$300</td>
-            </tr>
-            <tr>
-                <td>2024-03-26</td>
-                <td>ORD12347</td>
-                <td>Mark Lee</td>
-                <td>Processing</td>
-                <td>Debit Card</td>
-                <td>3</td>
-                <td>$750</td>
-            </tr>
-        </tbody>
+  <!-- Sales Table -->
+  <div>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2 border text-left">#</th>
+          <th class="p-2 border text-left">Order ID</th>
+          <th class="p-2 border text-left">Customer</th>
+          <th class="p-2 border text-left">Date</th>
+          <th class="p-2 border text-left">Subtotal</th>
+          <th class="p-2 border text-left">Discount</th>
+          <th class="p-2 border text-left">Shipping</th>
+          <th class="p-2 border text-left">Total</th>
+          <th class="p-2 border text-left">Status</th>
+          <th class="p-2 border text-left">Payment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-2 border">1</td>
+          <td class="p-2 border">ORD-1744053743207</td>
+          <td class="p-2 border">John Doe</td>
+          <td class="p-2 border">07-Apr-2025</td>
+          <td class="p-2 border">₹399</td>
+          <td class="p-2 border">₹119</td>
+          <td class="p-2 border">₹99</td>
+          <td class="p-2 border">₹378</td>
+          <td class="p-2 border">Pending</td>
+          <td class="p-2 border">Wallet</td>
+        </tr>
+        <!-- Add more rows as needed -->
+      </tbody>
     </table>
-    
-    <script src="/javascripts/admin/salesReport.js"></script>
-</body>
+  </div>
 
+  <!-- Footer (Optional) -->
+  <div class="mt-10 text-center text-xs text-gray-600">
+    <p>Generated on <%= new Date() %></p>
+    <p>REad & GroW | About | Contact</p>
+  </div>
+
+</body>
 </html>

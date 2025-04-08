@@ -4,14 +4,16 @@
         <button data-path="/admin/dashboard" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
             Dashboard
         </button>
+        <button data-path="/admin/sales-report" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Sales Report
+        </button>
         <button data-path="/admin/products" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
             Product
         </button>
         <button data-path="/admin/users" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
             User
         </button>
-        <button data-path="/admin/orders?page=1&limit=5"
-             class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+        <button data-path="/admin/orders" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
             Orders
         </button>
         <button data-path="/admin/category" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
@@ -23,8 +25,8 @@
         <button data-path="/admin/coupons" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
             Coupons
         </button>
-        <button class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
-            Banner
+        <button data-path="/admin/transactions?page=1&limit=10" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+            Transactions
         </button>
     </div>
     <button id="logoutButton" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 mt-auto border-t border-gray-500 transition duration-200">
@@ -35,17 +37,28 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const buttons = document.querySelectorAll('.nav-button');
-        const currentPath = window.location.pathname;
+        const currentPath = window.location.pathname; // e.g., "/admin/products" or "/admin/users?page=1&limit=6"
+
+        // Function to remove query parameters for cleaner comparison
+        const getBasePath = (path) => path.split('?')[0];
 
         // Set active button on page load
         buttons.forEach(button => {
-            if (button.dataset.path && currentPath.startsWith(button.dataset.path)) {
+            const buttonPath = button.dataset.path ? getBasePath(button.dataset.path) : null;
+            const currentBasePath = getBasePath(currentPath);
+
+            // Highlight the button if the current path matches the button's base path
+            if (buttonPath && currentBasePath === buttonPath) {
                 button.classList.add("bg-black", "text-white");
                 button.classList.remove("hover:bg-gray-300");
+            } else {
+                // Ensure non-active buttons retain their hover effect
+                button.classList.remove("bg-black", "text-white");
+                button.classList.add("hover:bg-gray-300");
             }
 
-            // Attach click event to navigate
-            if (button.dataset.path) {
+            // Attach click event to navigate (excluding logout button)
+            if (button.dataset.path && button.id !== "logoutButton") {
                 button.addEventListener('click', () => {
                     window.location.href = button.dataset.path;
                 });
@@ -89,7 +102,6 @@
         });
     });
 </script>
-
 
 
 

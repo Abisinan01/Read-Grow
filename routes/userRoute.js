@@ -30,7 +30,6 @@ import {
 } from "../controllers/user/userController.js"
 import passport from "passport"
 import jwt from "jsonwebtoken"
-import { renderHomePage, renderProductDetails, renderShopPage, sortProducts } from "../controllers/user/shopController.js"
 import { renderWallet } from "../controllers/user/walletController.js"
 import uploadProfileImage from "../utils/profileMulter.js"
 import User from "../models/userSchema.js"
@@ -63,13 +62,10 @@ router.delete('/address/:id', userAuth, deleteAddress)
 router.patch('/address/:id/select-address', selectAddress)
 
 router.get('/wallet/:id',userAuth,renderWallet)
-
-router.get('/home', renderHomePage)
-router.get('/product-details/:id', userAuth, renderProductDetails)
-router.get("/shop", userAuth, renderShopPage)
 router.get('/profile/:id', userAuth, renderProfilePage)
 router.patch('/profile/:id', userAuth, editProfile)
-router.get('/sort/:sort',userAuth,sortProducts)
+
+
 
 
 

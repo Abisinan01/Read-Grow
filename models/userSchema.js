@@ -15,13 +15,13 @@ const userSchema = new Schema({
     id:{
         type:String,
         unique:true
-
     },
     username: {
         type: String,
         trim: true,
         // required: true,// if i on this show error
     },
+    referralCode:{type:String},
     email: {
         type: String,
         trim: true,
@@ -68,12 +68,34 @@ const userSchema = new Schema({
 
 
 
-userSchema.pre('save',async function(next){
-    if(!this.id){
-        this.id=`${lastUser++}`
+userSchema.pre("save", async function (next) {
+    if (!this.referralCode) {
+        this.referralCode = generateReferralCode();
     }
-    next()
-})
+    next();
+});
 
-const User = mongoose.model('Users', userSchema)
+// Function to generate a random 6-character referral code
+function generateReferralCode() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    const characters = letters + numbers;
+
+    let result = '';
+
+    // Ensure at least one letter and one number
+    result += letters[Math.floor(Math.random() * letters.length)];
+    result += numbers[Math.floor(Math.random() * numbers.length)];
+
+    // Generate remaining 4 characters (to make it 6 total)
+    for (let i = 2; i < 6; i++) {
+        result += characters[Math.floor(Math.random() * characters.length)];
+    }
+
+    // Shuffle the string to randomize positions
+    return result.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+
+const User = mongoose.model('User', userSchema)
 export default User 

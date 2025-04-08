@@ -460,8 +460,8 @@ export const editProductsGet = async (req, res, next) => {
 
         const product = await Product.findById(req.params.id);
         // console.log("Product:", product);
-
-        return res.render('admin/editProduct', { product })
+        const categories = await Category.find()
+        return res.render('admin/editProduct', { product , categories })
 
     } catch (error) {
         return next(new AppError(`Product editing page loadng failed ${error}`, 500))
@@ -510,7 +510,6 @@ export const editProduct = async (req, res, next) => {
                 }
             }
         )
-
         return res.json({
             success: true,
             message: "Product updated successfully",

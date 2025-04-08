@@ -426,7 +426,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const subTotal = parseFloat(document.getElementById('subTotal')?.textContent) || 0;
 
-            const discount = document.getElementById('discount').textContent || 0;
+            const discountElement = document.getElementById('discount');
+            let discount = 0;
+            if (discountElement) {
+                discount = discountElement.textContent || 0;
+            }
+            
             const shippingCharge = document.getElementById('shipping').textContent || 0;
             const finalPriceElement = document.querySelector('.text-xl.font-bold.text-red-500');
             let finalPrice;
@@ -456,6 +461,39 @@ document.addEventListener('DOMContentLoaded', function () {
                     return
                 }
                 placeOrder('pending')
+            }
+
+            if(selectedPayment === 'Wallet'){
+                try {
+                    const response = await fetch('/read-and-grow/wallet',{
+                        method:"POST",
+                        headers:{"Content-Type":"application/json"},
+                        body: JSON.stringify({finalPrice})
+                    })
+
+                    const result = await response.json()
+                    
+                    if(!response.ok){
+                        Swal.fire({ 
+                            icon: "error",
+                            title: "Oops...",
+                            text: result.message,
+                            footer: '<a href="#">Why do I have this issue?</a>'
+                          });
+                          return
+                    }
+             
+                    Swal.fire({
+                    title: result.message,
+                    icon: "success",
+                    
+                    })
+
+                    placeOrder('paid')
+                } catch (error) {
+                    console.log(error.message)
+                    showToast('Wallet is not working','error')
+                }
             }
  
             if (selectedPayment === 'Razorpay') {
@@ -633,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             confirmButtonText: "OK"
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = "/read-and-grow/shop";  // Redirect after clicking "OK"
+                                // window.location.href = "/read-and-grow/";  // Redirect after clicking "OK"
                             }
                         });
 

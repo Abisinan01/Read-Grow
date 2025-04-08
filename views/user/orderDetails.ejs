@@ -43,6 +43,10 @@
               </button>
             </div>
             <div class="flex justify-between items-center">
+              <span class="font-medium text-gray-800">Subtotal :</span>
+              <span class="text-gray-900 font-semibold"><%= order.subTotal %></span>
+            </div>
+            <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Payment status:</span>
               <span class="<% 
               if (order.paymentStatus === 'failed') { %> text-red-600 font-semibold <% } 
@@ -58,10 +62,18 @@
               <span class="font-medium text-gray-800">Shipping charge</span>
               <span class="text-gray-900 font-semibold"><%= order.shippingCharge %></span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="font-medium text-gray-800">discount</span>
-              <span class="text-gray-900 font-semibold"><%= order.discount %></span>
-            </div>
+            <% if(order.discount){%>
+              <div class="flex justify-between items-center">
+                <span class="font-medium text-gray-800">discount</span>
+                <span class="text-gray-900 font-semibold">-<%= order.discount %></span>
+              </div>
+            <% } %>
+            <% if(order.coupon){%>
+              <div class="flex justify-between items-center">
+                <span class="font-medium text-gray-800">Applied coupon</span>
+                <span class="text-gray-900 font-semibold">-<%= order.coupon.discountValue %></span>
+              </div>
+            <% } %>
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Total Amount:</span>
               <span style="font-size: 18px; font-weight: bold;" id="x">Rs. <%= order.totalAmount %></span>
@@ -184,7 +196,7 @@
           
             <button id="invoice"
               class="invoice-btn bg-gray-400 align-end hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
-              data-order-id="<%= order._id %>"
+              data-order-id="<%= order._id %>" onclick="invoice('<%= order._id %>')"
               <% if(order.status !== "Delivered") { %>hidden<% } %>>
               Invoice
             </button>
@@ -215,62 +227,62 @@
       }
       document.addEventListener('DOMContentLoaded', function () {
 
-        document.querySelectorAll('.invoice-btn').forEach(button => {
-          button.addEventListener('click', async function () {
-            const orderId = this.getAttribute('data-order-id');
+        // document.querySelectorAll('.invoice-btn').forEach(button => {
+        //   button.addEventListener('click', async function () {
+        //     const orderId = this.getAttribute('data-order-id');
  
-            if (!orderId) {
-              console.error("Order ID not found");
-              Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Order ID is missing!',
-              });
-              return;
-            }
+        //     if (!orderId) {
+        //       console.error("Order ID not found");
+        //       Swal.fire({
+        //         icon: 'error',
+        //         title: 'Oops...',
+        //         text: 'Order ID is missing!',
+        //       });
+        //       return;
+        //     }
 
-            button.disabled = true;
-            button.innerHTML = 'Generating...';
+        //     button.disabled = true;
+        //     button.innerHTML = 'Generating...';
 
-            try {
-              const response = await fetch(`/read-and-grow/generate-invoice/${orderId}`, { method: 'GET' });
+        //     try {
+        //       const response = await fetch(`/read-and-grow/generate-invoice/${orderId}`, { method: 'GET' });
 
-              if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to generate invoice');
-              }
+        //       if (!response.ok) {
+        //         const errorData = await response.json();
+        //         throw new Error(errorData.message || 'Failed to generate invoice');
+        //       }
 
-              const blob = await response.blob();
-              const url = window.URL.createObjectURL(blob);
+        //       const blob = await response.blob();
+        //       const url = window.URL.createObjectURL(blob);
 
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `Invoice_${orderId}.pdf`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              window.URL.revokeObjectURL(url);
+        //       const a = document.createElement('a');
+        //       a.href = url;
+        //       a.download = `Invoice_${orderId}.pdf`;
+        //       document.body.appendChild(a);
+        //       a.click();
+        //       document.body.removeChild(a);
+        //       window.URL.revokeObjectURL(url);
 
-              Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Invoice downloaded successfully!',
-                timer: 1500,
-                showConfirmButton: false,
-              });
-            } catch (error) {
-              console.error('Error generating invoice:', error.message);
-              Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Failed to generate invoice: ' + error.message,
-              });
-            } finally {
-              button.disabled = false;
-              button.innerHTML = 'Invoice';
-            }
-          });
-        });
+        //       Swal.fire({
+        //         icon: 'success',
+        //         title: 'Success',
+        //         text: 'Invoice downloaded successfully!',
+        //         timer: 1500,
+        //         showConfirmButton: false,
+        //       });
+        //     } catch (error) {
+        //       console.error('Error generating invoice:', error.message);
+        //       Swal.fire({
+        //         icon: 'error',
+        //         title: 'Oops...',
+        //         text: 'Failed to generate invoice: ' + error.message,
+        //       });
+        //     } finally {
+        //       button.disabled = false;
+        //       button.innerHTML = 'Invoice';
+        //     }
+        //   });
+        // });
 
 
         document.querySelectorAll('#singleCancel').forEach(button => {
@@ -544,9 +556,27 @@
           }
       })
     }
+
     })
     
   })
+  function invoice(orderId) {
+      Swal.fire({
+        title: 'Generating Invoice...',
+        text: 'Please wait while we prepare your invoice.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: true,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      setTimeout(() => {
+        window.open(`/read-and-grow/invoice/${orderId}`);
+        Swal.close();
+      }, 1500);
+    }
 
     </script>
 </body>

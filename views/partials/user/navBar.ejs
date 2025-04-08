@@ -59,7 +59,7 @@
                 <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
                     <i class="fas fa-shopping-cart text-xl"></i>
                 </a>
-                <a href="/read-and-grow/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                <a href="/read-and-grow/profile/<%= user.id || user._id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
                     <i class="fas fa-user text-xl"></i>
                 </a>
             </div>

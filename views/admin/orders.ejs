@@ -43,7 +43,6 @@
                 <tbody>
                     <% if (allOrders && allOrders.length > 0) { %>
                         <% allOrders.forEach(order => { %>
-                            <% order.items.forEach(item => { %>
                                 <tr class="border-b bg-white hover:bg-gray-50">
                                     <td class="py-4 px-6 text-sm text-gray-700">
                                         <%= order.orderId %>
@@ -61,40 +60,40 @@
                                     </td>
                                     <td class="py-4 px-6 text-sm">
                                         <% let statusClass = ""; %>
-                                        <% if (item.status === "Delivered") { %>
+                                        <% if (order.items && order.items.status === "Delivered") { %>
                                             <% statusClass = "bg-green-100 text-green-800"; %>
-                                        <% } else if (item.status === "Pending") { %>
+                                        <% } else if (order.items && order.items.status === "Pending") { %>
                                             <% statusClass = "bg-yellow-100 text-yellow-800"; %>
-                                        <% } else if (item.status === "Cancelled") { %>
+                                        <% } else if (order.items && order.items.status === "Cancelled") { %>
                                             <% statusClass = "bg-red-100 text-red-800"; %>
-                                        <% } else if (item.status === "Returned") { %>
+                                        <% } else if (order.items && order.items.status === "Returned") { %>
                                             <% statusClass = "bg-blue-100 text-blue-800"; %>
                                         <% } else { %>
                                             <% statusClass = "bg-gray-100 text-gray-800"; %>
                                         <% } %>
                                         <span class="status-display text-xs font-medium px-2.5 py-0.5 rounded-full <%= statusClass %>"
                                             data-order-id="<%= order._id %>"
-                                            data-item-id="<%= item.productId %>">
-                                            <%= item.status || "Unknown" %>
+                                            data-item-id="<%= order.items.productId %>">
+                                            <%= order.items.status || "Unknown" %>
                                         </span>
                                     </td>
                                     <td class="py-4 px-6 text-sm">
                                         <select class="status-select border border-gray-300 rounded-lg py-1 px-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             data-order-id="<%= order._id %>"
-                                            data-item-id="<%= item.productId %>">
-                                            <option value="Pending" <%= item.status === "Pending" ? "selected" : "" %>>Pending</option>
-                                            <option value="Delivered" <%= item.status === "Delivered" ? "selected" : "" %>>Delivered</option>
-                                            <option value="Cancelled" <%= item.status === "Cancelled" ? "selected" : "" %>>Cancelled</option>
-                                            <option value="Returned" <%= item.status === "Returned" ? "selected" : "" %>>Returned</option>
+                                            data-item-id="<%= order.items.productId %>">
+                                            <option value="Pending" <%= order.items.status === "Pending" ? "selected" : "" %>>Pending</option>
+                                            <option value="Delivered" <%= order.items.status === "Delivered" ? "selected" : "" %>>Delivered</option>
+                                            <option value="Cancelled" <%= order.items.status === "Cancelled" ? "selected" : "" %>>Cancelled</option>
+                                            <option value="Returned" <%= order.items.status === "Returned" ? "selected" : "" %>>Returned</option>
                                         </select>
                                     </td>
                                     <td class="py-4 px-6 text-sm">
-                                        <a href="/admin/view-order/<%= order._id %>/<%= item.productId %>"
+                                        <a href="/admin/view-order/<%= order._id %>/<%= order.items.productId %>"
                                             class="bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition duration-200">View Details</a>
                                     </td>
+                                    
                                 </tr>
                             <% }) %>
-                        <% }) %>
                     <% } else { %>
                         <tr>
                             <td colspan="5" class="py-4 px-6 text-sm text-gray-700 text-center">No orders are available</td>

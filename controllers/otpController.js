@@ -4,6 +4,7 @@ import User from '../models/userSchema.js';
 import jwt from "jsonwebtoken"
 import AppError from "../utils/errorHandler.js";
 import { content_v2_1 } from "googleapis";
+import { getReferralReward } from "../services/referralReward.js";
 
 export const sendOTP = async (email) => {
     try {
@@ -25,7 +26,7 @@ export const sendOTP = async (email) => {
         let result = await OTP.findOne({ otp: otp })
 
         while (result) {
-            otp = otpGenerator.generate(4, {
+            otp = otpGenerator.generate(4, { 
                 upperCaseAlphabets: false
             })
             result = await OTP.findOne({ otp: otp })
@@ -125,7 +126,7 @@ export const otpVerifyPost = async (req, res, next) => {
         }
 
 
-        const { username, email, phoneNumber, password } = req.session.temp
+        const { username, email, phoneNumber, password,referralCode } = req.session.temp
         console.log("temp session otp", req.session.temp)
 
         const getOtp = await OTP.find({ email: email }).sort({ createdAt: -1 }).limit(1)
@@ -163,6 +164,8 @@ export const otpVerifyPost = async (req, res, next) => {
             })
             await newUser.save()
             // console.log("user saved :", newUser.username);
+
+            await getReferralReward(referralCode,newUser._id)
             req.session.temp = null;
 
             //creating JWT

@@ -71,7 +71,7 @@
                 <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
                     <i class="fas fa-shopping-cart text-xl"></i>
                 </a>
-                <a href="/read-and-grow/profile/<%= user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                <a href="/read-and-grow/profile/<%= user._id || user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
                     <i class="fas fa-user text-xl"></i>
                 </a>
             </div>
@@ -209,6 +209,10 @@
                                                 <% } %>
                                             <% } %>
                                         </div>
+                                        <% if(product?.bestOffer){%>
+                                                <p class="text-lg font-semibold text-red-700  rounded-lg
+                                                    shadow-sm mb-2"><%= product.bestOffer %>% offer</p>
+                                        <% } %> 
                                         <div class="flex justify-between items-center">
                                             <span class="font-bold text-gray-900">Rs. <%= product.price %></span>
                                             <button 
@@ -217,7 +221,7 @@
                                                 <%= product.stock > 0 ? "" : "disabled" %>
                                                 class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
                                                 aria-label="Add <%= product.name %> to cart">
-                                                ADD CART
+                                                <%= !cartItems.includes(product._id.toString())? 'ADD TO CART' : 'GO TO CART' %>
                                             </button>
                                         
                                         </div>

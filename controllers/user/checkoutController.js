@@ -29,7 +29,7 @@ export const renderCheckoutPage = async (req, res, next) => {
         const cartId = req.params.id
         const address = await Address.find({ userId: user.id })
 
-        const userCart = await Cart.findById(cartId) 
+        const userCart = await Cart.findById(cartId)
 
         if (userCart.items.length <= 0) {
             return res.status(400).redirect('/read-and-grow/shop')
@@ -49,17 +49,17 @@ export const renderCheckoutPage = async (req, res, next) => {
             if (currentDate > coupon.expiryDate) {
                 await Offer.findByIdAndUpdate(coupon._id, { $set: { isActive: false } })
             }
- 
+
         }
 
-        
+
 
         let subTotal = 0
         let totalDiscount = 0
         let bestOffer
         let shippingCharge = 99
         let finalPrice = shippingCharge
-        const checkoutProducts = [] 
+        const checkoutProducts = []
         for (let item of userCart.items) {
             const product = await Product.findById(item.productId).lean()
                 .populate('offers')
@@ -67,52 +67,55 @@ export const renderCheckoutPage = async (req, res, next) => {
             const category = await Category.findOne({ categoryName: product.category })
                 .populate('offers')
 
-            if (product.offers || category.offers) {
-                let categoryOffer = category.offers.length > 0
-                    ? category.offers.reduce((acc, curr) =>
-                        (curr.status === true && curr.discountPercentage >= acc.discountPercentage) ? curr : acc
-                    )
-                    : null;
-                console.log("Category Offer:", categoryOffer);
+            // if (product.offers || category.offers) {
+            //     let categoryOffer = category.offers.length > 0
+            //         ? category.offers.reduce((acc, curr) =>
+            //             (curr.status === true && curr.discountPercentage >= acc.discountPercentage) ? curr : acc
+            //         )
+            //         : null;
+            //     console.log("Category Offer:", categoryOffer);
 
-                let productOffer = product.offers.length > 0
-                    ? product.offers.reduce((acc, curr) =>
-                        (curr.status === true && curr.discountPercentage > acc.discountPercentage) ? curr : acc
-                    )
-                    : null;
+            //     let productOffer = product.offers.length > 0
+            //         ? product.offers.reduce((acc, curr) =>
+            //             (curr.status === true && curr.discountPercentage > acc.discountPercentage) ? curr : acc
+            //         )
+            //         : null;
 
-                console.log("Product Offer:", productOffer);
+            //     console.log("Product Offer:", productOffer);
 
-                productOffer = productOffer && productOffer.discountPercentage > 0 ? productOffer : null;
-                categoryOffer = categoryOffer && categoryOffer.discountPercentage > 0 ? categoryOffer : null;
+            //     productOffer = productOffer && productOffer.discountPercentage > 0 ? productOffer : null;
+            //     categoryOffer = categoryOffer && categoryOffer.discountPercentage > 0 ? categoryOffer : null;
 
-                if (productOffer && categoryOffer) {
-                    bestOffer = (productOffer.discountPercentage > categoryOffer.discountPercentage) ? productOffer : categoryOffer;
-                } else {
-                    bestOffer = productOffer || categoryOffer;
-                }
-            }
+            //     if (productOffer && categoryOffer) {
+            //         bestOffer = (productOffer.discountPercentage > categoryOffer.discountPercentage) ? productOffer : categoryOffer;
+            //     } else {
+            //         bestOffer = productOffer || categoryOffer;
+            //     }
+            // }
 
             if (!product) {
                 console.log(`Not product found in this cart`)
                 throw new Error('Product not found in cart')
             }
 
-            let discountValue = (bestOffer.discountPercentage / 100) * product.price
+            let discountValue = (product.bestOffer / 100) * product.price
+            console.log(product.bestOffer, 'dosfjdlsfj')
             subTotal += (product.price * item.quantity)// fixed amount
             totalDiscount += discountValue
+            console.log(totalDiscount)
+
             finalPrice += (product.price * item.quantity) - discountValue  // minus all discounts
 
-            await Product.findByIdAndUpdate(product._id, { $set: { bestOffer: bestOffer.discountPercentage } })// can pass offer id
+            // await Product.findByIdAndUpdate(product._id, { $set: { bestOffer: bestOffer?.discountPercentage } })// can pass offer id
             checkoutProducts.push(product);
         }
 
         let appliedCoupon
-        if(req.session.applyCoupon){
+        if (req.session.applyCoupon) {
             finalPrice = req.session.applyCoupon.totalAmount
             appliedCoupon = req.session.applyCoupon.coupon
         }
-    
+
         console.log("finalPrice : ", finalPrice)
         req.session.orderDetails = finalPrice
 
@@ -125,7 +128,7 @@ export const renderCheckoutPage = async (req, res, next) => {
             userCart,
             subTotal,
             shippingCharge,
-            totalDiscount,
+            totalDiscount : totalDiscount,
             coupons,
             appliedCoupon
         })
@@ -138,29 +141,30 @@ export const renderCheckoutPage = async (req, res, next) => {
 export const confirmOrder = async (req, res, next) => {
     try {
         const user = req.user
-        const {
+        const { 
             addressId,
             paymentMethod,
             paymentStatus,
             subTotal,
             shippingCharge,
-            finalPrice, 
+            finalPrice,
             discount,
             // currency,
             // receipt,
             // notes 
 
-        } = req.body 
+        } = req.body
         console.log(req.body, 'confimr order req.body')
+
         if (!paymentMethod) {
-            return res.status(400).json({
+            return res.status(400).json({ 
                 success: false,
                 message: "Please select payment method"
             })
         }
-
-        console.log("paymentMethod :", paymentMethod)
  
+        console.log("paymentMethod :", paymentMethod)
+
         let address = await Address.findById(addressId)
         console.log('Delivery Address :', address)
 
@@ -172,7 +176,7 @@ export const confirmOrder = async (req, res, next) => {
                     message: "Please select address"
                 })
             }
-        }   
+        }
 
         const totalAmount = req.session.orderDetails
         console.log("totalAmount : ", totalAmount)
@@ -198,11 +202,13 @@ export const confirmOrder = async (req, res, next) => {
                 })
             }
 
+            const discountPriceEachProduct = (product.bestOffer / 100) * product.price
             items.push({
                 productId: product._id,
                 productName: product.name,
-                price: product.price,
+                price: Number(product.price),
                 quantity: item.quantity,
+                discountPrice: Number(discountPriceEachProduct)
             })
 
             product.stock -= item.quantity
@@ -223,7 +229,7 @@ export const confirmOrder = async (req, res, next) => {
             subTotal: parseInt(subTotal),
             totalAmount: parseInt(finalPrice),
             paymentStatus: paymentStatus,
-            coupon:coupon?.coupon?._id 
+            coupon: coupon?.coupon?._id
         })
 
         req.session.applyCoupon = null // this removing current applied coupon
@@ -245,7 +251,7 @@ export const confirmOrder = async (req, res, next) => {
     } catch (error) {
         next(new AppError(`Checkout Confirm order : ${error}`, 500))
     }
-
+ 
 }
 
 
@@ -260,7 +266,7 @@ export const successPage = async (req, res, next) => {
         const user = await User.findById(userId.id)
         const orders = await Order.findById(req.session.order._id);
         console.log("Order detials : ", orders)
-        
+
         req.session.order = null
         return res.render('user/orderConfirmed', {
             user,
@@ -272,55 +278,55 @@ export const successPage = async (req, res, next) => {
 }
 
 
-export const applyCoupon = async (req,res,next)=>{
+export const applyCoupon = async (req, res, next) => {
     try {
-        const {couponCode,totalAmount}=req.body
+        const { couponCode, totalAmount } = req.body
         const user = req.user
         console.log(req.body)
-        const coupon = await Coupon.findOne({couponCode})
-        if(!coupon){
-            return res.status(400).json({success:false,message:"Invalid coupon code"})
+        const coupon = await Coupon.findOne({ couponCode })
+        if (!coupon) {
+            return res.status(400).json({ success: false, message: "Invalid coupon code" })
         }
-        
+
         if (coupon.isUsed.some(id => id.toString() === user.id)) {
             return res.status(400).json({ success: false, message: 'Already used this coupon' });
         }
-        
-        if(new Date > coupon.expiryDate){
-            return res.status(400).json({success:false,message:"Coupon has expired"})
+
+        if (new Date > coupon.expiryDate) {
+            return res.status(400).json({ success: false, message: "Coupon has expired" })
         }
 
-        if(totalAmount < coupon.minPurchase){
-            return res.status(400).json({success:false,message:`Minimum purchase is ${coupon.minPurchase}`})
+        if (totalAmount < coupon.minPurchase) {
+            return res.status(400).json({ success: false, message: `Minimum purchase is ${coupon.minPurchase}` })
         }
 
         let discountAmount = coupon.discountValue
 
-        if(discountAmount > coupon.maxDiscount){
+        if (discountAmount > coupon.maxDiscount) {
             discountAmount = coupon.maxDiscount
         }
 
-        let totalAmountWithCoupon = totalAmount-discountAmount
-        req.session.applyCoupon={coupon,totalAmount:totalAmountWithCoupon}
-        console.log("req.session.applyCoupon ",req.session.applyCoupon)
+        let totalAmountWithCoupon = totalAmount - discountAmount
+        req.session.applyCoupon = { coupon, totalAmount: totalAmountWithCoupon }
+        console.log("req.session.applyCoupon ", req.session.applyCoupon)
 
         coupon.isUsed.push(req.user?.id)
         await coupon.save()
 
         return res.status(200).json({
-            success:true,
-            message:`Coupon applied coupon applied  You saved ₹${discountAmount.toFixed(2)}`,
-            totalAmountWithCoupon 
+            success: true,
+            message: `Coupon applied coupon applied  You saved ₹${discountAmount.toFixed(2)}`,
+            totalAmountWithCoupon
         })
     } catch (error) {
-        next(new AppError(`Apply coupon failed ${error}`,500))
+        next(new AppError(`Apply coupon failed ${error}`, 500))
     }
 }
 
- 
+
 export const removeCoupon = async (req, res, next) => {
     try {
-        const { couponId } = req.body; 
+        const { couponId } = req.body;
         const user = req.user;
         const coupon = await Coupon.findById(couponId);
         if (!coupon) {

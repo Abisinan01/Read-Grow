@@ -30,10 +30,10 @@ export const renderSignPage = async (req, res, next) => {
 
 export const handleSignupPage = async (req, res, next) => {
     try {
-        const { username, password, confirmPassword, email, phoneNumber } = req.body
+        const { username, password, confirmPassword, email, phoneNumber,referralCode } = req.body
         // console.log(req.body)
-        // console.log(email)
-
+        console.log(referralCode)
+ 
         let StrongPassword = (password === confirmPassword) ? password : false;
 
         const userExist = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] })
@@ -45,6 +45,19 @@ export const handleSignupPage = async (req, res, next) => {
             })
         }
 
+        if(referralCode){
+            const users = await User.find()
+            let flag = false
+            for(let user of users){
+                if(user.referralCode === referralCode){
+                    console.log("Referral code is valid")
+                    flag=true
+                }
+            }
+            if(!flag){
+                return res.status(404).json({success:false,message:"Invalid referral code"})
+            }
+        }
         if (userExist) {
             if (userExist.username == username) {
                 console.log(username)
@@ -83,7 +96,8 @@ export const handleSignupPage = async (req, res, next) => {
             username,
             email,
             password: hashPassword,
-            phoneNumber
+            phoneNumber,
+            referralCode
         }
         const token = jwt.sign({ email: email }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
 

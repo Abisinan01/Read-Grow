@@ -30,20 +30,23 @@ import { addOffers, deleteOffer, editOffer, renderAddOffers, renderEditOffers, r
 import { addCoupon, deleteCoupon, editCoupon, renderAddCoupon, renderCouponsPage, renderEditCoupon } from '../controllers/admin/couponController.js';
 import {
     adminDashboardGet,
-    downloadPDFReport,
-    exportUser,
-    getSalesData
+    updateDashboard
 } from '../controllers/admin/dashboardController.js';
+import { transactionManagment} from '../controllers/admin/transactionController.js';
+import { downloadExcelReport, downloadPDFReport, salesReport } from '../controllers/admin/salesReportController.js';
 
 
 //========Login
 router.get('/login', adminLoginGet)
 router.post('/login', adminLoginPost)
 //=========Dashboard
-router.get('/dashboard', adminAuth, adminDashboardGet)
-router.get('/sales', adminAuth, getSalesData)
-router.get('/download/pdf', downloadPDFReport)
-router.get("/downloadExcel", exportUser)
+router.get('/dashboard', adminAuth, adminDashboardGet);
+router.get('/update-dashboard', adminAuth, updateDashboard)
+// router.get('/sales', adminAuth, getSalesData);
+router.get('/download-pdf-report', adminAuth, downloadPDFReport);
+router.get('/download-excel-report', adminAuth, downloadExcelReport);
+
+
 //======users
 router.get('/users', adminAuth, renderUserPanel)
 
@@ -93,6 +96,11 @@ router.patch('/edit-coupon/:id', adminAuth, editCoupon)
 
 router.put('/accept-return/:productId/:orderId', adminAuth, acceptReturn)
 router.put('/reject-return/:productId/:orderId', adminAuth, rejectReturn)
+
+router.get('/transactions', adminAuth, transactionManagment)
+
+router.get('/sales-report',adminAuth,salesReport)
+router.get('/')
 //======logout=============
 router.post("/logout", adminLogout)
 //=============for handling random routes===============

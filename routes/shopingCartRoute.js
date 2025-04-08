@@ -10,8 +10,18 @@ import {
     renderWishListPage,
     updateQuantity
 } from "../controllers/user/shopingCartController.js"
+import {
+    renderHomePage, 
+    renderProductDetails,
+    renderShopPage,
+    sortProducts
+} from "../controllers/user/shopController.js"
 
 
+router.get('/home', renderHomePage)
+router.get('/product-details/:id', userAuth, renderProductDetails)
+router.get("/shop", userAuth, renderShopPage)
+router.get('/sort/:sort', userAuth, sortProducts)
 
 router.get('/wishlist', userAuth, renderWishListPage)
 router.post('/wishlist/add', userAuth, addToWishlist)

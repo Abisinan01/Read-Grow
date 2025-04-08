@@ -138,11 +138,14 @@
                                         <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
                                     </div>
                                 </label> -->
-                                <!-- <label
+                                <label
                                     class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
-                                    <input type="radio" name="paymentMethod" value="UPI" class="sr-only" required>
-                                    <span class="font-bold text-sm" id="UPI">UPI</span>
-                                </label> -->
+                                    <input type="radio" name="paymentMethod" value="Wallet" class="sr-only" required>
+                                    <span class="font-bold text-sm" id="Wallet"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+                                        <path d="M200-200v-560 560Zm0 80q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v100h-80v-100H200v560h560v-100h80v100q0 
+                                        33-23.5 56.5T760-120H200Zm320-160q-33 0-56.5-23.5T440-360v-240q0-33 23.5-56.5T520-680h280q33 0 56.5 23.5T880-600v240q0 33-23.5 56.5T800-280H520Zm280-80v-240H520v240h280Zm-160-60q25 0
+                                         42.5-17.5T700-480q0-25-17.5-42.5T640-540q-25 0-42.5 17.5T580-480q0 25 17.5 42.5T640-420Z"/></svg></span>
+                                </label>
                                 <label
                                     class="border border-gray-300 rounded-md p-3 w-16 h-10 flex items-center justify-center bg-white cursor-pointer hover:border-blue-500 payment-option">
                                     <input type="radio" name="paymentMethod" value="COD" class="sr-only" required>
@@ -227,9 +230,11 @@
                                                     <p class="text-sm text-gray-500">Qty: <span id="quantity">
                                                             <%= cartItem ? cartItem.quantity : 0 %>
                                                         </span></p>
-                                                <p class="font-small text-red-500">
-                                                    <%= product.bestOffer %>% off
-                                                </p>
+                                                <% if(product.bestOffer > 0) {%>
+                                                    <p class="font-small text-red-500">
+                                                        <%= product.bestOffer %>% off
+                                                    </p>
+                                                <% } %>
                                                 <p class="text-black">Rs. <%= product.price %>
                                                 </p>
                                             </div>
@@ -255,10 +260,12 @@
                                     <span id="coupon">-<%= appliedCoupon.discountValue %></span>
                                 </div>
                             <% } %>
+                            <% if(totalDiscount>0) {%>
                             <div class="flex justify-between text-sm text-red-500">
                                 <span>Discount</span>
                                 <span id="discount"><%= totalDiscount.toFixed(2) %></span>
                             </div>
+                            <% } %>
 
                         </div>
 

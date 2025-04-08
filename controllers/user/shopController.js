@@ -28,6 +28,13 @@ export const renderHomePage = async (req, res, next) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET)
                 user = decoded
+
+                const isUser = await User.findById(user.id, { role: "user" })
+                if (!isUser) {
+                    res.clearCookie("jwt")
+                    return res.redirect('/read-and-grow/home')
+                }
+
             } catch (error) {
                 console.log('Invalid jwt :', error)
             }
@@ -61,40 +68,15 @@ export const renderProductDetails = async (req, res, next) => {
                 message: "Product not found"
             });
         }
-        const offers = await Offer.find()
-        let currentDate = new Date
-        for(let offer of offers){
-            if(currentDate > offer.validTo ){
-                await Offer.findByIdAndUpdate(offer._id,{$set:{status:false}})
-            }
-        }
+
+        let currentDate = new Date()
+        await Offer.updateMany(
+            { validTo: { $lt: currentDate } },
+            { $set: { status: false } }
+        )
 
         const category = await Category.findOne({ categoryName: product.category })
-            .populate('offers')
-        let bestOffer;
-        let productOffer = product.offers.length > 0
-            ? product.offers.reduce((acc, curr) =>
-                (curr.status === true && curr.discountPercentage > acc.discountPercentage) ? curr : acc
-                , { discountPercentage: 0 })
-            : null;
-        console.log("Product Offer:", productOffer);
-
-        let categoryOffer = category.offers.length > 0
-            ? category.offers.reduce((acc, curr) =>
-                (curr.status === true && curr.discountPercentage > acc.discountPercentage) ? curr : acc
-                , { discountPercentage: 0 })
-            : null;
-        console.log("Category Offer:", categoryOffer);
-
-        productOffer = productOffer && productOffer.discountPercentage > 0 ? productOffer : null;
-        categoryOffer = categoryOffer && categoryOffer.discountPercentage > 0 ? categoryOffer : null;
-
-        if (productOffer && categoryOffer) {
-            bestOffer = (productOffer.discountPercentage > categoryOffer.discountPercentage) ? productOffer : categoryOffer;
-        } else {
-            bestOffer = productOffer || categoryOffer;
-        }
-        console.log("best offer:", bestOffer);
+            .populate('offers') 
 
         const relatedProducts = await Product.find(
             { category: product.category, _id: { $ne: id } }
@@ -104,22 +86,32 @@ export const renderProductDetails = async (req, res, next) => {
         let wishlistItems = []
         const wishlist = await Wishlist?.findOne({ userId: user.id })
         if (wishlist) {
-
             for (let item of wishlist?.items) {
                 const product = await Product.findById(item.productId).lean()
                 if (product) {
                     wishlistItems.push(product)
                 } else {
                     console.log(`No product found`)
-                    return res.status(400).json({ success: false, message: "No products found" })
+                    return res.status(404).json({ success: false, message: "No products found" })
                 }
-
-            
                 wishlistItems.push(product)
             }
 
         }
 
+        let cartItems = []
+        const cart = await Cart.findOne({ userId: user.id })
+        if (cart) {
+            for (let item of cart.items) {
+                const product = await Product.findById(item.productId)
+                if (!product) {
+                    console.log(`No product found`)
+                    return res.status(404).json({ success: false, message: "No products found" })
+                }
+                cartItems.push(product)
+            }
+        }
+        console.log(cartItems, 'cartItems')
         const date = new Date(product.createdAt).toDateString();
         res.render("user/product", {
             product,
@@ -127,7 +119,8 @@ export const renderProductDetails = async (req, res, next) => {
             user: req.user,
             relatedProducts,
             wishlistItems,
-            bestOffer
+            // bestOffer,
+            cartItems
         });
 
     } catch (error) {
@@ -140,7 +133,7 @@ export const renderShopPage = async (req, res, next) => {
     try {
         const user = req.user;
         const category = req.query.category || '';
-        const author = req.query.author || '';
+        const author = req.query.author || ''; 
         const search = req.query.search || '';
         const price = req.query.price || '';
         let page = req.query.page || 1;
@@ -182,7 +175,6 @@ export const renderShopPage = async (req, res, next) => {
             }
         }
 
-
         const products = await Product.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -205,6 +197,22 @@ export const renderShopPage = async (req, res, next) => {
             }
         }
 
+        let cartItems = []
+        const cart = await Cart.findOne({ userId: user.id })
+
+        if (cart) {
+            for (let item of cart.items) {
+                const product = await Product.findById(item.productId)
+                if (!product) {
+                    console.log(`No product found`)
+                    return res.status(404).json({ success: false, message: "No products found" })
+                }
+                cartItems.push(product)
+
+            }
+        }
+        console.log(cartItems, 'cartItems')
+        
         const totalProducts = await Product.countDocuments(query);
         const totalPages = Math.ceil(totalProducts / limit);
 
@@ -222,7 +230,8 @@ export const renderShopPage = async (req, res, next) => {
             categories,
             errorMessage: products?.length === 0 ? "No products found." : null,
             user: req.user,
-            wishlistItems
+            wishlistItems,
+            cartItems
         };
 
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
@@ -237,7 +246,6 @@ export const renderShopPage = async (req, res, next) => {
 };
 
 
-
 export const sortProducts = async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -246,7 +254,6 @@ export const sortProducts = async (req, res, next) => {
 
         const sort = req.params.sort;
         console.log("Order sort:", sort);
-
 
         let sortCondition = {};
         switch (sort) {
@@ -266,16 +273,13 @@ export const sortProducts = async (req, res, next) => {
                 sortCondition = {};
         }
 
-
         const products = await Product.find({ isBlocked: false })
             .sort(sortCondition)
             .skip(skip)
             .limit(limit);
 
-
         const totalProducts = await Product.countDocuments({ isBlocked: false });
         const totalPages = Math.ceil(totalProducts / limit);
-
 
         return res.render("user/shop", {
             allProducts: products,

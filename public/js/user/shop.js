@@ -1,7 +1,7 @@
 function showToast(message, type = 'error') {
-    Toastify({
+    Toastify({  
         text: message,
-        duration: 2000,
+        duration: 1500,
         gravity: "top",
         position: "center",
         backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const bookGrid = document.querySelector('.grid');
     const pagination = document.querySelector('.flex.space-x-2');
     const limit = document.getElementById('limit').value
-    const totalPages = document.getElementById('totalPages').value
+    // const totalPages = document.getElementById('totalPages').value
     const body = document.body; 
     const currentSearch = body.getAttribute("data-search");
     const currentCategory = body.getAttribute("data-category");

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body {
+        font-size: 12px;
+        color: #000;
+        background: #fff;
+      }
+      .no-print {
+        display: none !important;
+      }
+      table, th, td {
+        border: 1px solid #000 !important;
+        border-collapse: collapse !important;
+      }
+    }
+  </style>
+</head>
+<body class="p-10 bg-white text-black font-sans">
+
+  <!-- Company Info / Title -->
+  <div class="text-center mb-10">
+    <h1 class="text-3xl font-bold">Sales Report</h1>
+    <p class="text-sm mt-1">REad & GroW</p>
+    <p class="text-xs text-gray-700">Date Range: <%= new Date().toLocaleDateString() %></p>
+  </div>
+
+
+  <!-- Sales Table -->
+  <div>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2 border text-left">#</th>
+          <th class="p-2 border text-left">Order ID</th>
+          <th class="p-2 border text-left">Customer</th>
+          <th class="p-2 border text-left">Date</th>
+          <th class="p-2 border text-left">Subtotal</th>
+          <th class="p-2 border text-left">Discount</th>
+          <th class="p-2 border text-left">Shipping</th>
+          <th class="p-2 border text-left">Total</th>
+          <th class="p-2 border text-left">Status</th>
+          <th class="p-2 border text-left">Payment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if(orders.length>0){%>
+            <% orders.forEach(orders=>{%>
+            <tr>
+            <td class="p-2 border"></td>
+            <td class="p-2 border"><%= orders.orderId %></td>
+            <td class="p-2 border"><%= orders.userId?.username %></td>
+            <td class="p-2 border"><%= new Date(orders.createdAt).toLocaleDateString() %></td>
+            <td class="p-2 border">₹<%= orders.subTotal %></td>
+            <td class="p-2 border">₹<%= orders.discount %></td>
+            <td class="p-2 border">₹<%= orders.shippingCharge %></td>
+            <td class="p-2 border">₹<%= orders.totalAmount %></td>
+            <td class="p-2 border"><%= orders.status %></td>
+            <td class="p-2 border"><%= orders.payment %></td>
+            </tr>
+            <% })  %>
+        <% } %>
+        <!-- Add more rows as needed -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer (Optional) -->
+  <div class="mt-10 text-center text-xs text-gray-600">
+    <p>Generated on <%= new Date() %></p>
+    <p>REad & GroW | About | Contact</p>
+  </div>
+
+</body>
+</html>

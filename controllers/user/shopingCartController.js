@@ -226,15 +226,19 @@ export const addToCart = async (req, res, next) => {
         }
         let cart = await Cart.findOne({ userId: user.id })
    
-        
         if (cart) {
             const existItemIndex = cart.items.findIndex(
                 item => item.productId.toString() === productId.toString()
             )
             if (existItemIndex > -1) {
-                if (cart.items[existItemIndex].quantity + 1 > product.stock) {
+                if (cart.items[existItemIndex].quantity + 1 > product.stock ) {
                     return res.status(400).json({
                         success: false, message: "No enough stock"
+                    })  
+                }
+                if(cart.items[existItemIndex].quantity + 1 > 3){
+                    return res.status(400).json({
+                        success: false, message: "Order limit is reached"
                     })  
                 }
                 cart.items[existItemIndex].quantity += 1;

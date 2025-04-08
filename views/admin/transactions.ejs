@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Admin Listing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex h-screen">
+    <!-- Sidebar -->
+    <%- include("../partials/admin/adminSideBar.ejs") %>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <div class="p-8">
+                <h1 class="text-3xl font-bold mb-6 text-gray-800">Transaction Management</h1>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800">Transactions</h2>
+                            <p class="text-gray-600">Manage transaction records</p>
+                        </div>
+                    </div>
+
+                    <!-- <form id="searchInput">
+                        <div class="flex mb-6">
+                        <div class="relative flex-1 mr-2">
+                            <input type="text" placeholder="Search transactions..."
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10">
+                            <svg class="w-5 h-5 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <button  type="submit" class="bg-gray-400 text-white px-6 py-2 rounded-lg">Search</button>
+                         <button
+                            class="ml-2 px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">Reset</button> -->
+                          <!-- </div>
+                    </form>  -->
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead>
+                                <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm">
+                                    <th class="py-3 px-4 font-semibold">Transaction ID</th>
+                                    <th class="py-3 px-4 font-semibold">User</th>
+                                    <th class="py-3 px-4 font-semibold">Date</th>
+                                    <th class="py-3 px-4 font-semibold">Amount</th>
+                                    <th class="py-3 px-4 font-semibold">Status</th>
+                                    <th class="py-3 px-4 font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <% if(wallets && wallets.length > 0){%>
+                                    <% wallets.forEach(wallet=>{%>
+                                        
+                                        <tr class="border-t">
+                                            <td class="py-3 px-4">#<%= wallet?.transactions?.transactionId %></td>
+                                            <td class="py-3 px-4"><%= wallet?.user?.username %></td>
+
+                                            <td class="py-3 px-4">2025-04-01</td>
+                                            <td class="py-3 px-4"><%= wallet?.transactions.amount %></td>
+                                            <% if(wallet?.transactions?.transactionType === 'credit') {%>
+                                                <td class="py-3 px-4">
+                                                    <span class="text-green-600 text-semi-bold px-2 py-1 ">Credited</span>
+                                                    (<%= wallet?.transactions?.source %>)
+                                                </td>
+                                            <% } else if(wallet?.transactions?.transactionType === 'debit') {%>
+                                                <td class="py-3 px-4">
+                                                    <span class="  text-red-600 text-semi-bold px-2 py-1">Debited</span>
+                                                    (<%= wallet?.transactions?.source %>)
+                                                </td>
+                                            <% } %>
+                                            <td class="py-3 px-4">
+                                                <% if(wallet?.transactions.source ==='refund'){%>
+                                                    <div class="flex">
+                                                        <a href="/admin/view-order/<%= wallet.transactions.orderId %>/<%= wallet.transactions?.productId %>" 
+                                                            class="text-white mr-3 bg-gray-500 text-[12px] w-20 rounded-[10px] px-2">
+                                                            View details
+                                                        </a>
+                                                    </div>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                      
+                                        <% })  %>
+                                        <% }else{ %>
+                                            <tr>
+                                                <td class="flex justify-center text-center relative left-96">No transactions found</td>
+                                            </tr>
+                                        <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex justify-center mt-6">
+                        <nav class="flex justify-center mt-6">
+                            <ul class="inline-flex items-center -space-x-px text-sm">
+                              <!-- Previous Page -->
+                              <% if(page > 1){ %>
+                                <li>
+                                  <a href="/admin/transactions?page=<%= page - 1 %>&limit=<%= limit %>" 
+                                     class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                  </a>
+                                </li>
+                              <% } else { %>
+                                <li>
+                                  <span class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-l-lg cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                  </span>
+                                </li>
+                              <% } %>
+                          
+                              <!-- Page Numbers -->
+                              <% for(let i = 1; i <= totalPages; i++) { %>
+                                <li>
+                                  <a href="/admin/transactions?page=<%= i %>&limit=<%= limit %>" 
+                                     class="flex items-center justify-center px-3 h-10 leading-tight 
+                                            border border-gray-300 
+                                            <%= page === i ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100' %>">
+                                    <%= i %>
+                                  </a>
+                                </li>
+                              <% } %>
+                          
+                              <!-- Next Page -->
+                              <% if(page < totalPages){ %>
+                                <li>
+                                  <a href="/admin/transactions?page=<%= page + 1 %>&limit=<%= limit %>" 
+                                     class="flex items-center justify-center px-3 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                  </a>
+                                </li>
+                              <% } else { %>
+                                <li>
+                                  <span class="flex items-center justify-center px-3 h-10 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-r-lg cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                  </span>
+                                </li>
+                              <% } %>
+                            </ul>
+                          </nav>
+                          
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</body>
+
+</html>
