@@ -103,6 +103,7 @@ export const viewOrder = async (req, res, next) => {
         })
 
     } catch (error) {
+        
         next(new AppError(` viewOrder detials : ${error}`, 500))
     }
 }
