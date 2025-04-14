@@ -1,0 +1,26 @@
+<html>
+    <body>
+        <input type="text" id="searchBox" placeholder="Search for products...">
+        <div id="productList">
+            <div class="product" data-name="Laptop">Laptop - $800</div>
+            <div class="product" data-name="Phone">Phone - $500</div>
+            <div class="product" data-name="Tablet">Tablet - $300</div>
+        </div>
+
+        <script type="text/javascript" charset="utf-8">
+            document.getElementById('searchBox').addEventListener('keyup', function () {
+                const query = this.value.toLowerCase();
+                const products = document.querySelectorAll('.product');
+
+                products.forEach(p => {
+                    // Check if the product name includes the search query
+                    if (p.dataset.name.toLowerCase().includes(query)) {
+                        p.style.display = 'block';
+                    } else {
+                        p.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
