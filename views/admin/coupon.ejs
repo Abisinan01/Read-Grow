@@ -57,6 +57,7 @@
                             <th class="p-3 text-left">Coupon Code</th>
                             <th class="p-3 text-left">Discount</th>
                             <th class="p-3 text-left">Expiry Date</th>
+                            <th class="p-3 text-left">Status</th>
                             <th class="p-3 text-left">Actions</th>
                         </tr>
                     </thead>
@@ -74,6 +75,11 @@
                                             day: '2-digit' 
                                         }) %>
                                     </td>
+                                    <% if(coupons[i].isActive) {%>
+                                        <td class="p-3 text-green-600 font-semibold">Active</td>
+                                    <% }else{ %>
+                                        <td class="p-3 text-red-600 font-semibold">Inactive</td>
+                                    <% } %>
                                     <td class="p-3 flex justify-center space-x-4">
                                         <a href="/admin/edit-coupon/<%= coupons[i]._id %>" class="text-blue-500 hover:text-blue-700 transition duration-200 group">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 group-hover:scale-110">

@@ -29,30 +29,32 @@ export const renderCheckoutPage = async (req, res, next) => {
         const cartId = req.params.id
         const address = await Address.find({ userId: user.id })
 
-        const userCart = await Cart.findById(cartId)
+        const userCart = await Cart.findById(cartId)//FETCH CART DATA
 
+        //CHECK CART HAVE DATA
         if (userCart.items.length <= 0) {
             return res.status(400).redirect('/read-and-grow/shop')
         }
 
         const offers = await Offer.find()
-        let currentDate = new Date
+        let currentDate = new Date()
+        //UNLIST EXPIRED OFFERS
         for (let offer of offers) {
             if (currentDate > offer.validTo) {
                 await Offer.findByIdAndUpdate(offer._id, { $set: { status: false } })
             }
         }
 
-        const coupons = await Coupon.find({ isActive: true })
+        //FIDN COUPON UNUSED COUPON
+        const coupons = await Coupon.find({ isActive: true, isUsed: { $nin: [user.id] } })
             .sort({ createdAt: -1 })
+
+        //UNLIST EXPIRED COUPONS
         for (let coupon of coupons) {
             if (currentDate > coupon.expiryDate) {
-                await Offer.findByIdAndUpdate(coupon._id, { $set: { isActive: false } })
+                await Coupon.findByIdAndUpdate(coupon._id, { $set: { isActive: false } })
             }
-
         }
-
-
 
         let subTotal = 0
         let totalDiscount = 0
@@ -60,64 +62,46 @@ export const renderCheckoutPage = async (req, res, next) => {
         let shippingCharge = 99
         let finalPrice = shippingCharge
         const checkoutProducts = []
+
+        //
         for (let item of userCart.items) {
             const product = await Product.findById(item.productId).lean()
-                .populate('offers')
+                .populate('offers')//LOOKUP 
 
             const category = await Category.findOne({ categoryName: product.category })
                 .populate('offers')
-
-            // if (product.offers || category.offers) {
-            //     let categoryOffer = category.offers.length > 0
-            //         ? category.offers.reduce((acc, curr) =>
-            //             (curr.status === true && curr.discountPercentage >= acc.discountPercentage) ? curr : acc
-            //         )
-            //         : null;
-            //     console.log("Category Offer:", categoryOffer);
-
-            //     let productOffer = product.offers.length > 0
-            //         ? product.offers.reduce((acc, curr) =>
-            //             (curr.status === true && curr.discountPercentage > acc.discountPercentage) ? curr : acc
-            //         )
-            //         : null;
-
-            //     console.log("Product Offer:", productOffer);
-
-            //     productOffer = productOffer && productOffer.discountPercentage > 0 ? productOffer : null;
-            //     categoryOffer = categoryOffer && categoryOffer.discountPercentage > 0 ? categoryOffer : null;
-
-            //     if (productOffer && categoryOffer) {
-            //         bestOffer = (productOffer.discountPercentage > categoryOffer.discountPercentage) ? productOffer : categoryOffer;
-            //     } else {
-            //         bestOffer = productOffer || categoryOffer;
-            //     }
-            // }
 
             if (!product) {
                 console.log(`Not product found in this cart`)
                 throw new Error('Product not found in cart')
             }
 
-            let discountValue = (product.bestOffer / 100) * product.price
-            console.log(product.bestOffer, 'dosfjdlsfj')
-            subTotal += (product.price * item.quantity)// fixed amount
-            totalDiscount += discountValue
+            //VALIDATE STOCK AVAILABILITY
+            if (product.stock === 0 || product.stock < item.quantity) {
+                console.log('Out of stock')
+                return res.status(400).redirect('/read-and-grow/cart')
+            }
+
+            let discountValue = (product.bestOffer / 100) * product.price//CALCULATE EACH PRODUCT DISCOUNT
+            console.log(product.bestOffer, 'product.bestOffer')
+            subTotal += (product.price * item.quantity)//CHECKOUT TOTAL WIHOUT DISCOUNT
+            totalDiscount += parseInt(discountValue) || 0;
             console.log(totalDiscount)
 
-            finalPrice += (product.price * item.quantity) - discountValue  // minus all discounts
-
-            // await Product.findByIdAndUpdate(product._id, { $set: { bestOffer: bestOffer?.discountPercentage } })// can pass offer id
+            finalPrice += (product.price * item.quantity) - (discountValue || 0)  //PRICE USER WANT TO PAY
             checkoutProducts.push(product);
         }
 
         let appliedCoupon
+        //WHEN USER APPLIED COUPON ITS WILL STORE IN SESSION
         if (req.session.applyCoupon) {
             finalPrice = req.session.applyCoupon.totalAmount
             appliedCoupon = req.session.applyCoupon.coupon
         }
 
         console.log("finalPrice : ", finalPrice)
-        req.session.orderDetails = finalPrice
+
+        req.session.orderDetails = finalPrice//FOR GETTING REALTIME UPDATE FRONTEND
 
         console.log("checkoutProducts", checkoutProducts)
         res.render('user/checkout', {
@@ -128,7 +112,7 @@ export const renderCheckoutPage = async (req, res, next) => {
             userCart,
             subTotal,
             shippingCharge,
-            totalDiscount : totalDiscount,
+            totalDiscount: Number(totalDiscount),
             coupons,
             appliedCoupon
         })
@@ -141,7 +125,7 @@ export const renderCheckoutPage = async (req, res, next) => {
 export const confirmOrder = async (req, res, next) => {
     try {
         const user = req.user
-        const { 
+        const {
             addressId,
             paymentMethod,
             paymentStatus,
@@ -152,17 +136,16 @@ export const confirmOrder = async (req, res, next) => {
             // currency,
             // receipt,
             // notes 
-
         } = req.body
         console.log(req.body, 'confimr order req.body')
 
         if (!paymentMethod) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 message: "Please select payment method"
             })
         }
- 
+
         console.log("paymentMethod :", paymentMethod)
 
         let address = await Address.findById(addressId)
@@ -181,6 +164,7 @@ export const confirmOrder = async (req, res, next) => {
         const totalAmount = req.session.orderDetails
         console.log("totalAmount : ", totalAmount)
 
+        //CREATE ORDERID
         const orderID = `ORD-${Date.now()}`;
         console.log("orderID :", orderID)
 
@@ -195,27 +179,34 @@ export const confirmOrder = async (req, res, next) => {
                 throw new Error('Product not found in cart')
             }
 
-            if (product.stock === 0) {
+            //VALIDATE STOCK AVAILABILITY
+            if (product.stock === 0 || product.stock < item.quantity) {
                 return res.status(400).json({
                     success: false,
                     message: `Out of stock`
                 })
             }
 
-            const discountPriceEachProduct = (product.bestOffer / 100) * product.price
+            // const discountPriceEachProduct = (product.bestOffer / 100) * product.price || 0
+            // console.log(discountPriceEachProduct)
+
             items.push({
                 productId: product._id,
                 productName: product.name,
                 price: Number(product.price),
                 quantity: item.quantity,
-                discountPrice: Number(discountPriceEachProduct)
+                discountPrice: Number((product.bestOffer/100)*product.price) || 0
             })
 
+            //UPDATE INVENTORY 
+            // if(product.stock >= item.quantity){
+            //     return res.status(400).json({success:false,message:"Insufficent stock count"})
+            // }
             product.stock -= item.quantity
             await product.save()
         }
 
-        const coupon = req.session.applyCoupon
+        const coupon = req.session.applyCoupon || null
 
         console.log(coupon)
         const newOrder = new Order({
@@ -229,10 +220,11 @@ export const confirmOrder = async (req, res, next) => {
             subTotal: parseInt(subTotal),
             totalAmount: parseInt(finalPrice),
             paymentStatus: paymentStatus,
-            coupon: coupon?.coupon?._id
+            coupon: coupon?.coupon?._id,
+            isCouponAvailable : (coupon)?true:false
         })
 
-        req.session.applyCoupon = null // this removing current applied coupon
+        req.session.applyCoupon = null //CLEAR COUPON FROM SESSOIN APPLIED ONE
 
         const saveOrder = await newOrder.save()
         console.log(`New order saved ${saveOrder}`)
@@ -243,6 +235,7 @@ export const confirmOrder = async (req, res, next) => {
             })
         }
 
+        //REMOVE CART ITEMS
         await Cart.findByIdAndUpdate(cart._id, { $set: { items: [] } })
         req.session.order = saveOrder
         return res.status(200).json({
@@ -251,7 +244,7 @@ export const confirmOrder = async (req, res, next) => {
     } catch (error) {
         next(new AppError(`Checkout Confirm order : ${error}`, 500))
     }
- 
+
 }
 
 
@@ -261,8 +254,9 @@ export const successPage = async (req, res, next) => {
         console.log("req.session.order", req.session.order)
 
         if (!req.session.order) {
-            return res.redirect('/read-and-grow/home')
+            return res.redirect('/read-and-grow')
         }
+
         const user = await User.findById(userId.id)
         const orders = await Order.findById(req.session.order._id);
         console.log("Order detials : ", orders)
@@ -288,6 +282,7 @@ export const applyCoupon = async (req, res, next) => {
             return res.status(400).json({ success: false, message: "Invalid coupon code" })
         }
 
+        //VALIDATE MULTIPLE USAGE SAME COUPON
         if (coupon.isUsed.some(id => id.toString() === user.id)) {
             return res.status(400).json({ success: false, message: 'Already used this coupon' });
         }
@@ -302,14 +297,17 @@ export const applyCoupon = async (req, res, next) => {
 
         let discountAmount = coupon.discountValue
 
-        if (discountAmount > coupon.maxDiscount) {
-            discountAmount = coupon.maxDiscount
-        }
+        // if (discountAmount > coupon.maxDiscount) {
+        //     discountAmount = coupon.maxDiscount
+        // }
 
         let totalAmountWithCoupon = totalAmount - discountAmount
+
+        //FOR SEE APPLIED COUPON IN CHECKOUT PAGE
         req.session.applyCoupon = { coupon, totalAmount: totalAmountWithCoupon }
         console.log("req.session.applyCoupon ", req.session.applyCoupon)
 
+        //MARK IT HAS BEEN USED
         coupon.isUsed.push(req.user?.id)
         await coupon.save()
 

@@ -14,262 +14,474 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="/js/user/showMessage.js" defer></script>
     <script src="/js/user/shop.js" defer></script>
+    <style>
+        /* Mobile menu styles */
+        .mobile-menu {
+            display: none;
+            transition: all 0.3s ease;
+        }
+        .mobile-menu.active {
+            display: block;
+        }
+        
+        /* Container styling */
+        .sort-by {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space between label and dropdown */
+        }
+
+        /* Label styling */
+        .sort-by label {
+            font-size: 1.125rem; /* 18px, matches text-lg */
+            font-weight: 600; /* Matches font-semibold */
+            color: #374151; /* Dark gray for contrast */
+        }
+
+        /* Dropdown styling */
+        .sort-options {
+            appearance: none; /* Remove default browser styling */
+            background: #ffffff;
+            border: 1px solid #d1d5db; /* Light gray border */
+            border-radius: 6px;
+            padding: 8px 32px 8px 12px; /* Space for custom arrow */
+            font-size: 0.875rem; /* 14px for readability */
+            color: #374151; /* Dark gray text */
+            cursor: pointer;
+            min-width: 180px; /* Prevent shrinking */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Custom dropdown arrow */
+        .sort-options {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        /* Hover and focus effects */
+        .sort-options:hover {
+            border-color: #6b7280; /* Darker gray on hover */
+            box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1); /* Subtle ring */
+        }
+
+        .sort-options:focus {
+            outline: none;
+            border-color: #3b82f6; /* Blue focus ring */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Option styling (limited control, but for consistency) */
+        .sort-options option {
+            background: #ffffff;
+            color: #374151;
+            padding: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sort-by {
+                justify-content: flex-start; /* Align left on mobile */
+                width: 100%;
+            }
+            .sort-options {
+                width: 100%; /* Full width on mobile */
+            }
+        }
+
+        /* Ensure visibility on medium screens and up */
+        @media (min-width: 768px) {
+            .hidden.md\:flex {
+                display: flex;
+            }
+        }
+        
+        /* Filter sidebar for mobile */
+        .filter-sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 80%;
+                max-width: 300px;
+                z-index: 50;
+                background-color: white;
+                overflow-y: auto;
+                transform: translateX(-100%);
+                padding: 1rem;
+            }
+            
+            .filter-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .filter-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                z-index: 40;
+                display: none;
+            }
+            
+            .filter-overlay.active {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen flex flex-col"
-        data-search="<%= search || '' %>" 
-        data-category="<%= category || '' %>" 
-        data-author="<%= author || '' %>" 
-        data-price="<%= price || '' %>">
+      data-search="<%= search || '' %>" 
+      data-category="<%= category || '' %>" 
+      data-author="<%= author || '' %>" 
+      data-price="<%= price || '' %>">
+      
+    <!-- Mobile menu overlay -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    
+    <!-- Filter sidebar overlay -->
+    <div id="filterOverlay" class="filter-overlay"></div>
         
     <!-- Navbar -->
-<nav class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            
-            <!-- Logo -->
-            <a href="/" class="flex items-center">
-                <h1 class="text-2xl font-bold text-gray-900">REad & GroW</h1>
-            </a>
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-600 focus:outline-none" aria-label="Menu">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- Logo -->
+                <a href="/" class="flex items-center">
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-900">REad & GroW</h1>
+                </a>
 
-            <!-- Search Bar -->
-            <div class="flex-1 max-w-2xl px-6">
-                <div class="relative">
-                    <form id="searchForm" action="/read-and-grow/shop" method="GET">
-                        <input type="search" 
-                               name="search" 
-                               value="<%= search || '' %>" 
-                               placeholder="Search for books..." 
-                               class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               aria-label="Search">
-                        <input type="hidden" name="page" value="1">
-                        <input type="hidden" name="limit" value="6">
-                        <% if (category) { %>
-                            <input type="hidden" name="category" value="<%= category %>">
-                        <% } %>
-                        <% if (author) { %>
-                            <input type="hidden" name="author" value="<%= author %>">
-                        <% } %>
-                        <% if (price) { %>
-                            <input type="hidden" name="price" value="<%= price %>">
-                        <% } %>
-          
-                    </form>
-
+                <!-- Search Bar - Hide on small screens -->
+                <div class="hidden md:flex flex-1 max-w-2xl px-6">
+                    <div class="relative w-full">
+                        <form id="searchForm" action="/read-and-grow/shop" method="GET" class="w-full">
+                            <input type="search" 
+                                   name="search" 
+                                   value="<%= search || '' %>" 
+                                   placeholder="Search for books..." 
+                                   class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   aria-label="Search">
+                            <input type="hidden" name="page" value="1">
+                            <input type="hidden" name="limit" value="6">
+                            <% if (category) { %>
+                                <input type="hidden" name="category" value="<%= category %>">
+                            <% } %>
+                            <% if (author) { %>
+                                <input type="hidden" name="author" value="<%= author %>">
+                            <% } %>
+                            <% if (price) { %>
+                                <input type="hidden" name="price" value="<%= price %>">
+                            <% } %>
+                        </form>
+                    </div>
+                </div>
+     
+                <!-- Navigation Icons -->
+                <div class="flex items-center space-x-3 md:space-x-6">
+                    <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                        <i class="fas fa-store text-lg md:text-xl"></i>
+                    </a>
+                    <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                        <i class="fas fa-heart text-lg md:text-xl"></i>
+                    </a>
+                    <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+                        <i class="fas fa-shopping-cart text-lg md:text-xl"></i>
+                    </a>
+                    <a href="/read-and-grow/profile/<%= user._id || user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                        <i class="fas fa-user text-lg md:text-xl"></i>
+                    </a>
+                    
+                    <!-- Filter button (mobile only) -->
+                    <button id="filterBtn" class="md:hidden text-gray-600 hover:text-gray-900" aria-label="Filter">
+                        <i class="fas fa-filter text-lg"></i>
+                    </button>
                 </div>
             </div>
- 
             
-            <!-- Navigation Icons -->
-            <div class="flex items-center space-x-6">
-                <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
-                    <i class="fas fa-store text-xl"></i>
-                </a>
-                <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
-                    <i class="fas fa-heart text-xl"></i>
-                </a>
-                <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
-                    <i class="fas fa-shopping-cart text-xl"></i>
-                </a>
-                <a href="/read-and-grow/profile/<%= user._id || user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
-                    <i class="fas fa-user text-xl"></i>
-                </a>
+            <!-- Mobile Search - Visible only on small screens -->
+            <div class="md:hidden pb-3">
+                <form id="mobileSearchForm" action="/read-and-grow/shop" method="GET" class="w-full">
+                    <input type="search" 
+                           name="search" 
+                           value="<%= search || '' %>" 
+                           placeholder="Search for books..." 
+                           class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           aria-label="Search">
+                    <input type="hidden" name="page" value="1">
+                    <input type="hidden" name="limit" value="6">
+                    <% if (category) { %>
+                        <input type="hidden" name="category" value="<%= category %>">
+                    <% } %>
+                    <% if (author) { %>
+                        <input type="hidden" name="author" value="<%= author %>">
+                    <% } %>
+                    <% if (price) { %>
+                        <input type="hidden" name="price" value="<%= price %>">
+                    <% } %>
+                </form>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-
-    <main class="container mx-auto px-4 py-8 flex-1">
+    <main class="container mx-auto px-4 py-4 md:py-8 flex-1">
+        <!-- Mobile breadcrumb and sort row -->
+        <div class="flex justify-between items-center mb-4 md:hidden">
+            <div class="text-sm breadcrumbs">
+                <span>Home</span> / 
+                <span>Shop</span>
+                <% if (category) { %> / <span><%= category %></span><% } %>
+            </div>
+            
+            <div class="hidden md:flex justify-end mb-4">
+                <div class="sort-by relative">
+                    <label for="sortOptions" class="text-lg font-semibold mr-2">Sort by:</label>
+                    <select id="sortOptions" name="sortOptions" onchange="location = '<%= currentSort %>' " class="border border-gray-300 rounded px-3 py-1 text-gray-700">
+                        <option value="/read-and-grow/sort/default" <%= currentSort === 'default' ? 'selected' : '' %>>Default</option>
+                        <option value="/read-and-grow/sort/name_asc" <%= currentSort === 'name_asc' ? 'selected' : '' %>>A to Z</option>
+                        <option value="/read-and-grow/sort/name_desc" <%= currentSort === 'name_desc' ? 'selected' : '' %>>Z to A</option>
+                        <option value="/read-and-grow/sort/price_asc" <%= currentSort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
+                        <option value="/read-and-grow/sort/price_desc" <%= currentSort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
+                    </select>                    
+                </div>
+            </div>
+        </div>
 
         <div class="flex flex-col md:flex-row gap-8">
-            <!-- Sidebar -->
-            <div class="w-full md:w-64 space-y-6">
-                
-                <aside class="  flex-col md:flex-row gap-8">
-                <!-- Categories -->
-                <div>
-                    <h2 class="text-lg font-semibold mb-3">Categories</h2>
-                    <ul class="space-y-2">
-                        <li>
-                            <a href="/read-and-grow/shop?page=1&limit=6<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
-                                class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
-                                 All Categories
-                             </a>
-                        </li>
-                        <% categories.forEach(cat => { %>
-                            <li>
-                                <a href="/read-and-grow/shop?page=1&limit=6&category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
-                                   class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
-                                    <%= cat.categoryName %>
-                                </a>
-                            </li>
-                        <% }) %>
-                    </ul>    
+            <!-- Sidebar - hidden on mobile, shown with filter button -->
+            <div id="filterSidebar" class="filter-sidebar md:relative md:transform-none md:w-64 md:block">
+                <div class="flex justify-between items-center md:hidden mb-4 pt-2">
+                    <h2 class="text-xl font-bold">Filters</h2>
+                    <button id="closeFilterBtn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
                 </div>
                 
-
-                <!-- Authors -->
-                <div>
-                    <h2 class="text-lg font-semibold mb-3">Authors</h2>
-                    <ul class="space-y-2">
+                <aside class="space-y-6">
+                    <!-- Categories -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3">Categories</h2>
                         <ul class="space-y-2">
-                            <% let authorSet = new Set(allProducts.map(product => product.authorName)); %>
-                            <% Array.from(authorSet).forEach(auth => { %>
+                            <li>
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
+                                    class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
+                                     All Categories
+                                 </a>
+                            </li>
+                            <% categories.forEach(cat => { %>
                                 <li>
-                                    <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&author=<%= encodeURIComponent(auth) %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
-                                       class="text-gray-600 hover:text-gray-900 <%= author === auth ? 'font-bold' : '' %>">
-                                        <%= auth %>
+                                    <a href="/read-and-grow/shop?page=1&limit=6&category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
+                                       class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
+                                        <%= cat.categoryName %>
                                     </a>
                                 </li>
                             <% }) %>
+                        </ul>    
+                    </div>
+                    
+                    <!-- Authors -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3">Authors</h2>
+                        <div class="max-h-60 overflow-y-auto">
+                            <ul class="space-y-2">
+                                <% let authorSet = new Set(allProducts.map(product => product.authorName)); %>
+                                <% Array.from(authorSet).forEach(auth => { %>
+                                    <li>
+                                        <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&author=<%= encodeURIComponent(auth) %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
+                                           class="text-gray-600 hover:text-gray-900 <%= author === auth ? 'font-bold' : '' %>">
+                                            <%= auth %>
+                                        </a>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Range -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-3">Price</h2>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=under-399" 
+                                   class="text-gray-600 hover:text-gray-900 <%= price === 'under-20' ? 'font-bold' : '' %>">
+                                    Under Rs.399
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=400-599" 
+                                   class="text-gray-600 hover:text-gray-900 <%= price === '20-30' ? 'font-bold' : '' %>">
+                                    Rs.400 - Rs.599
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=above-600" 
+                                   class="text-gray-600 hover:text-gray-900 <%= price === 'above-30' ? 'font-bold' : '' %>">
+                                    Above Rs.600
+                                </a>
+                            </li>
                         </ul>
-                    </ul>
-                </div>
+                    </div>
+                </aside>
                 
-                <!-- Price Range -->
-                <div>
-                    <h2 class="text-lg font-semibold mb-3">Price</h2>
-                    <ul class="space-y-2">
-                        <li>
-                            <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=under-399" 
-                               class="text-gray-600 hover:text-gray-900 <%= price === 'under-20' ? 'font-bold' : '' %>">
-                                Under Rs.399
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=400-599" 
-                               class="text-gray-600 hover:text-gray-900 <%= price === '20-30' ? 'font-bold' : '' %>">
-                                Rs.400 - Rs.599
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=above-600" 
-                               class="text-gray-600 hover:text-gray-900 <%= price === 'above-30' ? 'font-bold' : '' %>">
-                                Above Rs.600
-                            </a>
-                        </li>
-                    </ul>
+                <!-- Apply filters button for mobile -->
+                <div class="mt-6 md:hidden">
+                    <button id="applyFilters" class="w-full bg-black text-white py-2 rounded-md">
+                        Apply Filters
+                    </button>
                 </div>
-            </aside>
-            <div class="sort-by relative ">
-                <span class="text-lg font-semibold mb-3">Sort by:</span> 
-                <button class="sort-button "></button>
-                <ul class="sort-options">
-                  <li><a href="/read-and-grow/sort/name_asc">A to Z</a></li>
-                  <li><a href="/read-and-grow/sort/name_desc">Z to A</a></li>
-                  <li><a href="/read-and-grow/sort/price_asc">Price: Low to High</a></li>
-                  <li><a href="/read-and-grow/sort/price_desc">Price: High to Low</a></li>
-                </ul>
-              </div>
             </div>
             
-
-            <!-- Book Grid -->
+            <!-- Main content area -->
             <div class="flex-1">
+                <!-- Desktop sort options -->
+                <div class="hidden md:flex justify-end mb-4">
+                    <div class="sort-by relative">
+                        <label for="sortOptions" class="text-lg font-semibold mr-2">Sort by:</label>
+                        <select id="sortOptions" name="sortOptions" onchange="location = this.value;" class="border border-gray-300 rounded px-3 py-1 text-gray-700">
+                            <option value="/read-and-grow/shop">Default</option>
+                            <option value="/read-and-grow/sort/name_asc">A to Z</option>
+                            <option value="/read-and-grow/sort/name_desc">Z to A</option>
+                            <option value="/read-and-grow/sort/price_asc">Price: Low to High</option>
+                            <option value="/read-and-grow/sort/price_desc">Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+                
+                
                 <% if(errorMessage){ %>
                     <div class="text-lg text-red-600 font-semibold text-center mt-2">
                         <%= errorMessage %>
                     </div>                    
-                    <% }else {%>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Book 1 -->
-                            <% allProducts.forEach(product=>{%>
-                                <article
-                                    class="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform hover:scale-105">
-                                    <div class="relative h-64 bg-gray-50">
-                                        <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center">
-                                            <img src="<%= product.images[0] %>" alt="Rich Dad Poor Dad"
-                                                class="w-auto h-52 md:h-64 object-cover rounded-md">
-                                        </a>
-                                        <button onclick="toggleWishlist(this, '<%= product._id %>')" 
-                                            class="wishlist-btn absolute top-4 right-4 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
-                                            data-product-id="<%= product._id %>">
-                                            <% if (wishlistItems.includes(product._id.toString())) { %>
-                                                <i class="fas fa-heart text-red-500"></i> <!-- Filled heart -->
+                <% } else { %>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                        <!-- Book items -->
+                        <% allProducts.forEach(product => { %>
+                            <article class="bg-white rounded-lg shadow-md hover:shadow-xl overflow-hidden transition-transform hover:scale-105">
+                                <div class="relative h-48 sm:h-56 md:h-64 bg-gray-50">
+                                    <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center h-full">
+                                        <img src="<%= product.images[0] %>" alt="<%= product.name %>"
+                                            class="w-auto h-full object-cover rounded-t-md">
+                                    </a>
+                                    <button onclick="addToWishlist(this,'<%= product._id %>')" 
+                                        class="wishlist-btn absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                                        data-product-id="<%= product._id %>">
+                                        <% let inWishlist = wishlistItems.some(item => item._id.toString() === product._id.toString()); %>
+
+                                        <% if (inWishlist) { %>
+                                            <i class="fas fa-heart text-red-500"></i> <!-- Filled heart -->
+                                        <% } else { %>
+                                            <i class="far fa-heart text-gray-600"></i> <!-- Empty heart -->
+                                        <% } %>
+                                    </button>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="font-semibold text-base sm:text-lg truncate mb-1">
+                                        <%= product.name %>
+                                    </h3>
+                                    <p class="text-gray-600 text-sm mb-2 truncate">
+                                        <%= product.authorName %>
+                                    </p>
+                                    <div class="text-yellow-400 space-x-1 mb-2">
+                                        <% for (let i = 0; i < 5; i++) { %>
+                                            <% if( i < Math.floor(product.rating)){ %>
+                                                <i class="fas fa-star text-sm"></i>
                                             <% } else { %>
-                                                <i class="far fa-heart text-gray-600"></i> <!-- Empty heart -->
+                                                <i class="far fa-star text-sm"></i>
                                             <% } %>
-                                        </button>
-                                                                          
+                                        <% } %>
                                     </div>
-                                    <div class="p-4">
-                                        <h3 class="font-semibold text-lg mb-1">
-                                            <%= product.name %>
-                                        </h3>
-                                        <p class="text-gray-600 text-sm mb-2">
-                                            <%= product.authorName %>
+                                    <% if(product?.bestOffer) { %>
+                                        <p class="text-sm font-semibold text-red-700 mb-2">
+                                            <%= product.bestOffer %>% offer
                                         </p>
-                                        <div class="text-yellow-400 space-x-1">
-                                            <% for (let i = 0; i < 5; i++) { %>
-                                                <% if( i < Math.floor(product.rating)){ %>
-                                                        <i class="fas fa-star"></i>
-                                                    <% }else{%>
-                                                        <i class="far fa-star"></i>
-                                                <% } %>
-                                            <% } %>
-                                        </div>
-                                        <% if(product?.bestOffer){%>
-                                                <p class="text-lg font-semibold text-red-700  rounded-lg
-                                                    shadow-sm mb-2"><%= product.bestOffer %>% offer</p>
-                                        <% } %> 
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-bold text-gray-900">Rs. <%= product.price %></span>
-                                            <button 
-                                                onclick="addToCart('<%= product._id %>')" 
-                                                id="addToCart"
-                                                <%= product.stock > 0 ? "" : "disabled" %>
-                                                class="<%= product.stock > 0 ? 'bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition' : 'bg-gray-400 text-white px-4 py-2 rounded ' %>"
-                                                aria-label="Add <%= product.name %> to cart">
-                                                <%= !cartItems.includes(product._id.toString())? 'ADD TO CART' : 'GO TO CART' %>
-                                            </button>
-                                        
-                                        </div>
+                                    <% } %> 
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                        <span class="font-bold text-gray-900">Rs. <%= product.price %></span>
+                                        <button 
+                                            onclick="addToCart('<%= product._id %>')" 
+                                            id="addToCart"
+                                            <%= product.stock > 0 ? "" : "disabled" %>
+                                            class="<%= product.stock > 0 ? 'bg-black text-white px-3 py-1 sm:px-4 sm:py-2 text-sm rounded hover:bg-gray-800 transition w-full sm:w-auto text-center' : 'bg-gray-400 text-white px-3 py-1 sm:px-4 sm:py-2 text-sm rounded w-full sm:w-auto text-center' %>"
+                                            aria-label="Add <%= product.name %> to cart">
+                                            ADD TO CART
+                                        </button>
                                     </div>
-                                </article>
-                                <% }) %>
-                        </div>
-                        <% } %>
+                                </div>
+                            </article>
+                        <% }) %>
+                    </div>
+                <% } %>
 
                 <!-- Pagination -->
-                <div class="flex justify-center mt-8 space-x-2">
+                <div class="flex justify-center mt-6 md:mt-8 space-x-1 sm:space-x-2">
                     <% if(page > 1) { %>
                         <a href="/read-and-grow/shop?page=<%= page-1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
-                           class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                           class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     <% } else { %>
-                        <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                        <a class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded border border-gray-300 text-gray-400 cursor-default">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     <% } %>
                     
-                    <% for(let i=1; i<=totalPages; i++) { %>
+                    <% 
+                    // For better mobile pagination, show limited pages
+                    let startPage = Math.max(1, page - 1);
+                    let endPage = Math.min(totalPages, page + 1);
+                    
+                    // Ensure at least 3 page buttons when possible
+                    if (endPage - startPage < 2 && totalPages > 2) {
+                        if (startPage === 1) {
+                            endPage = Math.min(3, totalPages);
+                        } else {
+                            startPage = Math.max(1, endPage - 2);
+                        }
+                    }
+                    
+                    for(let i=startPage; i<=endPage; i++) { 
+                    %>
                         <a href="/read-and-grow/shop?page=<%= i %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
-                           class="w-10 h-10 flex items-center justify-center rounded <%= i === page ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100' %>">
+                           class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded <%= i === page ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100' %>">
                             <%= i %>
                         </a>
                     <% } %>
                     
                     <% if(page < totalPages) { %>
                         <a href="/read-and-grow/shop?page=<%= page+1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
-                           class="w-10 h-10 flex items-center justify-center rounded border border-gray-400 hover:bg-gray-200">
+                           class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     <% } else { %>
-                        <a class="w-10 h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
+                        <a class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded border border-gray-300 text-gray-400 cursor-default">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     <% } %>
                 </div>
-            </div> 
+            </div>
         </div>
     </main>
 
     <input type="number" id="totalPages" value="<%= totalPages %>" hidden>
-    <input type="number" id="limit" value="<%= limit  %>" hidden> 
+    <input type="number" id="limit" value="<%= limit %>" hidden> 
+    
     <!-- Footer -->
     <%- include("../partials/user/footer.ejs") %>
+    
+ 
 </body>
-
 </html>

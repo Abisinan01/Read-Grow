@@ -21,7 +21,6 @@ export const createOrder = async (req, res) => {
             currency,
             receipt,
             notes
-
         } = req.body 
         
         const options = {
@@ -168,6 +167,7 @@ export const failedPayment = async (req,res)=>{
             })
         } 
 
+        //CART ITEMS REMOVE
         await Cart.findByIdAndUpdate(cart._id,{$set:{items:[]}})
         req.session.order = saveOrder 
         return res.status(400).json({
@@ -204,12 +204,14 @@ export const retryPayment = async (req, res) => {
             }
         }
 
+        //UPDATE INVENTORY
         for (let item of order.items) {
             await Product.findByIdAndUpdate(item.productId, {
                 $inc: { stock: -item.quantity }
             });
         }
 
+        //UPDATED STATUS
         await Order.findByIdAndUpdate(order._id, {
             $set: { paymentStatus: "paid" }
         });

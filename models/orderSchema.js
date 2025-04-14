@@ -5,7 +5,7 @@ import { type } from "os";
 const orderSchema = new Schema({
     userId: {
         type: mongoose.Types.ObjectId,
-        ref:"User",
+        ref: "User",
         required: true,
     },
     orderId: {
@@ -30,12 +30,12 @@ const orderSchema = new Schema({
         productName: String,
         quantity: Number,
         price: Number,
-        discountPrice:{type:Number},
+        discountPrice: { type: Number },
         isCancelled: { type: Boolean, default: false },
         isReturned: { type: Boolean, default: false },
         isRequested: { type: Boolean, default: false },
         status: { type: String, default: "Pending" },
-        paymentStatus: { type: String, default:'Pending'},
+        paymentStatus: { type: String, default: 'Pending' },
         reason: { type: String, default: null },
     }],
     subTotal: { type: Number },
@@ -45,6 +45,7 @@ const orderSchema = new Schema({
     paymentStatus: { type: String, default: false },
     reason: { type: String, default: null },
     updatedAt: { type: Date, default: Date.now },
+    isCouponAvailable: { type: Boolean, default: false },
     coupon: {
         type: mongoose.Schema.Types.ObjectId, ref: "Coupon"
     },

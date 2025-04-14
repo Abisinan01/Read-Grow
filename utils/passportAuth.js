@@ -16,8 +16,7 @@ passport.use(
 
 
         async function (request, accessToken, refreshToken, profile, done) {
-
-
+ 
 
             const exist = await User.findOne({ email: profile["emails"][0].value });
             if (exist) {
@@ -26,7 +25,7 @@ passport.use(
             }
             
             await User.create({
-                name: profile.displayName,
+                username: profile.displayName,
                 email: profile.emails[0].value,
                 googleId: profile.id,
                 isBlocked: false,

@@ -11,14 +11,14 @@ import {
     updateQuantity
 } from "../controllers/user/shopingCartController.js"
 import {
-    renderHomePage, 
+    renderHomePage,
     renderProductDetails,
     renderShopPage,
     sortProducts
 } from "../controllers/user/shopController.js"
 
 
-router.get('/home', renderHomePage)
+router.get('/', renderHomePage)
 router.get('/product-details/:id', userAuth, renderProductDetails)
 router.get("/shop", userAuth, renderShopPage)
 router.get('/sort/:sort', userAuth, sortProducts)

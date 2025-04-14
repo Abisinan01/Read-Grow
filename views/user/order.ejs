@@ -63,17 +63,25 @@
                         <p class="text-sm text-gray-600">Qty: <%= item.quantity %></p>
                         <p class="text-sm text-gray-600 font-medium">Rs. <%= item.price %></p>
                         <div class="flex items-center space-x-2 mt-1">
-                          <span class="text-sm font-medium text-gray-700">Status:</span>
-                          <span class="text-sm font-medium <%= item.status === 'Pending' ? 'text-yellow-500' : item.status === 'Cancelled' ? 'text-red-600' : 'text-green-600' %>">
-                            <%= item.status %>
-                          </span>
-                          <% if (item.status === 'Pending') { %>
-                            <i class="fas fa-clock text-yellow-500"></i>
-                          <% } else if (item.status === 'Delivered') { %>
-                            <i class="fas fa-check-circle text-green-600"></i>
-                          <% } else if (item.status === 'Cancelled') { %>
-                            <i class="fas fa-times-circle text-red-600"></i>
-                          <% } %>
+                            <span class="text-sm font-medium text-gray-700">Status:</span>
+                            <span class="text-sm font-medium 
+                                <%= item.status === 'Pending' ? 'text-yellow-500' 
+                                : item.status === 'Cancelled' ? 'text-red-600' 
+                                : item.status === 'Delivered' ? 'text-green-600' 
+                                : item.status === 'Returned' ? 'text-purple-500' 
+                                : '' %>">
+                              <%= item.status %>
+                            </span>
+                              <% if (item.status === 'Pending') { %>
+                                <i class="fas fa-clock text-yellow-500"></i>
+                              <% } else if (item.status === 'Delivered') { %>
+                                <i class="fas fa-check-circle text-green-600"></i>
+                                <% } else if (item.status === 'Returned') { %>
+                      
+                                  <i class="fas fa-check-circle text-purple-500 font-semibold"></i>
+                              <% } else if (item.status === 'Cancelled') { %>
+                                <i class="fas fa-times-circle text-red-600"></i>
+                              <% }%>
                         </div>
                       </div>
                     </div>
@@ -131,7 +139,7 @@
       <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 text-center">
         <p class="text-gray-600">You have no orders.</p>
         <a href="/read-and-grow/shop" class="text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block">
-          Start Shopping
+          Browse books
         </a>
       </div>
     <% } %>

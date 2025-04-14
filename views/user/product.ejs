@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="/js/user/shop.js" defer></script>
+    <script src="/js/user/showMessage.js" defer></script>
+
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -94,13 +96,16 @@
                         alt="<%= product.name %> by <%= product.authorName %>" 
                         class="w-full h-96 object-contain rounded-lg shadow-md">
                     <!-- Wishlist Icon -->
-                    <button 
-                        onclick="addToWishlist('<%= product._id %>')" 
-                        id="wishlistIcon"
-                        class="absolute top-4 right-4 bg-white bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all duration-200"
-                        aria-label="Add <%= product.name %> to wishlist">
-                        <i id="wishlistHeart" class="<%= wishlistItems.includes(product._id) ? 'far fa-heart text-red text-lg' : 'far fa-heart text-gray-800 text-lg' %>"></i>
+                    <button onclick="addToWishlist(this,'<%= product._id %>')" 
+                        class="wishlist-btn absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
+                        data-product-id="<%= product._id %>">
+                        <% let inWishlist = wishlistItems.some(item => item._id.toString() === product._id.toString()); %>
 
+                        <% if (inWishlist) { %>
+                            <i class="fas fa-heart text-red-500"></i> <!-- Filled heart -->
+                        <% } else { %>
+                            <i class="far fa-heart text-gray-600"></i> <!-- Empty heart -->
+                        <% } %>
                     </button>
                     <div id="magnify-lens" class="hidden absolute border-2 border-gray-300 bg-white bg-opacity-50 rounded-lg pointer-events-none"></div>
                     <div class="flex mt-4 gap-2">
@@ -182,30 +187,30 @@
                     </div>
                 </div>
         
-<!-- Reviews -->
-<div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4">Review</h2>
-    <p class="text-gray-600 mb-4">Share your experience</p>
+        <!-- Reviews -->
+        <!-- <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Review</h2>
+            <p class="text-gray-600 mb-4">Share your experience</p>
 
-    <!-- Rating Section -->
-    <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-2">Rate this product:</label>
-        <div class="flex space-x-1" id="rating-stars">
-            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="1"></i>
-            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="2"></i>
-            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="3"></i>
-            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="4"></i>
-            <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="5"></i>
-        </div>
-        <input type="hidden" name="rating" id="rating-value" value="0">
-    </div>
+             
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Rate this product:</label>
+                <div class="flex space-x-1" id="rating-stars">
+                    <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="1"></i>
+                    <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="2"></i>
+                    <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="3"></i>
+                    <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="4"></i>
+                    <i class="fas fa-star text-gray-300 text-xl cursor-pointer transition duration-150" data-value="5"></i>
+                </div>
+                <input type="hidden" name="rating" id="rating-value" value="0">
+            </div>
 
-    <!-- Review Textarea -->
-    <textarea class="w-full border rounded-lg p-4 mb-4" placeholder="Write your review here..." rows="4" name="review" id="review-text"></textarea>
+         
+            <textarea class="w-full border rounded-lg p-4 mb-4" placeholder="Write your review here..." rows="4" name="review" id="review-text"></textarea>
 
-    <!-- Submit Button -->
-    <button class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-black transition duration-150" id="submit-review">Add feedback</button>
-</div>
+           
+            <button class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-black transition duration-150" id="submit-review">Add feedback</button>
+        </div> -->
     
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -408,42 +413,6 @@
             img.addEventListener('touchend', () => lens.classList.add('hidden'));
         }
 
-        async function addToWishlist(productId) {
-        try {
-            const button = document.getElementById('wishlistIcon');
-            const heartIcon = document.getElementById('wishlistHeart');
-            button.disabled = true;
-            heartIcon.classList.remove('far');
-            heartIcon.classList.add('fas', 'text-red-500', 'animate-pulse');
-
-            const response = await fetch(`/read-and-grow/wishlist/add`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body:JSON.stringify({productId})
-            });
-
-            const result = await response.json();
-            if (!response.ok) {
-                showToast(result.message || 'Failed to add to wishlist', 'error');
-                button.disabled = false;
-                // heartIcon.classList.remove('fas', 'text-red-500', 'animate-pulse');
-                // heartIcon.classList.add('far');
-                return;
-            }
-
-            showToast('Added to wishlist successfully', 'success'); 
-            // heartIcon.classList.remove('animate-pulse');
-            // heartIcon.classList.add('fas', 'text-red-500');
-        } catch (error) {
-            console.error('Error adding to wishlist:', error);
-            showToast('Failed to add to wishlist', 'error');
-            const button = document.getElementById('wishlistIcon');
-            const heartIcon = document.getElementById('wishlistHeart');
-            button.disabled = false;
-            // heartIcon.classList.remove('fas', 'text-red-500', 'animate-pulse');
-            // heartIcon.classList.add('far');
-        }
-    }
 
         // Initialize magnification when the page loads
         document.addEventListener('DOMContentLoaded', setupMagnification);

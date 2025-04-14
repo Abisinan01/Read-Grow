@@ -70,12 +70,6 @@
                         </p>
                     </div>
                     <div class="flex justify-between items-center">
-                        <% if(order.status === 'Cancelled' || order.status === 'Returned' ){%>
-                            <span class="text-sm text-gray-700  "><strong>Reason:</strong></span>
-                            <p class="text-sm text-gray-600"> <%= order.reason %></p>
-                        <% } %>
-                    </div>
-                    <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-700  ">Payment method :</span>
                         <span class="text-sm text-gray-700"> <%= order.payment %></span>
                     </div>
@@ -88,9 +82,15 @@
                         <span class="text-sm text-gray-700"> <%= order.items.length %></span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700  ">Total items i :</span>
-                        <span class="text-sm text-gray-700"> <%= order.items.length %></span>
+                        <span class="text-sm text-gray-700  ">Total quantity :</span>
+                        <span class="text-sm text-gray-700"> <%= totalQty %></span>
                     </div>
+                    <% for(let i=0; i<order.items.length; i++){%>
+                    <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-700  ">Items <%= i+1 %>:</span>
+                            <span class="text-sm text-gray-700"> <%= order.items[i].status %></span>
+                        </div>
+                    <% } %>
                     <% if(order.discount) {%>
                         <div class="flex justify-between items-center">
                             <span class="text-sm text-gray-700  ">Total discount:</span>
@@ -232,11 +232,10 @@
                 showToast('Accept return failed')
             }
         }
+
         async function rejectRequest(productId,orderId) {
             console.log(productId,orderId)
             console.log("Product ID:", productId);
- 
-
             try {
                 const response = await fetch(`/admin/reject-return/${productId}/${orderId}`, {
                     method: 'PUT',

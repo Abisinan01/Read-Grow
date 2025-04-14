@@ -1,47 +1,48 @@
 <!-- Sidebar -->
-<div class="w-1/3 border-r pr-4">
-    <ul class="space-y-3">
+<div class="w-full sm:w-80 md:w-1/3 border-r md:border-r-gray-200 px-4 sm:px-6 py-6 bg-gray-50 sm:bg-transparent">
+    <ul class="space-y-3 sm:space-y-4">
         <li>
-            <button data-section="change-password"
-                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
-                onclick="window.location.href = '/read-and-grow/profile/<%= user._id %>'">
+            <button data-section="profile"
+                    class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
+                    onclick="window.location.href = '/read-and-grow/profile/<%= user._id %>'">
                 Profile
             </button>
         </li>
         <li>
-            <button data-section="orders" onclick="window.location.href='/read-and-grow/orders'"
-                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+            <button data-section="orders"
+                    class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
+                    onclick="window.location.href='/read-and-grow/orders'">
                 Orders
             </button>
         </li>
         <li>
-            <button data-section="address" onclick="window.location.href='/read-and-grow/address/<%= user._id %>'"
-                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+            <button data-section="address"
+                    class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
+                    onclick="window.location.href='/read-and-grow/address/<%= user._id %>'">
                 Address
             </button>
         </li>
         <li>
-            <button data-section="wallet" onclick="window.location.href='/read-and-grow/wallet/<%= user._id %>'"
-                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
+            <button data-section="wallet"
+                    class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
+                    onclick="window.location.href='/read-and-grow/wallet/<%= user._id %>'">
                 Wallet
             </button>
         </li>
         <li>
             <button data-section="change-password"
-                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300"
-                onclick="window.location.href = '/read-and-grow/change-password/<%= user._id %>'">
+                    class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
+                    onclick="window.location.href = '/read-and-grow/change-password/<%= user._id %>'">
                 Change Password
             </button>
         </li>
         <li>
-            <button
-                class="sidebar-btn w-full text-left py-2 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 flex items-center"
-                id="logoutButton">
-                <span class="mr-2"></span> Logout
+            <button id="logoutButton"
+                    class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
             </button>
         </li>
     </ul>
-    <!-- <p class="mt-6 text-sm text-gray-500 cursor-pointer">← Go Back to shop</p> -->
 </div>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -81,7 +82,7 @@
         }
     });
 
-    //logout
+    // Logout
     document.getElementById("logoutButton").addEventListener("click", async () => {
         const { value: confirmed } = await Swal.fire({
             title: "Are you sure you want to log out?",
@@ -94,7 +95,7 @@
         });
 
         if (confirmed) {
-            const url = "/read-and-grow/logout"; // Ensure correct API route
+            const url = "/read-and-grow/logout";
 
             try {
                 const response = await fetch(url, {
@@ -102,7 +103,7 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    credentials: "include", // Allow cookies to be sent
+                    credentials: "include",
                 });
 
                 const result = await response.json();
@@ -111,11 +112,10 @@
                     throw new Error(`Error occurred. HTTP status ${response.status}`);
                 }
 
-
                 if (result.success) {
                     Swal.fire("Logged out", "You are successfully logged out", "success");
                     setTimeout(() => {
-                        window.location.href = "/read-and-grow/home";
+                        window.location.href = "/read-and-grow";
                     }, 2000);
                 } else {
                     Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");
@@ -126,5 +126,4 @@
             }
         }
     });
-
 </script>

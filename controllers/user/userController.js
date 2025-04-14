@@ -19,9 +19,9 @@ import Order from "../../models/orderSchema.js"
 export const renderSignPage = async (req, res, next) => {
     try {
         if (req.cookies.jwt) {
-            return res.redirect("/read-and-grow/home")
+            return res.redirect("/read-and-grow")
         }
-        return res.render("user/signup.ejs")
+        return res.render("user/signup")
 
     } catch (error) {
         return next(new AppError(`User signup ${req.method} method failed `, 500))
@@ -30,14 +30,13 @@ export const renderSignPage = async (req, res, next) => {
 
 export const handleSignupPage = async (req, res, next) => {
     try {
-        const { username, password, confirmPassword, email, phoneNumber,referralCode } = req.body
+        const { username, password, confirmPassword, email, phoneNumber, referralCode } = req.body
         // console.log(req.body)
         console.log(referralCode)
- 
+
         let StrongPassword = (password === confirmPassword) ? password : false;
 
-        const userExist = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] })
-
+        //VALIDATION
         if (!username || !email || !phoneNumber || !password || !confirmPassword) {
             return res.status(400).json({
                 success: false,
@@ -45,19 +44,22 @@ export const handleSignupPage = async (req, res, next) => {
             })
         }
 
-        if(referralCode){
+        //REFERRAL CODE VALDATION
+        if (referralCode) {
             const users = await User.find()
             let flag = false
-            for(let user of users){
-                if(user.referralCode === referralCode){
+            for (let user of users) {
+                if (user.referralCode === referralCode) {
                     console.log("Referral code is valid")
-                    flag=true
+                    flag = true
                 }
             }
-            if(!flag){
-                return res.status(404).json({success:false,message:"Invalid referral code"})
+            if (!flag) {
+                return res.status(404).json({ success: false, message: "Invalid referral code" })
             }
         }
+
+        const userExist = await User.findOne({ $or: [{ username }, { email }, { phoneNumber }] })
         if (userExist) {
             if (userExist.username == username) {
                 console.log(username)
@@ -82,9 +84,10 @@ export const handleSignupPage = async (req, res, next) => {
 
             }
         }
-        req.session.temp = email
+        
+        req.session.temp = email //FOR RESEND OTP
         const otpResult = await sendOTP(email)
-        console.log("Send Otp response :", otpResult)
+        console.log("Send Otp response :", otpResult)//DEBUG
 
         if (!otpResult.success) {
             return res.status(500).json(otpResult.message)
@@ -92,6 +95,8 @@ export const handleSignupPage = async (req, res, next) => {
 
         let salt = await bcrypt.genSalt(10)
         let hashPassword = await bcrypt.hash(StrongPassword, salt)
+
+        //STORE EMAIL IN SESSION FOR VARIFY OTP
         req.session.temp = {
             username,
             email,
@@ -102,7 +107,6 @@ export const handleSignupPage = async (req, res, next) => {
         const token = jwt.sign({ email: email }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
 
         // console.log('sign up Temp session :', req.session.temp, token)
-
         return res.status(200).json({
             success: true,
             message: otpResult.message,
@@ -120,9 +124,11 @@ export const handleSignupPage = async (req, res, next) => {
 
 export const renderLoginPage = async (req, res, next) => {
     try {
+        //CHECK TOKEN AVAILABLE FOR SESSION MANAGMENT
         if (req.cookies.jwt) {
-            return res.redirect('/read-and-grow/home')
+            return res.redirect('/read-and-grow')
         }
+
         return res.render("user/login")
     } catch (error) {
         return next(new AppError(`User login failed : ${error}`, 500))
@@ -140,20 +146,21 @@ export const handleLoginPage = async (req, res, next) => {
         if (!isUser) {
             return res.status(400).json({ success: false, message: "User not found!" })
         }
-        console.log(isUser)
+        console.log("isUser : ", isUser)
+
+        //IGNORE IF USER IS ADMIN
         if (isUser.role == 'admin') {
             return res.status(400).json({ success: false, message: "User is not exist" })
         }
 
+        //COMPARE PASSWORD FROM DB
         const comparePassword = await bcrypt.compare(password, isUser.password)
 
         if (!comparePassword) {
             return res.status(400).json({ success: false, message: "Incorrect password" })
         }
 
-        // req.session.user = { id: isUser._id, username: isUser.username, role: isUser.role }
-        // console.log(req.session.user) 
-
+        //IGNORE BLOCKED USERS
         if (isUser.isBlocked == true) {
             return res.status(400).json({
                 success: false,
@@ -161,16 +168,16 @@ export const handleLoginPage = async (req, res, next) => {
             })
         }
 
-        //creating JWT
+        //GENERATING JWT TOKEN
         const token = jwt.sign({ id: isUser._id, username: isUser.username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
-        //Store JWT in cookies
+        //STORE JWT IN COOKIES
         res.cookie('jwt', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
 
-        req.session.user = isUser
+        // req.session.user = isUser
         return res.status(200).json({
             success: true,
             message: "successfully logged",
-            redirect: "/read-and-grow/home"
+            redirect: "/read-and-grow"
         })
 
     } catch (error) {
@@ -178,8 +185,6 @@ export const handleLoginPage = async (req, res, next) => {
         return next(new AppError(error, 500))
     }
 }
-
-
 
 
 //==================forgot password================== 
@@ -195,8 +200,9 @@ export const requestPasswordReset = async (req, res, next) => {
     const { email } = req.body
     try {
         console.log(email)
-        const user = await User.findOne({ email: email })
+        const user = await User.findOne({ email: email })//FIND EMAIL
 
+        //IF EMAIL NOT MATCHING
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -204,10 +210,13 @@ export const requestPasswordReset = async (req, res, next) => {
             })
         }
 
+        //CREATE JWT SCRET WITH USER PASSWORD
         const secret = process.env.JWT_SECRET + user.password;
+        //JWT TOKEN CREATE
         const token = jwt.sign({ id: user._id, email: email }, secret, { expiresIn: '1h' });
 
-        const resetURL = `http://localhost:3999/resetPassword?id=${user._id}&token=${token}`;
+        //PASS WITH API LIKE QUERY
+        const resetURL = `http://localhost:3999/read-and-grow/resetPassword?id=${user._id}&token=${token}`;
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -216,7 +225,8 @@ export const requestPasswordReset = async (req, res, next) => {
                 pass: process.env.MAIL_PASS
             },
         });
-        // console.log(transporter)
+
+        //FOR SEND REQUEST TO MAIL
         const mailOptions = {
             to: email,
             from: process.env.MAIL_USER,
@@ -248,7 +258,7 @@ export const renderResetPassword = async (req, res, next) => {
 
 
 export const resetPassword = async (req, res, next) => {
-    const { id, token } = req.query;
+    const { id, token } = req.query;// TAKE ID AND TOKEN FROM QUERY
     const { password } = req.body;
     console.log("Reset password :", req.query)
 
@@ -260,8 +270,12 @@ export const resetPassword = async (req, res, next) => {
 
         const secret = process.env.JWT_SECRET + user.password;
 
+        //VERIFY WITH GIVE TOKEN  
         const verify = jwt.verify(token, secret);
+        //HASH PASSWORD
         const encryptedPassword = await bcrypt.hash(password, 10);
+
+        //UPDATE WITH NEW PASSWORD
         await User.findByIdAndUpdate(
             id,
             {
@@ -308,13 +322,11 @@ export const editProfile = async (req, res, next) => {
         const user = req.user
         console.log(req.body)
 
-
         await User.findByIdAndUpdate(
             user.id,
             { username, phoneNumber }
         )
         return res.status(200).json({ success: true, message: "Profile updated." })
-
 
     } catch (error) {
         next(new AppError(`User profile update Failed : ${error}`, 500))
@@ -345,6 +357,7 @@ export const changePasswordRequest = async (req, res, next) => {
         const data = req.user
         const user = await User.findOne({ _id: data.id })
 
+        //BCRYPT COMPPARE OLD PASSWORD WITH NEW PASSWORD
         const comparePassword = await bcrypt.compare(oldPassword, user.password)
 
         if (!comparePassword) {
@@ -358,9 +371,11 @@ export const changePasswordRequest = async (req, res, next) => {
             return res.status(400).json({ success: false, message: "confirm password is not matching" })
         }
 
+        //IF MATCH ? GENERATE SALT
         let salt = await bcrypt.genSalt(10)
         let hashPassword = await bcrypt.hash(newPassword, salt)
 
+        //UPDATE
         await User.findByIdAndUpdate(
             user._id,
             { password: hashPassword }
@@ -368,7 +383,8 @@ export const changePasswordRequest = async (req, res, next) => {
 
         return res.status(200).json({
             success: true,
-            message: "Password updated"
+            message: "Password updated",
+            data
         })
     } catch (error) {
         next(new AppError(`Change password : ${error}`, 500))
@@ -378,13 +394,16 @@ export const changePasswordRequest = async (req, res, next) => {
 export const renderChangeEmail = async (req, res, next) => {
     try {
         const id = req.params
-        const user = await User.findById(id.id)
+        const user = await User.findById(id.id)//FIND USER
+
+        //SET EMAIL TO SESSION 
         req.session.update = user.email
         if (req.session.update) {
             return res.render("user/editEmail", { id })
         } else {
             return res.redirect(`/read-and-grow/profile/${id}`)
         }
+
     } catch (error) {
         next(new AppError(`Change email : ${error}`, 500))
     }
@@ -397,8 +416,9 @@ export const changeEmailRequest = async (req, res, next) => {
         const id = req.user
         // console.log(email)
 
-        const isExist = await User.findById(id.id)
+        const isExist = await User.findById(id.id)//FIND USER
 
+        // CHECK  EMAIL MATCHING 
         if (isExist.email !== email) {
             return res.status(400).json({
                 success: false,
@@ -406,8 +426,10 @@ export const changeEmailRequest = async (req, res, next) => {
             })
         }
 
+        //RESET URL IN A VARIBLE
         const resetURL = `http://localhost:3999/read-and-grow/new-email/${id.id}`;
 
+        //SEND REQUEST TO MAILID
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -457,6 +479,7 @@ export const updateNewMail = async (req, res, next) => {
         console.log(email)
 
         const isExists = await User.findOne({ email: email })
+        //CHECK ALREADY AVAILABLE
         if (isExists) {
             return res.status(400).json({
                 success: false,
@@ -464,18 +487,19 @@ export const updateNewMail = async (req, res, next) => {
             })
         }
 
-        const otpResult = await sendOTP(email)
+        const otpResult = await sendOTP(email)//PASS EMAIL TO SEND OTP FUNCTION
         console.log("Send Otp response  :", otpResult)
 
         if (!otpResult.success) {
             return res.status(500).json(otpResult.message)
         }
 
+        //SET NEW SESSION WHEN EMAIL ITS FINE
         req.session.updateNew = email
         return res.status(200).json({
             success: true,
             message: otpResult.message,
-            redirect: "/otp/verify"
+            redirect: "/otp/verify"//VERIFY NEW EMAIL
         })
 
     } catch (error) {
@@ -508,18 +532,23 @@ export const addAddress = async (req, res, next) => {
             addressType
         } = req.body
         const user = req.user
+
+        //VALIDATIONS
         if (!firstName || !lastName || !street || !city || !state || !zip || !phone) {
             return res.status(400).json({
                 success: false,
                 message: "Please add your address"
             })
         }
+
         console.log("Add address :", req.body)
         const phoneNumber = parseInt(phone)
 
         if (isNaN(phoneNumber)) {
             return res.status(400).json({ success: false, message: "Number must be digits" })
         }
+
+        //CREATE NEW ADDRESS
         const newAddress = new Address({
             firstName,
             lastName,
@@ -568,6 +597,7 @@ export const editAddress = async (req, res, next) => {
         const addressId = req.params.addressId
         console.log("Address edit : ", addressId)
 
+        //VALIDATION
         if (!firstName || !lastName || !street || !city || !state || !phone || !zip || !addressType) {
             return res.status(400).json({
                 success: false,
@@ -579,6 +609,8 @@ export const editAddress = async (req, res, next) => {
         if (isNaN(phoneNumber)) {
             return res.status(400).json({ success: false, message: "Number must be digits" })
         }
+
+        //UPDATE ADDRESS
         const updateAddress = await Address.findByIdAndUpdate(
             addressId,
             {
@@ -637,7 +669,7 @@ export const deleteAddress = async (req, res, next) => {
 export const setDefault = async (req, res, next) => {
     try {
         const addressId = req.params.id
-        const isChecked = req.body.isDefault
+        const isChecked = req.body.isDefault//SELECTED (TRUE/FALSE)
         console.log("Address set defualt : ", isChecked)
 
         const address = await Address.findById(addressId)
@@ -646,12 +678,14 @@ export const setDefault = async (req, res, next) => {
         }
 
         if (isChecked) {
+            //SET ONLY ONE ADDRESS AS DEFAULT IF MULITPLE ADDRESS AVAILABLE
             await Address.updateMany(
                 { user: address.user, _id: { $ne: addressId } },
                 { $set: { isDefault: false } }
             );
         }
 
+        //UPDATE ISDEFAULT
         const updateAddress = await Address.findByIdAndUpdate(
             addressId,
             { $set: { isDefault: isChecked } },
@@ -678,7 +712,7 @@ export const setDefault = async (req, res, next) => {
 export const selectAddress = async (req, res, next) => {
     try {
         const addressId = req.params.id
-        const isChecked = req.body.isSelected
+        const isChecked = req.body.isSelected//(TRUE/FALSE)
         console.log("Address is selected : ", isChecked)
 
         const address = await Address.findById(addressId)
@@ -686,6 +720,7 @@ export const selectAddress = async (req, res, next) => {
             return res.status(400).json({ success: false, message: "Address not found" })
         }
 
+        //USER CAN ONLY SELECT ONE ADDRESS
         if (isChecked) {
             await Address.updateMany(
                 { user: address.user, _id: { $ne: addressId } },
@@ -693,6 +728,7 @@ export const selectAddress = async (req, res, next) => {
             );
         }
 
+        //UPDATE
         const updateAddress = await Address.findByIdAndUpdate(
             addressId,
             { $set: { isSelected: isChecked } },
@@ -705,6 +741,7 @@ export const selectAddress = async (req, res, next) => {
                 message: "Failed to select addresss"
             });
         }
+
         if (isChecked) {
             return res.status(200).json({
                 success: true,
@@ -725,8 +762,8 @@ export const selectAddress = async (req, res, next) => {
 //============Logout=================== 
 export const logout = async (req, res, next) => {
     try {
-        res.clearCookie("jwt")
-        req.session.user = null
+        res.clearCookie("jwt")//CLEAR JWT TOKENS
+        req.session.user = null//CLEAR AVAILABLE SESSION
         return res.json({ success: true, message: "Logged out successfully." })
 
     } catch (error) {

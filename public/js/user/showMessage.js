@@ -10,9 +10,11 @@ function showToast(message, type = 'error') {
     }).showToast();
 }
 
-async function showMessage(name, data) {
+async function addToWishlist(button,data) {
+        // const wishlistBtn = document.getElementById('wishlistBtn')
 
-    if (name == 'wishlist') {
+        // console.log(wishlistBtn)
+ 
         try {
             const response = await fetch('/read-and-grow/wishlist/add', {
                 method: "POST",
@@ -28,58 +30,45 @@ async function showMessage(name, data) {
             }
 
             showToast(result.message || 'Product added to wishlist', 'success')
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fas');
+                icon.classList.toggle('far');
+                icon.classList.toggle('text-red-500');
+                icon.classList.toggle('text-gray-600');
+            }
 
+            setTimeout(() => {
+                location.reload()
+            }, 1000);
         } catch (error) {
             console.log('Add to Wishlist ', error.message)
             showToast(error.message || 'Something went wrong', 'error')
         }
-    }
-
-    if (name == 'wishlistDelete') {
-        console.log(data)
-        Swal.fire({
-            title: "Are you sure?",
-            text: "Do you really want to remove this item from your wishlist?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, remove it!"
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`/read-and-grow/wishlist/remove/${data[0]}}`, {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
-                        body:JSON.stringify({productId:data[1]})
-                    })
-
-                    const result = await response.json()
-
-                    console.log(result)
-                    if (!response.ok) {
-                        throw Error(result.message || 'Product not added to wishlist')
-                        return
-                    }
-
-                    Swal.fire({
-                        title: "Removed!",
-                        text: result.message || "Product has been removed from your wishlist.",
-                        icon: "success",
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-
-                } catch (error) {
-                    Swal.fire({
-                        title: "Error!",
-                        text: error.message || "Something went wrong.",
-                        icon: "error"
-                    });
-                }
-            }
-        });
-    }
-
-   
 } 
+
+async function removeWishlist(data){
+    console.log(data)
+    try {
+        const response = await fetch(`/read-and-grow/wishlist/remove/${data}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: data })
+        })
+
+        const result = await response.json()
+        console.log(result)
+        if (!response.ok) {
+            throw Error(result.message || 'Product remove from wishlist failed')
+            return
+        }
+
+        showToast(result.message || 'Product removed from wishlist', 'success')
+        setTimeout(() => {
+            location.reload()
+        }, 1000);
+    } catch (error) {
+        console.log('Remove from Wishlist ', error.message)
+        showToast(error.message || 'Something went wrong', 'error')
+    }
+}

@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
             notyf.success(result.message || "Login successful");
     
             setTimeout(() => {
-                window.location.href = result.redirect || "/read-and-grow/home";
+                window.location.href = result.redirect || "/read-and-grow";
             }, 1000);
     
         } catch (error) {

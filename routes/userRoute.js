@@ -45,7 +45,6 @@ router.post('/requestPasswordReset', requestPasswordReset)
 router.get('/resetPassword', renderResetPassword)
 router.post('/resetPassword', resetPassword)
 
-
 router.get('/change-password/:id', userAuth, renderChangePassword)
 router.post('/change-password', userAuth, changePasswordRequest)
 
@@ -109,8 +108,8 @@ router.get('/auth/google/callback',
             return res.redirect('/read-and-grow/signup');
         } else if (req.user.googleId)
 
-            req.session.user = req.user._id;
-
+        req.session.user = req.user._id;
+ 
         req.session.save((err) => {
             if (err) {
                 console.error('Session save error:', err);
@@ -131,12 +130,12 @@ router.get('/auth/google/callback',
 
         console.log(`Google signup done`);
 
-        return res.redirect('/read-and-grow/home');
+        return res.redirect('/read-and-grow');
     }
 );
 
 
-// ================for handling random routes===============
+// // ================for handling random routes===============
 // router.get('/notFound', (req, res) => {
 //     res.render('admin/notFound')
 // })

@@ -18,6 +18,12 @@ export const renderOffersPage = async (req, res, next) => {
             .populate('categoryId')
 
         // console.log("offers :", offers)
+        
+        const products = await Product.find()
+        .populate('offers')
+        const categories = await Category.find()
+        .populate('offers')
+        
         let currentDate = new Date
         for (let offer of offers) {
             if (currentDate > offer.validTo) {
@@ -25,10 +31,6 @@ export const renderOffersPage = async (req, res, next) => {
             }
         }
 
-        const products = await Product.find()
-                .populate('offers')
-        const categories = await Category.find()
-                .populate('offers')
 
         let bestOffer = 0;
         for (let product of products) {
@@ -58,6 +60,8 @@ export const renderOffersPage = async (req, res, next) => {
 
             if(bestOffer){
                 await Product.findByIdAndUpdate(product._id, { $set: { bestOffer: bestOffer?.discountPercentage } })
+            }else{
+                await Product.findByIdAndUpdate(product._id, { $unset: { bestOffer: "" } })
             }
             console.log("product with Bestoffer:", bestOffer);
  

@@ -69,14 +69,16 @@
                     <div>
                         <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
                         <select id="category" name="category" required
-                        class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <option value="" disabled selected>Select a category</option>
-                        <% categories.forEach(cat=>{ %>
-                            <option value="<%= cat.categoryName %>">
-                                <%= cat.categoryName %>
-                            </option>
+                            class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="" disabled>Select a category</option>
+                            <% categories.forEach(cat => { %>
+                                <option value="<%= cat.categoryName %>" 
+                                    <%= cat.categoryName === product.category ? 'selected' : '' %>>
+                                    <%= cat.categoryName %>
+                                </option>
                             <% }) %>
-                    </select>
+                        </select>
+                    
                     </div>
                     <div>
                         <label for="author" class="block text-sm font-medium text-gray-700">Author</label>

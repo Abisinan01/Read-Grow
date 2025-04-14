@@ -22,7 +22,7 @@ export const renderWishListPage = async (req, res, next) => {
         let wishlistItems = []
         const wishlist = await Wishlist.findOne({ userId: user.id })
 
-        const itemsToRemove = [];
+        const itemsToRemove = [];//PUSH REMOVED ITEMS
         if (!wishlist) {
             return res.render('user/wishlist', {
                 user,
@@ -40,10 +40,8 @@ export const renderWishListPage = async (req, res, next) => {
                 itemsToRemove.push(item.productId);
                 continue;
             }
-            if (!cart) {
-                res.status(200).json({ success: false, message: "Not cart products" })
-            }
 
+            //REMOVING PRODUCTS INCLUDES IN CART 
             for (let cartItem of cart.items) {
                 if (cartItem.productId.toString() === product._id.toString()) {
                     itemsToRemove.push(item.productId);
@@ -57,7 +55,7 @@ export const renderWishListPage = async (req, res, next) => {
 
         if (itemsToRemove.length > 0) {
             wishlist.items = wishlist.items.filter(item =>
-                !itemsToRemove.includes(item.productId.toString()) // Remove items in itemsToRemove
+                !itemsToRemove.includes(item.productId.toString()) // FOR ENSURE NOT INCLUDES REMOVED PRODUCT
             );
             await wishlist.save();
         }
@@ -77,29 +75,32 @@ export const renderWishListPage = async (req, res, next) => {
 
 export const addToWishlist = async (req, res, next) => {
     try {
-        console.log("product id ", req.body)
+        console.log("product id ", req.body)//DEBUG
         const productId = req.body.productId
-        const user = req.user
+        const user = req.user//FROM JWT TOKEN
 
-        if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+        if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {//THIS WILL ENSURE INVALID ID FORMAT LIKE (_id:'abc').
             return res.status(400).json({ success: false, message: "Invalid or missing product ID" });
         }
+
         if (!user || !user.id) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
         }
 
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
+            return res.status(400).json({ success: false, message: "Product not found" });
         }
 
         let wishlist = await Wishlist?.findOne({ userId: user.id });
         if (!wishlist) {
+            //CREATE NEW WISHLIST FOR USER
             wishlist = new Wishlist({
                 userId: user.id,
                 items: [{ productId }]
             });
         } else {
+            //ADDING TO WISHLIST WITH AVOID DUPLICATES
             if (!wishlist?.items.some(item => item.productId.toString() === productId)) {
                 wishlist.items.push({ productId });
             } else {
@@ -122,7 +123,7 @@ export const addToWishlist = async (req, res, next) => {
 
 export const deleteWishlist = async (req, res, next) => {
     try {
-        const productId = req.params.id
+        const { productId } = req.body
         const user = req.user
         console.log("productId", productId)
         console.log("userId", user.id)
@@ -132,13 +133,13 @@ export const deleteWishlist = async (req, res, next) => {
         }
         const validProductId = new mongoose.Types.ObjectId(productId);
 
-        const wishlist = await Wishlist.findOne({ userId: user.id }).select('_id');
+        const wishlist = await Wishlist.findOne({ userId: user.id });//GETING THE ID OF WISHLIST
+
         if (!wishlist) {
             return res.status(400).json({ success: false, message: "Wishlist not found" });
         }
 
         const validWishlistId = new mongoose.Types.ObjectId(wishlist._id)
-
 
         const result = await Wishlist.updateOne(
             { _id: validWishlistId, userId: user.id },
@@ -163,28 +164,29 @@ export const deleteWishlist = async (req, res, next) => {
 export const renderCartManagment = async (req, res, next) => {
     try {
         const user = req.user
-        const cartItems = await Cart?.findOne({ userId: user.id })
+        const cartItems = await Cart?.findOne({ userId: user.id })//FIND CART
 
-        if (cartItems) {
-            const product = await Product.findOne({ productId: cartItems?.items?.productId })
-        } else {
+        if (!cartItems) {
             return res.render('user/cart', { user, allCartProducts: [], cartItems: [] });
         }
 
         let allCartProducts = [], totalAmount = 0
         for (let item of cartItems.items) {
-            const product = await Product.findById(item.productId).lean()
+            const product = await Product.findById(item.productId).lean()//LEAN FOR CLEAN JS OBJECT
 
             if (!product) {
-                console.log(`Not product found in this cart pid:${item.productId}`)
+                console.log(`Not product found in this cart`)
+                return res.status(400).redirect('/read-and-grow/shop')
             }
+
+            //REMOVE BLOCKED PRODUCTS FROM CART 
             if (product.isBlocked) {
                 cartItems.items.pull({ productId: product._id })
                 await cartItems.save()
                 continue;
             }
 
-            totalAmount += item.quantity * product.price
+            totalAmount += item.quantity * product.price//CART TOTAL AMOUNT
             const cartProduct = {
                 ...product,
                 quantity: item.quantity,
@@ -193,15 +195,17 @@ export const renderCartManagment = async (req, res, next) => {
             allCartProducts.push(cartProduct);
         }
 
+        //CHECK WHOLE STOCK COUNT GREATER THAN THEIR QUANTITY (TRUE/FALSE)
         const isAvailableStock = allCartProducts.every(product => product.stock >= product.quantity)
-
+        
         return res.render("user/cart", {
             user,
             allCartProducts,
             cartItems, totalAmount, isAvailableStock
-        }) 
+        })
 
     } catch (error) {
+        console.log(error.message)
         next(new AppError(`Cart managment failed : ${error}`, 500))
     }
 }
@@ -214,52 +218,68 @@ export const addToCart = async (req, res, next) => {
         console.log("user:", user.id)
 
         const product = await Product.findById(productId)
-        // console.log(product)
+
         if (product.isBlocked || !product) {
             return res.status(400).json({
                 success: false,
                 message: "Unavailable."
             })
         }
+
         if (product.stock <= 0) {
             return next(new AppError(`Out of stock`, 400))
         }
+
         let cart = await Cart.findOne({ userId: user.id })
-   
+
         if (cart) {
+            //FIND INDEX
             const existItemIndex = cart.items.findIndex(
                 item => item.productId.toString() === productId.toString()
             )
-            if (existItemIndex > -1) {
-                if (cart.items[existItemIndex].quantity + 1 > product.stock ) {
+
+            //CHECK ALREADY INCLUDES 
+            if (existItemIndex >= 0) {
+
+                //VALIDATE ADD QUANTITY
+                if (cart.items[existItemIndex].quantity + 1 > product.stock) {
+                    console.log('No enough stock')
                     return res.status(400).json({
                         success: false, message: "No enough stock"
-                    })  
+                    })
                 }
-                if(cart.items[existItemIndex].quantity + 1 > 3){
+
+                //MINIMUM LIMIT ORDER(3) VALIDATE
+                if (cart.items[existItemIndex].quantity + 1 > 3) {
                     return res.status(400).json({
                         success: false, message: "Order limit is reached"
-                    })  
+                    })
                 }
+
+                //INCREASE QAUNTITY
                 cart.items[existItemIndex].quantity += 1;
-     
+
 
             } else {
+                //IF NO CART AVAILABLE FOR USER CREATE NEW CART
                 cart.items.push({
                     productId: new mongoose.Types.ObjectId(product._id),
                     quantity: 1,
                     stock: parseInt(product.stock)
                 })
- 
+
             }
+
             const saveCart = (await cart.save()) ? true : false
+
             if (!saveCart) {
                 return res.status(400).json({
                     success: false, message: "Maximum limit reached"
                 })
             }
-    
+
         } else {
+            //IF NO CART FOR USER. CREATE NEW ONE
             const addCart = new Cart({
                 userId: new mongoose.Types.ObjectId(user.id),
                 items:
@@ -275,7 +295,12 @@ export const addToCart = async (req, res, next) => {
             await product.save()
         }
 
-        await Wishlist.findOneAndUpdate({userId:user.id},{$unset:{items:""}})
+        //REMOVE PRODUCT FROM WISH LIST IF ITS FROM ADDED FROM WISHLIST
+        await Wishlist.findOneAndUpdate(
+            { userId: user.id },
+            { $pull: { items: { productId: productId } } }
+        );
+
 
         return res.status(200).json({
             success: true,
@@ -294,11 +319,12 @@ export const removeFromCart = async (req, res, next) => {
 
         const product = await Product.findById(productId)
         const cartItem = await Cart.findOne({ userId: user.id })
-        console.log("cartItem", cartItem)
-        const stockCount = cartItem.items.find(p => {
-            if (p.productId.toString() == product._id.toString()) return p.quantity
-        })
-        console.log("stockCount before", stockCount.quantity)
+        console.log("cartItem", cartItem)//DEBUG
+
+        // const stockCount = cartItem.items.find(p => {
+        //     if (p.productId.toString() == product._id.toString()) return p.quantity
+        // })
+        // console.log("stockCount before", stockCount.quantity)
 
         const updateCart = await Cart.updateOne(
             { userId: user.id },
@@ -306,12 +332,6 @@ export const removeFromCart = async (req, res, next) => {
                 $pull: { items: { productId: product._id } }
             }
         )
-
-        // const updateInventory = await Product.updateOne(
-        //     { _id: product._id },
-        //     { $inc: { stock: stockCount.quantity } }
-        // )
-        // if (updateInventory) console.log(`Inventory updated ${product.name} ${stockCount}`)
 
         if (!updateCart) {
             return res.status(200).json({
@@ -332,8 +352,8 @@ export const removeFromCart = async (req, res, next) => {
 export const updateQuantity = async (req, res, next) => {
     try {
         const productId = req.params.id
-        const newQty = req.body.quantity
-        const minusQty = req.body.minusQty
+        const newQty = req.body.quantity//+ve
+        const minusQty = req.body.minusQty//-ve
         const user = req.user
 
         const product = await Product.findById(productId)
@@ -341,7 +361,10 @@ export const updateQuantity = async (req, res, next) => {
 
         const cart = await Cart.findOne({ userId: user.id })
         console.log('cart', cart)
+
+        //CONDITION FOR ADD QUANTITY
         if (newQty) {
+
             if (newQty > product.stock) {
                 return res.status(400).json({
                     success: false,
@@ -349,6 +372,7 @@ export const updateQuantity = async (req, res, next) => {
                 })
             }
 
+            //LIMIT 3
             if (newQty > 3) {
                 return res.status(400).json({
                     success: false, message: "Quantity maximum 3"
@@ -365,11 +389,12 @@ export const updateQuantity = async (req, res, next) => {
                 })
             }
 
-            item.quantity += 1
+            item.quantity += 1//INCREASE QTY BY 1
             await cart.save()
         }
-        if (minusQty) {
 
+        //CONDITION FOR MINUS QUANTITY
+        if (minusQty) {
             console.log("newQty :", newQty)
             console.log("current stock:", product.stock)
 
@@ -381,11 +406,12 @@ export const updateQuantity = async (req, res, next) => {
                 })
             }
 
-            item.quantity -= 1
- 
+            item.quantity -= 1//DECREASE QTY
+
             await cart.save()
             console.log("updated Stock :", product.stock)
         }
+        
         return res.status(200).json({
             success: true,
             message: "Done"

@@ -1,70 +1,63 @@
 <!-- Navbar -->
 <nav class="bg-white shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            
+        <div class="flex flex-col sm:flex-row items-center justify-between h-auto sm:h-16 py-4 sm:py-0">
             <!-- Logo -->
-            <a href="/" class="flex items-center">
-                <h1 class="text-2xl font-bold text-gray-900">REad & GroW</h1>
+            <a href="/" class="flex items-center mb-4 sm:mb-0">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">REad & GroW</h1>
             </a>
 
             <!-- Search Bar -->
-            <div class="flex-1 max-w-2xl px-6">
+            <div class="flex-1 w-full sm:max-w-2xl px-0 sm:px-6 mb-4 sm:mb-0">
                 <div class="relative">
                     <form id="searchForm">
                         <input type="search" 
                                name="query" 
                                placeholder="Search for books..." 
-                               class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                                aria-label="Search">
                         <button type="submit" 
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            aria-label="Submit search">
-                            <i class="fas fa-search"></i>
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                aria-label="Submit search">
+                            <i class="fas fa-search text-sm sm:text-base"></i>
                         </button>
                     </form>
                     
                     <script>
                         document.getElementById('searchForm').addEventListener('submit', (e) => {
                             e.preventDefault();
-                            
                             const searchInput = document.querySelector('input[name="query"]').value.trim();
-                            
                             if (searchInput) {
                                 window.location.href = `/read-and-grow/shop?category=${encodeURIComponent('<%= %>')}&search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
                             }
                         });
                     </script>
-            
                 </div>
             </div>
-            <!-- <button class="relative right-[80px]" onclick="window.location.href = '/read-and-grow/shop?page=1&limit-6'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#666666">
-                    <path d="M20.944 12.979c-.489 4.509-4.306
-                 8.021-8.944 8.021-2.698 0-5.112-1.194-6.763-3.075l1.245-1.633c1.283 1.645 3.276 2.708 5.518 
-                2.708 3.526 0 6.444-2.624 6.923-6.021h-2.923l4-5.25 4 5.25h-3.056zm-15.864-1.979c.487-3.387 3.4-6 
-                6.92-6 2.237 0 4.228 1.059 5.51 2.698l1.244-1.632c-1.65-1.876-4.061-3.066-6.754-3.066-4.632 0-8.443 3.501-8.941 
-                8h-3.059l4 5.25 4-5.25h-2.92z" />
-                </svg>
-            </button> -->
-            
+
             <!-- Navigation Icons -->
-            <div class="flex items-center space-x-6">
-                <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
-                    <i class="fas fa-store text-xl"></i>
+            <div class="flex items-center space-x-4 sm:space-x-6">
+                <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Shop">
+                    <i class="fas fa-store text-lg sm:text-xl"></i>
                 </a>
-                <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
-                    <i class="fas fa-heart text-xl"></i>
+                <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Wishlist">
+                    <i class="fas fa-heart text-lg sm:text-xl"></i>
                 </a>
-                <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
-                    <i class="fas fa-shopping-cart text-xl"></i>
-                </a>
-                <a href="/read-and-grow/profile/<%= user.id || user._id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
-                    <i class="fas fa-user text-xl"></i>
+                <div class="relative">
+                    <a href="/read-and-grow/cart"
+                       class="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                       aria-label="Shopping cart">
+                        <i class="fas fa-shopping-cart text-lg sm:text-xl"></i>
+                        <!-- <span
+                            class="absolute -top-2 -right-2 bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold">
+                            1
+                        </span> -->
+                    </a>
+                </div>                
+                <a href="/read-and-grow/profile/<%= user.id || user._id %>" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Profile">
+                    <i class="fas fa-user text-lg sm:text-xl"></i>
                 </a>
             </div>
         </div>
     </div>
 </nav>
-
- 

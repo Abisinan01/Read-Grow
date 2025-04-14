@@ -5,49 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OTP Verification</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Toastify -->
     <link href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.js"></script>
     <style>
         .otp-input {
-            width: 3rem;
-            height: 3rem;
+            width: 3.5rem;
+            height: 3.5rem;
             text-align: center;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            font-weight: 600;
             border: 2px solid #d1d5db;
             border-radius: 0.5rem;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
         .otp-input:focus {
-            border-color: #ef4444;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            outline: none;
+        }
+        .otp-input:hover:not(:focus) {
+            border-color: #6ee7b7;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-2xl shadow-lg w-96 text-center">
-        <h2 class="text-2xl font-semibold italic mb-6 text-gray-800">OTP Verification</h2>
+<body class="bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center min-h-screen px-4">
+    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md text-center border border-gray-100 animate-fade-in">
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">OTP Verification</h2>
         <form id="otpForm" class="space-y-6">
-            <div class="flex justify-center space-x-4 mb-4">
+            <div class="flex justify-center space-x-3 sm:space-x-4">
                 <input type="text" id="otp1" maxlength="1" class="otp-input" required aria-label="OTP digit 1">
                 <input type="text" id="otp2" maxlength="1" class="otp-input" required aria-label="OTP digit 2">
                 <input type="text" id="otp3" maxlength="1" class="otp-input" required aria-label="OTP digit 3">
                 <input type="text" id="otp4" maxlength="1" class="otp-input" required aria-label="OTP digit 4">
             </div>
-            <div class="flex justify-between text-sm text-gray-600 mb-6">
-                <button type="button" id="resendOtp" class="text-gray-600 hover:text-red-500 disabled:text-gray-400" disabled>Resend</button>
-                <span id="Timer" class="font-medium">OTP expires in 00:30</span>
+            <div class="flex justify-between text-sm sm:text-base text-gray-600">
+                <button type="button" id="resendOtp" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors disabled:text-gray-400 disabled:cursor-not-allowed" disabled>Resend OTP</button>
+                <span id="Timer" class="font-medium text-gray-700">OTP expires in 00:30</span>
             </div>
             <button type="submit" id="verifyBtn"
-                class="bg-red-600 text-white px-8 py-2 rounded-full text-lg hover:bg-red-700 transition duration-300 w-full">
-                Verify
+                    class="bg-gradient-to-r from-red-600 to-red-900 text-white px-6 sm:px-8 py-2 rounded-full text-base sm:text-lg font-semibold hover:from-emerald-700 hover:to-teal-600 transition-all duration-300 w-full shadow-md">
+                Verify OTP
             </button>
         </form>
-        <p id="resendCount" class="text-sm text-gray-600 mt-2">Resend attempts remaining: 3</p>
     </div>
 
     <script>
-        // Toastify function
         function showToast(message, type = 'error') {
             Toastify({
                 text: message,
@@ -59,12 +68,6 @@
             }).showToast();
         }
 
-        // Initialize resend counter
-        let resendCount = parseInt(localStorage.getItem('resendCount')) || 3;
-        const resendCountDisplay = document.getElementById('resendCount');
-        resendCountDisplay.textContent = `Resend attempts remaining: ${resendCount}`;
-
-        // Handle OTP input navigation
         const otpInputs = document.querySelectorAll('.otp-input');
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
@@ -79,22 +82,18 @@
             });
         });
 
-        // Handle form submission
         document.getElementById('otpForm').addEventListener('submit', async (event) => {
             event.preventDefault();
-
             const verifyBtn = document.getElementById('verifyBtn');
             if (verifyBtn.disabled) {
                 showToast('OTP has expired. Please resend a new OTP.');
                 return;
             }
-
             const otp = Array.from(otpInputs).map(input => input.value).join('');
             if (otp.length !== 4) {
                 showToast('Please enter a 4-digit OTP');
                 return;
             }
-
             try {
                 const token = localStorage.getItem('otpToken');
                 const response = await fetch('/otp/otp-verify', {
@@ -105,19 +104,15 @@
                     },
                     body: JSON.stringify({ otp }),
                 });
-
                 const result = await response.json();
-
                 if (!response.ok) {
                     showToast(result.message || 'Invalid OTP');
                     return;
                 }
-
                 if (result.success) {
                     showToast(result.message || 'OTP verified successfully', 'success');
                     setTimeout(() => {
                         window.location.href = result.redirect || '/dashboard';
-                        localStorage.setItem('resendCount', '3'); // Reset counter on success
                     }, 1000);
                 }
             } catch (error) {
@@ -126,20 +121,13 @@
             }
         });
 
-        // Handle resend OTP
         document.getElementById('resendOtp').addEventListener('click', async () => {
-            if (resendCount <= 0) {
-                showToast('Maximum resend attempts reached.');
-                return;
-            }
-
             try {
                 const token = localStorage.getItem('otpToken');
                 if (!token) {
                     showToast('Session expired. Please log in again.');
                     return;
                 }
-
                 const response = await fetch('/otp/send-otp', {
                     method: 'POST',
                     headers: {
@@ -148,56 +136,37 @@
                     },
                     body: JSON.stringify({ token }),
                 });
-
                 const result = await response.json();
-
                 if (!response.ok) {
                     showToast(result.message || 'Failed to resend OTP');
                     return;
                 }
-
-                resendCount--;
-                localStorage.setItem('resendCount', resendCount);
-                resendCountDisplay.textContent = `Resend attempts remaining: ${resendCount}`;
                 showToast(result.message || 'OTP resent successfully', 'success');
-                otpTimer(30); // Restart timer
-
-                if (resendCount <= 0) {
-                    document.getElementById('resendOtp').disabled = true;
-                    document.getElementById('resendOtp').classList.add('cursor-not-allowed');
-                    showToast('No more resend attempts available.');
-                }
+                otpTimer(30);
             } catch (error) {
                 showToast('An error occurred while resending OTP.');
                 console.error(`Resend OTP error: ${error.message}`);
             }
         });
 
-        // OTP Timer Function
         function otpTimer(duration) {
             let time = duration;
             const timer = document.getElementById('Timer');
             const resendOtp = document.getElementById('resendOtp');
             const verifyBtn = document.getElementById('verifyBtn');
-
             resendOtp.disabled = true;
             resendOtp.classList.add('cursor-not-allowed');
             verifyBtn.disabled = false;
             verifyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
             const interval = setInterval(() => {
                 let minutes = Math.floor(time / 60);
                 let seconds = time % 60;
-
                 timer.textContent = `OTP expires in ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
                 if (time <= 0) {
                     clearInterval(interval);
                     timer.textContent = 'OTP expired';
-                    if (resendCount > 0) {
-                        resendOtp.disabled = false;
-                        resendOtp.classList.remove('cursor-not-allowed');
-                    }
+                    resendOtp.disabled = false;
+                    resendOtp.classList.remove('cursor-not-allowed');
                     verifyBtn.disabled = true;
                     verifyBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 }
@@ -205,7 +174,6 @@
             }, 1000);
         }
 
-        // Start timer on page load
         otpTimer(30);
     </script>
 </body>

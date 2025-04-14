@@ -1,21 +1,21 @@
 import express from "express"
-import { 
+import {
     sendOTP,
     otpVerifyGet,
     otpVerifyPost
 
- } from "../controllers/otpController.js"
+} from "../controllers/otpController.js"
 import { renderEmailVerify } from "../controllers/user/userController.js"
-import  jwt  from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
 const router = express.Router()
- 
+
 router.get("/otp-verify", otpVerifyGet)
-router.post('/otp-verify',otpVerifyPost)
+router.post('/otp-verify', otpVerifyPost)
 
 router.post("/send-otp", async (req, res) => {
     try {
-        const { token } = req.body; 
+        const { token } = req.body;
         // console.log(1,token)
 
         if (!token) {

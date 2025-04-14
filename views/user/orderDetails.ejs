@@ -50,13 +50,14 @@
               <span class="font-medium text-gray-800">Payment status:</span>
               <span class="<% 
               if (order.paymentStatus === 'failed') { %> text-red-600 font-semibold <% } 
-              else if (order.paymentStatus === 'refunded') { %> text-yellow-600 font-semibold <% } 
+              else if (order.paymentStatus === 'Refunded') { %> text-yellow-600 font-semibold <% } 
               else if (order.paymentStatus === 'paid') { %> text-green-600 font-semibold <% } 
+              else if (order.paymentStatus === 'pending') { %> text-yellow-600 font-semibold <% } 
               else { %> text-gray-900 font-semibold <% } 
               %>">
               <%= order.paymentStatus %>
               </span>
-          
+
             </div>
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800">Shipping charge</span>
@@ -64,18 +65,23 @@
             </div>
             <% if(order.discount){%>
               <div class="flex justify-between items-center">
-                <span class="font-medium text-gray-800">discount</span>
+                <span class="font-medium text-gray-800">Discount</span>
                 <span class="text-gray-900 font-semibold">-<%= order.discount %></span>
               </div>
             <% } %>
-            <% if(order.coupon){%>
+            <% if(order.coupon && order.isCouponAvailable){%>
               <div class="flex justify-between items-center">
                 <span class="font-medium text-gray-800">Applied coupon</span>
                 <span class="text-gray-900 font-semibold">-<%= order.coupon.discountValue %></span>
               </div>
+            <% }else if(order.coupon && !order.isCouponAvailable){ %>
+              <div class="flex justify-between items-center">
+                <span class="font-medium text-gray-800">Applied coupon</span>
+                <span class="text-gray-900 font-semibold line-through">-<%= order.coupon.discountValue %></span>
+              </div>
             <% } %>
             <div class="flex justify-between items-center">
-              <span class="font-medium text-gray-800">Total Amount:</span>
+              <span class="font-medium text-gray-800 ">Total Amount:</span>
               <span style="font-size: 18px; font-weight: bold;" id="x">Rs. <%= order.totalAmount %></span>
             </div>
           </div>
@@ -115,11 +121,16 @@
                               <i class="fas fa-times-circle text-red-600"></i>
                         <% } %>
                     </div>
+                    <% if(item.isRequested) {%>
+                      <p class="font-medium text-blue-600">
+                        Return requested
+                      </p>
+                    <% } %>
                   </div>
                 </div>
 
                 <div class="flex space-x-2">
-                  <% if (item.status==='Pending') { %>
+                  <% if (item.status==='Pending' && order.paymentStatus !== 'failed') { %>
                     <button id="singleCancel" data-product-id="<%= item.productId %>" data-order-id="<%= order._id %>"
                       class="cancel-btn text-xs font-medium text-white bg-gray-600 hover:bg-red-600 px-2 py-1 rounded transition duration-200">
                       Cancel
@@ -130,18 +141,8 @@
                           class="return-btn text-xs font-medium text-white bg-gray-600 hover:bg-green-600 px-2 py-1 rounded transition duration-200">
                           Return
                         </button>
-                    <% } %>
-                    <% if(order.paymentStatus === 'failed'){ %>
-                      <button id="retryPayment" data-order-id="<%= order._id %>"
-                        class="return-btn text-xs font-medium text-white bg-gray-600 hover:bg-green-600 px-2 py-1 rounded transition duration-200">
-                        Retry
-                      </button>
-                    <% }else{%>
-                      <button id="retryPayment" data-order-id="<%= order._id %>" hidden
-                        class="return-btn text-xs font-medium text-white bg-gray-600 hover:bg-green-600 px-2 py-1 rounded transition duration-200">
-                        Retry
-                      </button>
-                      <% } %>
+                    <% }%>
+ 
                 </div>
               </div>
               <% }) %>
@@ -180,19 +181,6 @@
         </div>
 
            <div class="flex space-x-6">
-            <!-- <button id="returnOrder"
-              class="bg-gray-100 hover:bg-yellow-400 text-gray-400 font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
-              data-order-id="<%= order._id %>"
-              <% if(order.status !== "Delivered") { %>hidden<% } %>>
-              Return
-            </button>
-
-            <button id="cancelOrders"
-              class="bg-gray-100 hover:bg-red-400 text-gray-400 font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
-              data-attribute-id="<%= order._id %>"
-              <% if ((order.status !== "Pending" && order.items.length > 1) || order.status === "Delivered" || order.status === "Cancelled") { %> hidden <% } %>>
-              Cancel
-          </button> -->
           
             <button id="invoice"
               class="invoice-btn bg-gray-400 align-end hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
@@ -200,8 +188,15 @@
               <% if(order.status !== "Delivered") { %>hidden<% } %>>
               Invoice
             </button>
+            
+            <% if(order.paymentStatus === 'failed'){ %>
+              <button id="retryPayment" data-order-id="<%= order._id %>"
+                class="return-btn bg-green-400 align-end hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                Retry payment
+              </button>
+            <% } %>
           </div>
-
+<!--  -->
       </div>
 
     </div>
@@ -227,242 +222,193 @@
       }
       document.addEventListener('DOMContentLoaded', function () {
 
-        // document.querySelectorAll('.invoice-btn').forEach(button => {
-        //   button.addEventListener('click', async function () {
-        //     const orderId = this.getAttribute('data-order-id');
- 
-        //     if (!orderId) {
-        //       console.error("Order ID not found");
-        //       Swal.fire({
-        //         icon: 'error',
-        //         title: 'Oops...',
-        //         text: 'Order ID is missing!',
-        //       });
-        //       return;
-        //     }
+      document.querySelectorAll('#singleCancel').forEach(button => {
+      button.addEventListener('click', async function () {
+        const productId = this.getAttribute('data-product-id');
+        const orderId = this.getAttribute('data-order-id');
 
-        //     button.disabled = true;
-        //     button.innerHTML = 'Generating...';
-
-        //     try {
-        //       const response = await fetch(`/read-and-grow/generate-invoice/${orderId}`, { method: 'GET' });
-
-        //       if (!response.ok) {
-        //         const errorData = await response.json();
-        //         throw new Error(errorData.message || 'Failed to generate invoice');
-        //       }
-
-        //       const blob = await response.blob();
-        //       const url = window.URL.createObjectURL(blob);
-
-        //       const a = document.createElement('a');
-        //       a.href = url;
-        //       a.download = `Invoice_${orderId}.pdf`;
-        //       document.body.appendChild(a);
-        //       a.click();
-        //       document.body.removeChild(a);
-        //       window.URL.revokeObjectURL(url);
-
-        //       Swal.fire({
-        //         icon: 'success',
-        //         title: 'Success',
-        //         text: 'Invoice downloaded successfully!',
-        //         timer: 1500,
-        //         showConfirmButton: false,
-        //       });
-        //     } catch (error) {
-        //       console.error('Error generating invoice:', error.message);
-        //       Swal.fire({
-        //         icon: 'error',
-        //         title: 'Oops...',
-        //         text: 'Failed to generate invoice: ' + error.message,
-        //       });
-        //     } finally {
-        //       button.disabled = false;
-        //       button.innerHTML = 'Invoice';
-        //     }
-        //   });
-        // });
-
-
-        document.querySelectorAll('#singleCancel').forEach(button => {
-          button.addEventListener('click', async function(e) {
-            const productId = this.getAttribute('data-product-id')
-            console.log(1111, productId)
-            const orderId = this.getAttribute('data-order-id')
-            const { value: reason } = await Swal.fire({
-              title: 'Cancel order',
-              html: `
-              <p>Please provide a reason for returning this order:</p>
-              <textarea id="returnReason" class="swal2-textarea w-96 p-2 border rounded" placeholder="Enter your reason here..." rows="4"></textarea>
-            `,
-              showCancelButton: true,
-              confirmButtonText: 'Submit Cancel',
-              cancelButtonText: 'Cancel',
-              confirmButtonColor: '#000223',
-              cancelButtonColor: '#d33',
-              preConfirm: () => {
-                const reasonText = document.getElementById('returnReason').value.trim();
-                if (!reasonText) {
-                  Swal.showValidationMessage('Please enter a reason for the return');
-                  return false;
-                }
-                return reasonText;
-              }
-            });
-            if (reason) {
-              Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-              }).then(async (result) => {
-                if (result.isConfirmed)
-                  try {
-                    const response = await fetch(`/read-and-grow/single-cancel-order/${orderId}/${productId}`, {
-                      method: "DELETE",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ reason: reason })
-                    })
-                    const result = await response.json()
-                    if (!response.ok) {
-                      Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: result.message,
-                        footer: '<a href="/read-and-grow/shop">Continue shop</a>',
-                        confirmButtonText: "OK"
-                      }).then((result) => {
-                        if (result.isConfirmed) {
-                          window.location.href = "/read-and-grow/orders";
-                        }
-                      });
-                    }
-                    Swal.fire({
-                      title: result.message,
-                      text: "You order another one",
-                      icon: "success"
-                    }).then((result) => {
-                      if (result.isConfirmed) {
-                        window.location.href = "/read-and-grow/orders"
-                      }
-                    });
-                  } catch (error) {
-                  }
-              })
+        const { value: reason } = await Swal.fire({
+          title: 'Cancel order',
+          html: `
+            <p>Please provide a reason for returning this order:</p>
+            <textarea id="returnReason" class="swal2-textarea w-96 p-2 border rounded" placeholder="Enter your reason here..." rows="4"></textarea>
+          `,
+          showCancelButton: true,
+          confirmButtonText: 'Submit Cancel',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#000223',
+          cancelButtonColor: '#d33',
+          preConfirm: () => {
+            const reasonText = document.getElementById('returnReason').value.trim();
+            if (!reasonText) {
+              Swal.showValidationMessage('Please enter a reason for the return');
+              return false;
             }
-          })
-        })
+            return reasonText;
+          }
+        });
 
-      document.getElementById('retryPayment').addEventListener('click',async function(e) {
-        const orderId = this.getAttribute('data-order-id')
-        console.log(orderId)
+        if (!reason) return;
 
-        const finalPrice = document.getElementById('x').textContent.replace(/\D/g,"")
-        console.log(finalPrice,'finalpice')
-        isProcessing = true;  
-                try {
-                    const orderData = {
-                        finalPrice:Number(finalPrice),
-                        receipt: 'receipt#1',
-                        notes: {},
-                        currency: "INR"
-                    };
+        const confirm = await Swal.fire({
+          title: 'Are you sure?',
+          text: "You won't be able to revert this!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, cancel it!'
+        });
 
-                    console.log('Submitting order:', orderData);
+        if (!confirm.isConfirmed) return;
 
-                    const response = await fetch(`/read-and-grow/create-order`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify( orderData )
+        try {
+          const response = await fetch(`/read-and-grow/single-cancel-order/${orderId}/${productId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reason })
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            return Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: result.message || "Something went wrong.",
+              footer: '<a href="/read-and-grow/shop">Continue shopping</a>'
+            });
+          }
+
+          // ✅ SUCCESS
+          Swal.fire({
+            title: result.message,
+            text: "Your order item has been cancelled.",
+            icon: "success"
+          }).then(() => {
+            window.location.href = "/read-and-grow/orders";
+          });
+
+        } catch (error) {
+          console.error("Cancel error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Something went wrong",
+            text: "Please try again later."
+          });
+        }
+      });
+    });
+
+        
+        
+        const retryPaymentBtn = document.getElementById('retryPayment');
+        if (retryPaymentBtn) {
+          retryPaymentBtn.addEventListener('click', async function(e) {
+            const orderId = this.getAttribute('data-order-id');
+            console.log(orderId);
+
+            const finalPrice = document.getElementById('x').textContent.replace(/\D/g, "");
+            console.log(finalPrice, 'finalprice');
+            isProcessing = true;
+
+            try {
+              const orderData = {
+                finalPrice: Number(finalPrice),
+                receipt: 'receipt#1',
+                notes: {},
+                currency: "INR"
+              };
+
+              console.log('Submitting order:', orderData);
+
+              const response = await fetch(`/read-and-grow/create-order`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(orderData)
+              });
+
+              const order = await response.json();
+              console.log(order, 'orders');
+              if (!response.ok) {
+                Swal.fire({
+                  title: "Warning!",
+                  text: order.message,
+                  icon: "warning",
+                  confirmButtonText: "OK",
+                });
+                return;
+              }
+
+              const options = {
+                key: 'rzp_test_ft2g0i6HYiyfqh', // Replace with your Razorpay key_id
+                amount: order.amount,
+                currency: order.currency,
+                name: 'Read-and-grow',
+                description: 'Transaction',
+                order_id: order.id,
+                callback_url: 'http://localhost:3999/read-and-grow/success',
+                prefill: {
+                  name: 'Abisinan',
+                  email: 'abisinanabisinan9@gmail.com',
+                  contact: '8086001138'
+                },
+                theme: {
+                  color: '#F37254'
+                },
+                handler: function (response) {
+                  fetch('/read-and-grow/verify-payment', {
+                    method: "POST",
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature
+                    })
+                  }).then(res => res.json())
+                    .then(data => {
+                      if (data.status === 'Ok') {
+                        retryPayment(orderId);
+                      } else {
+                        console.log(data.message);
+                        showToast('Payment verification failed', 'error');
+                        failedPayment();
+                      }
+                    })
+                    .catch((error) => {
+                      console.error("Error:", error);
+                      showToast("Payment verification failed", "error");
                     });
-
-                    const order = await response.json();    
-                    console.log(order,'orders')
-                    if (!response.ok ) {
-                        Swal.fire({
-                            title: "Warning!",
-                            text: order.message,
-                            icon: "warning",
-                            confirmButtonText: "OK",
-                        })
-                    }
-                    const options = {
-                        key: 'rzp_test_ft2g0i6HYiyfqh', // Replace with your Razorpay key_id
-                        amount: order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-                        currency: order.currency,
-                        name: 'Read-and-grow',
-                        description: 'Transaction',
-                        order_id: order.id, // This is the order_id created in the backend
-                        callback_url: 'http://localhost:3999/read-and-grow/success', // Your success URL
-                        prefill: {
-                            name: 'Abisinan',
-                            email: 'abisinanabisinan9@gmail.com',
-                            contact: '8086001138'
-                        },
-                        theme: {
-                            color: '#F37254'
-                        },
-
-                        handler: function (response) {
-
-                            fetch('/read-and-grow/verify-payment', {
-                                method: "POST",
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_signature: response.razorpay_signature
-                                })
-                            }).then(res => res.json())
-                                .then(data => {
-                                    if (data.status === 'Ok') {
-                                         retryPayment(orderId)
-                                        // window.location.href = '/read-and-grow/success';
-                                    } else {
-                                        console.log(data.message);
-                                        showToast('Payment verification failed', 'error');
-                                        failedPayment()
-                                    }
-                                })
-                                .catch((error) => {
-                                    console.error("Error:", error);
-                                    showToast("Payment verification failed", "error");
-                                });
-                        }
-                    };
-
-                    console.log(options,"options")
-                    // Initialize Razorpay payment
-                        const rzp = new Razorpay(options);
-                        rzp.on('payment.failed', async function (response) {
-                            failedPayment()
-                            Swal.fire({
-                                title: "Payment Failed",
-                                text: "Your order is saved. You can retry the payment from your orders section.",
-                                icon: "error",
-                                confirmButtonText: "Go to order",
-                            }).then(() => {
-                                window.location.href = "/read-and-grow/orders";  
-                            });
-                            
-                        });
-                        
-                        rzp.open();
-                        return;
-
-                } catch (err) {
-                    showToast(err.message || 'Failed to process Razorpay payment', 'error');
-                    console.error('Error processing Razorpay payment:', err);
-                } finally {
-                    isProcessing = false;
                 }
-            })
+              };
+
+              console.log(options, "options");
+              const rzp = new Razorpay(options);
+              rzp.on('payment.failed', async function (response) {
+                failedPayment();
+                Swal.fire({
+                  title: "Payment Failed",
+                  text: "Your order is saved. You can retry the payment from your orders section.",
+                  icon: "error",
+                  confirmButtonText: "Go to order",
+                }).then(() => {
+                  window.location.href = "/read-and-grow/orders";
+                });
+              });
+
+              rzp.open();
+            } catch (err) {
+              showToast(err.message || 'Failed to process Razorpay payment', 'error');
+              console.error('Error processing Razorpay payment:', err);
+            } finally {
+              isProcessing = false;
+            }
+          });
+        }
+
+            // retry payment function
             async function retryPayment(orderId) {
             try {
               const response = await fetch('/read-and-grow/retry-payment',{
@@ -484,81 +430,86 @@
               
             }
           }
+      
 
+          document.getElementById('returnOrder').addEventListener('click', async function () {
+          const orderId = this.getAttribute('data-order-id');
+          const productId = this.getAttribute('data-product-id');
 
-    document.getElementById('returnOrder').addEventListener('click', async function (e) {
-      const orderId = this.getAttribute('data-order-id')
-      console.log(orderId)
-    const productId = this.getAttribute('data-product-id')
-    console.log(orderId,productId)
-    
-    const { value: reason } = await Swal.fire({
-      title: 'Return order',
-      html: `
-        <p>Please provide a reason for returning this order:</p>
-        <textarea id="returnReason" class="swal2-textarea w-96 p-2 border rounded" placeholder="Enter your reason here..." rows="4"></textarea>
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Submit return',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#000223',
-      cancelButtonColor: '#d33',
-      preConfirm: () => {
-        const reasonText = document.getElementById('returnReason').value.trim();
-        if (!reasonText) {
-          Swal.showValidationMessage('Please enter a reason for the return');
-          return false;
-        }
-        return reasonText;
-      }
-    });
-    if (reason) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
-      }).then(async (result) => {
-        if (result.isConfirmed)
+          console.log("Returning Order:", { orderId, productId });
+
+          const { value: reason } = await Swal.fire({
+            title: 'Return order',
+            html: `
+              <p>Please provide a reason for returning this order:</p>
+              <textarea id="returnReason" class="swal2-textarea w-96 p-2 border rounded" placeholder="Enter your reason here..." rows="4"></textarea>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Submit return',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#000223',
+            cancelButtonColor: '#d33',
+            preConfirm: () => {
+              const reasonText = document.getElementById('returnReason').value.trim();
+              if (!reasonText) {
+                Swal.showValidationMessage('Please enter a reason for the return');
+                return false;
+              }
+              return reasonText;
+            }
+          });
+
+          if (!reason) return;
+
+          const confirm = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, return it!'
+          });
+
+          if (!confirm.isConfirmed) return;
+
           try {
             const response = await fetch(`/read-and-grow/return-order/${orderId}/${productId}`, {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ reason: reason })
-            })
-            const result = await response.json()
+              body: JSON.stringify({ reason })
+            });
+
+            const result = await response.json();
+
             if (!response.ok) {
-              Swal.fire({
+              await Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                text: result.message,
-                footer: '<a href="/read-and-grow/shop">Continue shop</a>',
-                confirmButtonText: "OK"
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  window.location.href = "/read-and-grow/orders";
-                }
+                text: result.message || "Something went wrong.",
+                footer: '<a href="/read-and-grow/shop">Continue shopping</a>'
               });
+              return;
             }
-            Swal.fire({
-              title: result.message,
-              text: "You order another one",
-              icon: "success"
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.href = "/read-and-grow/orders"
-              } 
-            });
-          } catch (error) {
-          }
-      })
-    }
 
-    })
-    
+            await Swal.fire({
+              title: result.message,
+              text: "Your item has been returned successfully.",
+              icon: "success"
+            });
+
+            window.location.href = "/read-and-grow/orders";
+
+          } catch (error) {
+            console.error("Return error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Something went wrong",
+              text: "Please try again later."
+            });
+          }
+        });
+
   })
   function invoice(orderId) {
       Swal.fire({

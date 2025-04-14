@@ -7,6 +7,7 @@ import User from "../../models/userSchema.js"
 import Product from "../../models/productSchema.js"
 import Category from "../../models/categorySchema.js"
 import Wallet from "../../models/walletSchema.js"
+import Coupon from "../../models/couponSchema.js"
 
 
 export const getOrderPage = async (req, res, next) => {
@@ -22,10 +23,10 @@ export const getOrderPage = async (req, res, next) => {
         //     .lean();
 
         const allOrders = await Order.aggregate([
-            {$unwind:"$items"},
-            {$sort:{createdAt:-1}},
-            {$skip:skip},
-            {$limit:limit}
+            { $unwind: "$items" },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit }
         ])
 
         if (!allOrders.length) {
@@ -85,10 +86,12 @@ export const viewOrder = async (req, res, next) => {
         const user = await User.findById(order.userId)
 
         let index
+        let totalQty = 0
         order.items.forEach(item => {
             if (item.productId.toString() == productId) {
                 index = order.items.indexOf(item)
             }
+            totalQty += item.quantity
         });
 
         const viewOrder = await Product.findById(order.items[index].productId)
@@ -96,7 +99,7 @@ export const viewOrder = async (req, res, next) => {
 
         return res.render('admin/orderDetails', {
             order, index
-            , user, viewOrder
+            , user, viewOrder, totalQty
         })
 
     } catch (error) {
@@ -180,121 +183,125 @@ export const updateStatus = async (req, res, next) => {
 
 export const acceptReturn = async (req, res, next) => {
     try {
-        const productId = req.params.productId;
-        const orderId = req.params.orderId;
+        const { productId, orderId } = req.params;
 
-        try {
-            console.log(productId, orderId, 'req.params');
+        //FIND ORDERS WITH LOOKUP COUPON
+        const orders = await Order.findById(orderId).populate('coupon');
 
-            const orders = await Order.findById(orderId).populate('coupon');
-            const product = await Product.findById(productId);
-            const user = orders.userId;
+        if (!orders) throw new AppError('Order not found', 404);
 
-            const transactionID = `TRANS-${Date.now()}`;
-            console.log(transactionID)
-            let wallet = await Wallet.findOne({ userId: orders.userId });
-            console.log("wallet", wallet);
+        const product = await Product.findById(productId);
+        if (!product) throw new AppError('Product not found', 404);
 
-            let applyCouponAmount = 0
-            applyCouponAmount = orders.coupon?.discountValue;
-            console.log("Discount coupon Value:", applyCouponAmount);
+        const userId = orders.userId;
 
-            const userWallet = await Wallet.findOne({ userId: orders.userId })
-            if (!userWallet) {
-                await Wallet.create({
-                    userId: user.id,
-                    balance: Number(0),
-                    transactions: []
-                })
-            }
-
-            let refundAmount = 0
-            for (let item of orders.items) {
-                if (item.productId.toString() === productId.toString()) {
-                    const product = await Product.findById(productId)
-
-                    const remainingItems = orders.items.filter(item =>
-                        !(item.productId.toString() === productId) &&
-                        item.status !== 'Cancelled' &&
-                        item.status !== 'Returned'
-                    );
-                    console.log("remainingItems ", remainingItems)
-
-                    let remainingItemsTotal = 0
-                    for (let item of remainingItems) {
-                        remainingItemsTotal += item.price * item.quantity - (item?.discountPrice || 0)
-                    }
-                    console.log("remainingItemsTotal ", remainingItemsTotal)
-
-                    if (orders.coupon && remainingItemsTotal >= orders.coupon.minPurchase) {
-                        refundAmount = Number(item.price * item.quantity - (item?.discountPrice || 0))
-                        console.log(refundAmount, "refundAmount without coupon")
-                    } else {
-                        if (orders.coupon) {
-                            await Coupon.findByIdAndUpdate(
-                                orders.coupon._id,
-                                { $pull: { isUsed: user.id } }
-                            );
-                            console.log("Coupon usage reverted");
-                            await Order.findByIdAndUpdate(orders._id, { $unset: { coupon: "" } })
-                        }
-
-                        if (remainingItems.length === 0) {
-                            refundAmount = Number(orders.totalAmount - orders.shippingCharge);
-                        } else if (item.discountPrice > 0) {
-                            refundAmount = Number(item.price * item.quantity - (item?.discountPrice || 0));
-                        } else {
-                            refundAmount = Number((orders.totalAmount - orders.shippingCharge) - remainingItemsTotal);
-                        }
-                        console.log(refundAmount, "refundAmount without coupon")
-                    }
-
-                    await Product.findByIdAndUpdate(productId, { $inc: { stock: item.quantity } })
-
-                    item.status = 'Returned',
-                    item.isReturned = true
-
-                    userWallet.balance += Number(refundAmount);
-                    userWallet.transactions.push({
-                        orderId: orders._id,
-                        transactionId: transactionID,
-                        amount: Number(refundAmount),
-                        transactionType: 'credit',
-                        source:'refund',
-                        createdAt: new Date(),
-                        productId
-                    });
-                }
-                console.log("userWallet ", userWallet)
-            }
-
-            if (orders.items.every(item => item.status === 'Returned' || item.status === 'Cancelled')) {
-                orders.paymentStatus = "Refunded";
-            }
-
-            if (orders.items.every(item => item.status === "Delivered")) {
-            } else if (orders.items.every(item => item.status === "Cancelled")) {
-              orders.status = "Cancelled";
-            } else if (orders.items.some(item => item.status === "Returned")) {
-              orders.status = "Returned";
-            }
-        
-            await orders.save();
-            await userWallet.save()
-            return res.status(200).json({
-                success: true,
-                message: "Order returned successfully",
-                refundAmount,
-                walletBalance: wallet.balance,
-                order:orders
+        let wallet = await Wallet.findOne({ userId });
+        if (!wallet) {
+            wallet = await Wallet.create({
+                userId,
+                balance: 0,
+                transactions: []
             });
-
-        } catch (error) {
-            next(new AppError(`Return order failed: ${error}`, 500));
         }
 
+        const transactionID = `TRANS-${Date.now()}`;
+        let applyCouponAmount = 0
+        applyCouponAmount = orders.coupon?.discountValue || 0;
+
+        let refundAmount = 0
+        for (let orderItem of orders.items) {
+            if (orderItem.productId.toString() === productId.toString()) {
+
+                //TAKE UNCANCELLED PRODUCTS
+                const remainingItems = orders.items.filter(item =>
+                    item.status !== 'Cancelled' &&
+                    item.status !== 'Returned'
+                );
+
+                let remainingItemsTotal = applyCouponAmount;//REMAINING ITEMS TOTAL PRICE
+                for (let item of remainingItems) {
+                    const discount = item.discountPrice || 0;//PRODUCT OR CATEGORY OFFERS 
+                    remainingItemsTotal += (item.price - discount) * item.quantity;
+                }
+                console.log("remainingItemsTotal", remainingItemsTotal);//DEBUG
+
+                //REDUCE APPLIED COUPON AMOUNT
+                if (orders.coupon && remainingItemsTotal >= orders.coupon?.minPurchase) {
+
+                    if (orderItem.discountPrice > 0) {
+                        refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
+                    } else {
+                        refundAmount += (orderItem.price * orderItem.quantity)
+                    }
+
+                } else {
+                    if (orders.coupon) {
+                        // remainingItemsTotal -= orders.coupon.discountValue
+                        refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUND ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
+
+                        //REMOVE APPLIED COUPON 
+                        await Coupon.findByIdAndUpdate(
+                            orders.coupon._id,
+                            { $pull: { isUsed: userId } }//MARK UNUSED
+                        );
+                        console.log(`Coupon amount ${applyCouponAmount} reverted`);
+
+                    }
+
+                    //REFUND SETTING
+                    if (orderItem.discountPrice > 0) {
+                        refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
+                    } else {
+                        refundAmount += (orderItem.price * orderItem.quantity)
+                    }
+                }
+
+                console.log(refundAmount, "refundAmount without coupon")
+
+                //UPDATE INVENTORY
+                await Product.findByIdAndUpdate(productId, { $inc: { stock: orderItem.quantity } })
+                orderItem.status = 'Returned',
+                    orderItem.isReturned = true
+                orderItem.isRequested = false
+
+                //UPDATE WALLET
+                wallet.balance += Number(refundAmount) || 0;
+                wallet.transactions.push({
+                    orderId: orders._id,
+                    transactionId: transactionID,
+                    amount: Number(refundAmount),
+                    transactionType: 'credit',
+                    source: 'refund',
+                    createdAt: new Date(),
+                    productId
+                });
+            }
+            console.log("userWallets ", wallet)
+        }
+
+        if (orders.items.every(item => item.status === 'Returned' || item.status === 'Cancelled')) {
+            orders.paymentStatus = 'Refunded';
+        }
+        if (orders.items.every(item => item.status === 'Cancelled')) {
+            orders.status = 'Cancelled';
+        } else if (orders.items.every(item => item.status === 'Returned')) {
+            orders.status = 'Returned';
+        }
+
+        //SAVE UPDATES
+        await orders.save();
+        await wallet.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Order returned successfully',
+            refundAmount,
+            walletBalance: wallet.balance,
+            order: orders
+        });
+
     } catch (error) {
-        next(new AppError(`Accept return failed: ${error}`, 500));
+        next(new AppError(`Accept return failed: ${error.message}`, 500));
     }
 };
 

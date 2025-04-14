@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if(username.value.length < 3){
             isValid = false,
-            showError(username,'Username must me 3 charecters')
+            showError(username,'Username must be 3 charecters')
         }
 
         if (!isRequired(email.value)) {

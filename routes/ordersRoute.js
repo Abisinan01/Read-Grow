@@ -33,7 +33,7 @@ router.post('/retry-payment', userAuth, retryPayment)
 router.post('/wallet', userAuth, payUsingWallet)
 
 router.get('/orders', userAuth, renderOrdersPage)
-router.get('/order-details/:id', userAuth, renderOrderDetailsPage)
+router.get('/order-details/:id', userAuth, renderOrderDetailsPage) 
 router.delete('/single-cancel-order/:orderId/:productId', userAuth, singleCancelOrder)
 
 router.get('/invoice/:orderId', userAuth, downloadInvoice)

@@ -20,10 +20,13 @@ import Offer from "../../models/offersSchema.js"
 
 export const renderHomePage = async (req, res, next) => {
     try {
-        const token = req.cookies.jwt
+        const token = req.cookies.jwt // TOKEN
         let user = null
+        if (req.session.order) req.session.order = null//ORDER CONFIRMATION PAGE SESSION MANAGE
+
         // console.log("token data : ",token)
 
+        // THIS FOR FORCEFULLY REMOVING USER WHEN ITS BLOCKED OR UNAVAILABLE
         if (token) {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -32,20 +35,31 @@ export const renderHomePage = async (req, res, next) => {
                 const isUser = await User.findById(user.id, { role: "user" })
                 if (!isUser) {
                     res.clearCookie("jwt")
-                    return res.redirect('/read-and-grow/home')
+                    return res.redirect('/read-and-grow')
                 }
 
             } catch (error) {
                 console.log('Invalid jwt :', error)
             }
         }
-        const products = await Product.find({
-            $and: [
-                { rating: { $gte: 4.0 } },
-                { isBlocked: { $ne: true } }
-            ]
-        }).limit(3);
 
+        //FOR SHOWING MOST SELLED PRODUCTS 
+        const orders = await Order.aggregate([
+            { $match: { isBlocked: { $ne: true } } },
+            { $unwind: "$items" },
+            { $group: { _id: "$items.productId", totalQty: { $sum: "$items.quantity" } } },
+            { $sort: { "items.quantity": -1 } },
+            { $limit: 3 }
+        ])
+
+
+        const products = []
+        for (let order of orders) {
+            const product = await Product.findById(order._id)
+            products.push(product)
+        }
+
+        console.log(products)//DEBUG
         return res.render('user/home', { products, user })
 
     } catch (error) {
@@ -56,28 +70,30 @@ export const renderHomePage = async (req, res, next) => {
 
 export const renderProductDetails = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params;// 
         const user = req.user
 
-        const product = await Product.findOne({ _id: id })
-            .populate('offers')
+        const product = await Product.findById(id)
+            .populate('offers')//LOOKUP OFFERS
 
         if (!product) {
-            return res.status(404).json({
+            return res.status(400).json({
                 success: false,
                 message: "Product not found"
             });
         }
 
         let currentDate = new Date()
+        //FOR REMOVING EXPIRED OFFERS
         await Offer.updateMany(
             { validTo: { $lt: currentDate } },
             { $set: { status: false } }
         )
 
         const category = await Category.findOne({ categoryName: product.category })
-            .populate('offers') 
+            .populate('offers') //LOOKUP OFFERS
 
+        // FINDING RELATED PRODUCTS
         const relatedProducts = await Product.find(
             { category: product.category, _id: { $ne: id } }
         );
@@ -92,7 +108,7 @@ export const renderProductDetails = async (req, res, next) => {
                     wishlistItems.push(product)
                 } else {
                     console.log(`No product found`)
-                    return res.status(404).json({ success: false, message: "No products found" })
+                    // return res.status(400).json({ success: false, message: "No products found" })
                 }
                 wishlistItems.push(product)
             }
@@ -106,13 +122,15 @@ export const renderProductDetails = async (req, res, next) => {
                 const product = await Product.findById(item.productId)
                 if (!product) {
                     console.log(`No product found`)
-                    return res.status(404).json({ success: false, message: "No products found" })
+                    // return res.status(400).json({ success: false, message: "No products found" })
                 }
                 cartItems.push(product)
             }
         }
-        console.log(cartItems, 'cartItems')
-        const date = new Date(product.createdAt).toDateString();
+        console.log(cartItems, 'cartItems')//DEBUG
+        const date = new Date(product.createdAt).toDateString();// SHOWING UPDATED DATE OF PRODUCT
+
+
         res.render("user/product", {
             product,
             date,
@@ -133,7 +151,7 @@ export const renderShopPage = async (req, res, next) => {
     try {
         const user = req.user;
         const category = req.query.category || '';
-        const author = req.query.author || ''; 
+        const author = req.query.author || '';
         const search = req.query.search || '';
         const price = req.query.price || '';
         let page = req.query.page || 1;
@@ -143,7 +161,7 @@ export const renderShopPage = async (req, res, next) => {
         limit = parseInt(limit) || 6;
         let skip = (page - 1) * limit;
 
-        let query = { isBlocked: { $ne: true } };
+        let query = { isBlocked: { $ne: true } };//QUERYING DATA SET TO AN OBJECT FOR SIMPLYFING CODE WE CAN ALSO SET WRITE MANUALLY MONGODB
 
         if (category) {
             query.category = category;
@@ -156,12 +174,12 @@ export const renderShopPage = async (req, res, next) => {
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
+                { category: { $regex: search, $options: 'i' } },
                 { authorName: { $regex: search, $options: 'i' } }
             ];
         }
 
-        if (price) {
+        if (price) { // FILTER PRICE RANGES
             switch (price) {
                 case 'under-399':
                     query.price = { $lt: 399 };
@@ -180,8 +198,9 @@ export const renderShopPage = async (req, res, next) => {
             .skip(skip)
             .limit(limit);
 
-        const categories = await Category.find({ status: { $ne: "inactive" } });
+        const categories = await Category.find({ status: { $ne: "inactive" } });// FOR FETCHING ACTIVE CATEGORIES
 
+        //FOR FIND WISHLIST ALREADY INCUDED PRODUCT 
         let wishlistItems = [];
         const wishlist = await Wishlist?.findOne({ userId: user.id });
         if (wishlist) {
@@ -203,16 +222,16 @@ export const renderShopPage = async (req, res, next) => {
         if (cart) {
             for (let item of cart.items) {
                 const product = await Product.findById(item.productId)
-                if (!product) {
-                    console.log(`No product found`)
-                    return res.status(404).json({ success: false, message: "No products found" })
-                }
+                // if (!product) {
+                //     console.log(`No product found`)
+                //     return res.status(400).json({ success: false, message: "No products found" })
+                // }
                 cartItems.push(product)
 
             }
         }
         console.log(cartItems, 'cartItems')
-        
+
         const totalProducts = await Product.countDocuments(query);
         const totalPages = Math.ceil(totalProducts / limit);
 
@@ -231,10 +250,11 @@ export const renderShopPage = async (req, res, next) => {
             errorMessage: products?.length === 0 ? "No products found." : null,
             user: req.user,
             wishlistItems,
-            cartItems
+            cartItems,
+            currentSort: ""
         };
 
-        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {//FETCH WITHOUT RENDERING
             return res.status(200).json(responseData);
         }
 
@@ -248,14 +268,16 @@ export const renderShopPage = async (req, res, next) => {
 
 export const sortProducts = async (req, res, next) => {
     try {
+        console.log("jello")
         const page = parseInt(req.query.page) || 1;
         const limit = 6;
         const skip = (page - 1) * limit;
 
-        const sort = req.params.sort;
+        const sort = req.params.sort;//SORT TYPE
         console.log("Order sort:", sort);
 
         let sortCondition = {};
+
         switch (sort) {
             case "name_asc":
                 sortCondition = { name: 1 };
@@ -270,9 +292,10 @@ export const sortProducts = async (req, res, next) => {
                 sortCondition = { price: -1 };
                 break;
             default:
-                sortCondition = {};
+                sortCondition = { createdAt: -1 };
         }
 
+        console.log("sortCondition", sortCondition)//DEBUG
         const products = await Product.find({ isBlocked: false })
             .sort(sortCondition)
             .skip(skip)
@@ -294,6 +317,7 @@ export const sortProducts = async (req, res, next) => {
             errorMessage: products.length === 0 ? "No products found." : null,
             user: req.user,
             wishlistItems: [],
+            currentSort: sort || ''
         });
     } catch (error) {
         next(new AppError(`Product sorting failed: ${error.message}`, 500));
