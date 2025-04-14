@@ -36,7 +36,6 @@ export const adminLoginPost = async (req, res, next) => {
 
         const admin = await User.findOne({ username })
 
-
         if (!admin) {
             return res.status(400).json({ success: false, message: "Please enter valid admin details" })
         }
@@ -46,10 +45,10 @@ export const adminLoginPost = async (req, res, next) => {
             return res.status(400).json({ success: false, message: "Incorrect password" })
         }
 
-        //create jwt token
+        //CREATE JWT TOKEN
         const token = jwt.sign({ id: admin._id, name: admin.username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
 
-        //store jwt to cookies
+        //STORE JWT TOKEN IN COOKIES
         res.cookie('jwt', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
 
         return res.status(200).json({ success: true, message: "Logged successfully", redirect: "/admin/dashboard" })
@@ -59,8 +58,6 @@ export const adminLoginPost = async (req, res, next) => {
         return next(new AppError(`admin Login ${req.method} method failed `, 500))
     }
 }
-
-//================admin Get method=======================
 
 
 //=================admin_users_get=========================

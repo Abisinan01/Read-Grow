@@ -82,7 +82,7 @@ app.use((err, req, res, next) => {
         message:"Something went wrong" }); 
 }); 
    
-console.log("PROCESS ID :",process.pid)//CURRENCT PROCESS ID
+// console.log("PROCESS ID :",process.pid)//CURRENCT PROCESS ID
 //THIS FOR CLOSE SERVER CLEANLY INSTEAD OF FORCEFULLY QUITTING
 process.on('SIGINT', () => {
     console.log("Closing server..."); 

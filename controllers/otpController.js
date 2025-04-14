@@ -78,9 +78,9 @@ export const otpVerifyPost = async (req, res, next) => {
         console.log("otp : ", otp)
 
         if (!req.session.temp && !req.session.update) {
-            return res.status(400).json({
+            return res.status(400).json({ 
                 success: false,
-                message: "Session expired"
+                message: "Session expired" 
             })
         } 
 
@@ -189,11 +189,12 @@ export const otpVerifyPost = async (req, res, next) => {
             success: true,
             message: "Account created successfully",
             redirect: "/read-and-grow"
-        })
+        }) 
   
     } catch (error) {
         console.log(error.message)
         next(new AppError(`otp verfication failed : ${error}`, 500))
     }
 }
+ 
  

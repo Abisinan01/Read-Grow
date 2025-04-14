@@ -73,8 +73,8 @@
       <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
         <div>
           <h2 class="text-lg font-semibold text-gray-900">Wallet Balance</h2>
-          <% if(wallet){ %>
-          <p class="text-3xl font-bold text-blue-700 mt-2">Rs. <%= (wallet[0].balance).toFixed(2) %></p>
+          <% if(wallet && wallet?.balance){ %>
+          <p class="text-3xl font-bold text-blue-700 mt-2">Rs. <%= (wallet[0]?.balance).toFixed(2) %></p>
           <% }else{ %>
           <p class="text-3xl font-bold text-blue-700 mt-2">Rs. 0.00</p>
         <% } %>

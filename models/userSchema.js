@@ -9,19 +9,19 @@ const addressSchema = new Schema({
     country: { type: String, required: true, trim: true, default: "India" },
 })
 
-let lastUser=100//for custome id setting
+let lastUser = 100//for custome id setting
 
 const userSchema = new Schema({
-    id:{
-        type:String,
-        unique:true
+    id: {
+        type: String,
+        // unique: true
     },
     username: {
         type: String,
         trim: true,
         // required: true,// if i on this show error
     },
-    referralCode:{type:String},
+    referralCode: { type: String },
     email: {
         type: String,
         trim: true,
@@ -39,14 +39,14 @@ const userSchema = new Schema({
     phoneNumber: {
         type: String,
         required: false,
-        unique:true,
-        sparse:true,
-        default:null
+        unique: true,
+        sparse: true,
+        default: null
     },
-    googleId:{
-        type:String,
-        unique:true
-    }, 
+    googleId: {
+        type: String,
+        unique: true
+    },
     address: addressSchema,
     role: {
         type: String,
@@ -54,16 +54,16 @@ const userSchema = new Schema({
     },
     isBlocked: {
         type: Boolean,
-        default:false
+        default: false
     },
     isEmailVerfied: {
         type: Boolean,
         default: false
     },
-    profileImage:{
-        type:String
+    profileImage: {
+        type: String
     },
-    
+
 }, { timestamps: true })
 
 
@@ -87,12 +87,12 @@ function generateReferralCode() {
     result += letters[Math.floor(Math.random() * letters.length)];
     result += numbers[Math.floor(Math.random() * numbers.length)];
 
-    // Generate remaining 4 characters (to make it 6 total)
+    // Generate remaining 4 characters 
     for (let i = 2; i < 6; i++) {
         result += characters[Math.floor(Math.random() * characters.length)];
     }
 
-    // Shuffle the string to randomize positions
+    // Shuffle the string to random positions
     return result.split('').sort(() => Math.random() - 0.5).join('');
 }
 
