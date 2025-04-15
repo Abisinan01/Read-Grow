@@ -2,6 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import AppError from "./errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,12 +11,13 @@ const directory = path.join(__dirname, "../public/temp/uploads");
 const FILE_TYPE_MAP = { 
     'image/png': 'png',
     'image/jpg': 'jpg',
-    'image/jpeg': 'jpeg'
+    'image/jpeg': 'jpeg',
+    'image/webp': 'webp',
 }
 
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (req, file, cb) { 
         const isValid = FILE_TYPE_MAP[file.mimetype];
         if (!isValid) {
             return cb(new Error("Invalid file format"), false);
@@ -32,9 +34,10 @@ const storage = multer.diskStorage({
 const fileFilter = (req,file,cb) =>{
     if(FILE_TYPE_MAP[file.mimetype]){
         cb(null,true)
-    }else{
-        cb(new Error('Invalid file type'),false)
     }
+    // else{
+    //     cb(new AppError('Invalid file type'),false)
+    // }
 }
 
 const upload = multer({

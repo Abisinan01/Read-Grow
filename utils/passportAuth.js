@@ -10,7 +10,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: "https://readandgrow.space/read-and-grow/auth/google/callback",
+            callbackURL: "https://readandgrow.space/auth/google/callback",
             passReqToCallback: true,
         },
 
