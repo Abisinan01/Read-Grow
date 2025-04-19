@@ -10,14 +10,21 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: "https://readandgrow.space/read-and-grow/auth/google/callback",
+            callbackURL: "https://readandgrow.space/auth/google/callback",
             passReqToCallback: true,
         },
 
 
         async function (request, accessToken, refreshToken, profile, done) {
  
+            const existUser = await User.findOne({email:profile?.emails[0].value})
+            console.log("existUser",existUser)
+            if (existUser && existUser.role === 'admin') {
+                console.log("Admin can't join here");
+                return done(null, false, { message: "Admin can't join here" });
+            }
 
+            console.log(profile)
             const exist = await User.findOne({ email: profile["emails"][0].value });
             if (exist) {
                 console.log('googleId is exists')
@@ -30,12 +37,17 @@ passport.use(
                 googleId: profile.id,
                 isBlocked: false,
                 isEmailVerfied: true,
-                role: 'user'
+                role: 'user',
+                phoneNumber :profile?.phone || 'No password provided'
             });
-            const user = await User.findOne({ email: profile["emails"][0].value });
-            return done(null, user);
 
-            //    return done(null, profile);
+
+            const googleUser = await User.findOne({ email: profile["emails"][0].value });
+            googleUser.id = googleUser._id.toString()
+            let user = await googleUser.save()
+            console.log("user google auth :",user)
+
+            return done(null, user);
         }
     )
 );

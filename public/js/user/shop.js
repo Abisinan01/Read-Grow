@@ -1,4 +1,4 @@
-// Toast notification function
+ 
 function showToast(message, type = 'error') {
     Toastify({
         text: message,
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Build URL with filters
     function buildUrl(page, filters) {
-        let url = `/read-and-grow/shop?page=${page}&limit=${limit}`;
+        let url = `/shop?page=${page}&limit=${limit}`;
         if (filters.search) url += `&search=${encodeURIComponent(filters.search)}`;
         if (filters.category) url += `&category=${encodeURIComponent(filters.category)}`;
         if (filters.author) url += `&author=${encodeURIComponent(filters.author)}`;
@@ -210,11 +210,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 bookGrid.innerHTML += `
                     <article class="bg-white rounded-lg shadow-md hover:shadow-xl overflow-hidden transition-transform hover:scale-105">
                         <div class="relative h-48 sm:h-56 md:h-64 bg-gray-50">
-                            <a href="/read-and-grow/product-details/${product._id}" class="flex justify-center h-full">
+                            <a href="/product-details/${product._id}" class="flex justify-center h-full">
                                 <img src="${product.images[0]}" alt="${product.name}" 
                                     class="w-auto h-full object-cover rounded-t-md">
                             </a>
-                            <button onclick="toggleWishlist(this, '${product._id}')" 
+                            <button onclick="addToWishlist(this, '${product._id}')" 
                                 class="wishlist-btn absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100"
                                 data-product-id="${product._id}">
                                 <i class="${isInWishlist ? 'fas text-red-500' : 'far text-gray-600'} fa-heart"></i>
@@ -352,7 +352,7 @@ async function addToCart(productId) {
         // button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         button.disabled = true;
 
-        const response = await fetch(`/read-and-grow/cart`, {
+        const response = await fetch(`/cart`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ productId })
@@ -365,6 +365,10 @@ async function addToCart(productId) {
 
         if (result.success) {
             showToast(result.message, 'success');
+
+            // setTimeout(() => {
+            //     location.reload()
+            // }, 1200);
         }
 
     } catch (error) {

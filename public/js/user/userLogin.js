@@ -13,8 +13,14 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     function isRequired(value) {
-        return value.trim() != "" && /[a-zA-Z]/.test(value)
-    }
+        const trimmed = value.trim();
+      
+        const isUsername = /[a-zA-Z]/.test(trimmed);
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+      
+        return trimmed !== "" && (isUsername || isEmail);
+      }
+      
 
     function isPassword(value) {
         return /[a-z]/.test(value) &&
@@ -48,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let isValid = true
         if (!isRequired(username.value)) {
             isValid = false
-            showError(username, "Please enter a valid username")
+            showError(username, "Please enter a valid username or email")
         }
 
         if(username.value.length < 3){
@@ -61,16 +67,16 @@ document.addEventListener('DOMContentLoaded', function () {
             showError(password, "Please enter a valid password")
         } else if (!isPassword(password.value)) {
             isValid = false
-            showError(password, 'Password must include at least 6 characters and a number')
+            showError(password, "Password must be at least 6 characters long and will be securely protected.")
         }
 
         if (!isValid) {
             return
         }
 
-        const url = "/read-and-grow/login"
+        const url = "/login"
         try {
-            const res = await fetch(`http://localhost:3999${url}`, {
+            const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -89,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
             notyf.success(result.message || "Login successful");
     
             setTimeout(() => {
-                window.location.href = result.redirect || "/read-and-grow";
+                window.location.href = result.redirect || "/";
             }, 1000);
     
         } catch (error) {

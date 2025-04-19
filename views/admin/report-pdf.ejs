@@ -5,76 +5,142 @@
   <title>Sales Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Custom styles for screen and print */
+    body {
+      font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
+      color: #1f2937;
+    }
+    .table-header {
+      background: linear-gradient(to right, #1e3a8a, #3b82f6);
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .table-row:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    .table-row:hover {
+      background-color: #e5e7eb;
+      transition: background-color 0.2s ease;
+    }
+    .bordered {
+      border: 1px solid #d1d5db;
+    }
     @media print {
       body {
-        font-size: 12px;
+        font-size: 10pt;
         color: #000;
         background: #fff;
+        margin: 0;
       }
       .no-print {
         display: none !important;
       }
-      table, th, td {
-        border: 1px solid #000 !important;
+      .table-header {
+        background: #1e3a8a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      table {
+        width: 100%;
         border-collapse: collapse !important;
+        page-break-inside: auto;
+      }
+      .table-row {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+      .bordered {
+        border: 1px solid #000 !important;
+      }
+      .shadow {
+        box-shadow: none !important;
+      }
+      @page {
+        size: A4;
+        margin: 15mm;
       }
     }
   </style>
 </head>
-<body class="p-10 bg-white text-black font-sans">
+<body class="p-8 bg-white text-gray-900 font-sans">
 
-  <!-- Company Info / Title -->
-  <div class="text-center mb-10">
-    <h1 class="text-3xl font-bold">Sales Report</h1>
-    <p class="text-sm mt-1">REad & GroW</p>
-    <p class="text-xs text-gray-700">Date Range: <%= new Date().toLocaleDateString() %></p>
-  </div>
-
+  <!-- Header -->
+  <header class="flex items-center justify-between mb-8">
+    <div class="flex items-center">
+      <!-- Placeholder for logo -->
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Sales Report</h1>
+        <p class="text-sm text-gray-600">REad & GroW</p>
+      </div>
+    </div>
+    <div class="text-right text-sm text-gray-600">
+      <p>Date Range: <%= new Date().toLocaleDateString() %></p>
+      <p>Generated: <%= new Date().toLocaleString() %></p>
+    </div>
+  </header>
 
   <!-- Sales Table -->
-  <div>
+  <div class="shadow rounded-lg overflow-hidden">
     <table class="w-full text-sm">
-      <thead class="bg-gray-200">
+      <thead class="table-header">
         <tr>
-          <th class="p-2 border text-left">#</th>
-          <th class="p-2 border text-left">Order ID</th>
-          <th class="p-2 border text-left">Customer</th>
-          <th class="p-2 border text-left">Date</th>
-          <th class="p-2 border text-left">Subtotal</th>
-          <th class="p-2 border text-left">Discount</th>
-          <th class="p-2 border text-left">Shipping</th>
-          <th class="p-2 border text-left">Total</th>
-          <th class="p-2 border text-left">Status</th>
-          <th class="p-2 border text-left">Payment</th>
+          <th class="p-3 bordered text-left font-semibold">#</th>
+          <th class="p-3 bordered text-left font-semibold">Order ID</th>
+          <th class="p-3 bordered text-left font-semibold">Customer</th>
+          <th class="p-3 bordered text-left font-semibold">Date</th>
+          <th class="p-3 bordered text-left font-semibold">Subtotal</th>
+          <th class="p-3 bordered text-left font-semibold">Discount</th>
+          <th class="p-3 bordered text-left font-semibold">Shipping</th>
+          <th class="p-3 bordered text-left font-semibold">Total</th>
+          <th class="p-3 bordered text-left font-semibold">Status</th>
+          <th class="p-3 bordered text-left font-semibold">Payment</th>
         </tr>
       </thead>
       <tbody>
-        <% if(orders.length>0){%>
-            <% orders.forEach(orders=>{%>
-            <tr>
-            <td class="p-2 border"></td>
-            <td class="p-2 border"><%= orders.orderId %></td>
-            <td class="p-2 border"><%= orders.userId?.username %></td>
-            <td class="p-2 border"><%= new Date(orders.createdAt).toLocaleDateString() %></td>
-            <td class="p-2 border">₹<%= orders.subTotal %></td>
-            <td class="p-2 border">₹<%= orders.discount %></td>
-            <td class="p-2 border">₹<%= orders.shippingCharge %></td>
-            <td class="p-2 border">₹<%= orders.totalAmount %></td>
-            <td class="p-2 border"><%= orders.status %></td>
-            <td class="p-2 border"><%= orders.payment %></td>
+        <% if (orders.length > 0) { %>
+          <% orders.forEach((order, index) => { %>
+            <tr class="table-row">
+              <td class="p-3 bordered"><%= index + 1 %></td>
+              <td class="p-3 bordered"><%= order.orderId %></td>
+              <td class="p-3 bordered"><%= order.userId?.username || 'N/A' %></td>
+              <td class="p-3 bordered"><%= new Date(order.createdAt).toLocaleDateString() %></td>
+              <td class="p-3 bordered">₹<%= order.subTotal.toFixed(2) %></td>
+              <td class="p-3 bordered">₹<%= order.discount.toFixed(2) %></td>
+              <td class="p-3 bordered">₹<%= order.shippingCharge.toFixed(2) %></td>
+              <td class="p-3 bordered">₹<%= order.totalAmount.toFixed(2) %></td>
+              <td class="p-3 bordered capitalize"><%= order.status %></td>
+              <td class="p-3 bordered capitalize"><%= order.payment %></td>
             </tr>
-            <% })  %>
+          <% }) %>
+        <% } else { %>
+          <tr class="table-row">
+            <td colspan="10" class="p-3 bordered text-center text-gray-500">No orders found</td>
+          </tr>
         <% } %>
-        <!-- Add more rows as needed -->
       </tbody>
     </table>
   </div>
 
-  <!-- Footer (Optional) -->
-  <div class="mt-10 text-center text-xs text-gray-600">
-    <p>Generated on <%= new Date() %></p>
-    <p>REad & GroW | About | Contact</p>
-  </div>
+  <!-- Summary Section -->
+  <% if (orders.length > 0) { %>
+    <div class="mt-6 flex justify-end">
+      <div class="bg-gray-50 p-4 rounded-lg shadow-sm w-1/3">
+        <h3 class="text-lg font-semibold mb-2">Summary</h3>
+        <p class="text-sm">Total Orders: <%= orders.length %></p>
+        <p class="text-sm">Total Subtotal: ₹<%= orders.reduce((sum, order) => sum + order.subTotal, 0).toFixed(2) %></p>
+        <p class="text-sm">Total Discount: ₹<%= orders.reduce((sum, order) => sum + order.discount, 0).toFixed(2) %></p>
+        <p class="text-sm">Total Shipping: ₹<%= orders.reduce((sum, order) => sum + order.shippingCharge, 0).toFixed(2) %></p>
+        <p class="text-sm font-bold">Grand Total: ₹<%= orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(2) %></p>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Footer -->
+  <footer class="mt-10 text-center text-xs text-gray-500">
+    <p>REad & GroW | <a href="#" class="hover:underline">About</a> | <a href="#" class="hover:underline">Contact</a></p>
+    <p class="mt-1">Generated on <%= new Date().toLocaleString() %></p>
+  </footer>
 
 </body>
 </html>

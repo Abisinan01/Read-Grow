@@ -103,7 +103,7 @@ export const viewOrder = async (req, res, next) => {
         })
 
     } catch (error) {
-        
+
         next(new AppError(` viewOrder detials : ${error}`, 500))
     }
 }
@@ -145,6 +145,8 @@ export const updateStatus = async (req, res, next) => {
             case "Delivered":
                 if (item.status === "Cancelled") {
                     return res.status(400).json({ success: false, message: "Cancelled items cannot be marked as Delivered" });
+                }else if (item.status === 'Returned'){
+                    return res.status(400).json({ success: false, message: "Returned items cannot be marked as Delivered" });
                 }
                 item.status = "Delivered";
                 item.isReturned = false;
@@ -226,19 +228,22 @@ export const acceptReturn = async (req, res, next) => {
                 }
                 console.log("remainingItemsTotal", remainingItemsTotal);//DEBUG
 
-                //REDUCE APPLIED COUPON AMOUNT
+                //PAID AMOUNT GREATER THAN MINIMUM PURCHASE
                 if (orders.coupon && remainingItemsTotal >= orders.coupon?.minPurchase) {
 
                     if (orderItem.discountPrice > 0) {
                         refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
+                        orders.totalAmount -= refundAmount
                     } else {
                         refundAmount += (orderItem.price * orderItem.quantity)
+                        orders.totalAmount -= refundAmount
                     }
 
                 } else {
                     if (orders.coupon) {
                         // remainingItemsTotal -= orders.coupon.discountValue
-                        refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUND ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
+                        refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUNDAMOUNT ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
+                        orders.isCouponAvailable = false//MAKE COUPON FALSE
 
                         //REMOVE APPLIED COUPON 
                         await Coupon.findByIdAndUpdate(
@@ -252,8 +257,10 @@ export const acceptReturn = async (req, res, next) => {
                     //REFUND SETTING
                     if (orderItem.discountPrice > 0) {
                         refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
+                        orders.totalAmount -= refundAmount
                     } else {
                         refundAmount += (orderItem.price * orderItem.quantity)
+                        orders.totalAmount -= refundAmount
                     }
                 }
 

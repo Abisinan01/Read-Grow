@@ -4,35 +4,35 @@
         <li>
             <button data-section="profile"
                     class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
-                    onclick="window.location.href = '/read-and-grow/profile/<%= user._id %>'">
+                    onclick="window.location.href = '/profile/<%= user._id %>'">
                 Profile
             </button>
         </li>
         <li>
             <button data-section="orders"
                     class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
-                    onclick="window.location.href='/read-and-grow/orders'">
+                    onclick="window.location.href='/orders'">
                 Orders
             </button>
         </li>
         <li>
             <button data-section="address"
                     class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
-                    onclick="window.location.href='/read-and-grow/address/<%= user._id %>'">
+                    onclick="window.location.href='/address/<%= user._id %>'">
                 Address
             </button>
         </li>
         <li>
             <button data-section="wallet"
                     class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
-                    onclick="window.location.href='/read-and-grow/wallet/<%= user._id %>'">
+                    onclick="window.location.href='/wallet/<%= user._id %>'">
                 Wallet
             </button>
         </li>
         <li>
             <button data-section="change-password"
                     class="sidebar-btn w-full text-left py-3 px-4 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 text-base font-medium transition-colors"
-                    onclick="window.location.href = '/read-and-grow/change-password/<%= user._id %>'">
+                    onclick="window.location.href = '/change-password/<%= user._id %>'">
                 Change Password
             </button>
         </li>
@@ -95,7 +95,7 @@
         });
 
         if (confirmed) {
-            const url = "/read-and-grow/logout";
+            const url = "/logout";
 
             try {
                 const response = await fetch(url, {
@@ -115,7 +115,7 @@
                 if (result.success) {
                     Swal.fire("Logged out", "You are successfully logged out", "success");
                     setTimeout(() => {
-                        window.location.href = "/read-and-grow";
+                        window.location.href = "/";
                     }, 2000);
                 } else {
                     Swal.fire("Logout Failed", "There was a problem logging out. Please try again later.", "error");

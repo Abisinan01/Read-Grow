@@ -79,7 +79,7 @@
                             </div>
                             <% } %>
                             <div class="flex justify-end">
-                                <button type="button" onclick='editData(<%= JSON.stringify(user) %>)'
+                                <button type="button" onclick="editData('<%= JSON.stringify(user) %>')"
                                     class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
                                     Edit
                                 </button>
@@ -135,7 +135,7 @@
                             </form>
                         </div>
                         <div class="mt-4">
-                            <button type="button" onclick="window.location.href='/read-and-grow/change-email/<%= user._id %>'"
+                            <button type="button" onclick="window.location.href='/change-email/<%= user._id %>'"
                                 class="bg-gray-600 text-white py-2 px-6 rounded-lg hover:bg-gray-700 transition duration-300">
                                 Change email
                             </button>
@@ -177,7 +177,7 @@
                     
                     try {
                         const id = document.getElementById('userId').value;
-                        const url = `/read-and-grow/profile/${id}`;
+                        const url = `/profile/${id}`;
                         const response = await fetch(url, {
                             method: "PATCH",
                             headers: { "Content-Type": "application/json" },
@@ -190,7 +190,9 @@
                         }
 
                         showToast("Profile updated successfully", "success");
-                        location.reload();
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
                     } catch (error) {
                         console.error('Error updating profile:', error);
                         showToast(error.message || 'An error occurred while updating profile');
@@ -230,7 +232,7 @@
         const formData = new FormData();
         formData.append("profileImage", fileInput.files[0]);
 
-        fetch("/read-and-grow/upload-profile", {
+        fetch("/upload-profile", {
             method: "POST",
             body: formData,
         })

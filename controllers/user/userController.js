@@ -19,7 +19,13 @@ import Order from "../../models/orderSchema.js"
 export const renderSignPage = async (req, res, next) => {
     try {
         if (req.cookies.jwt) {
-            return res.redirect("/read-and-grow")
+            const token = req.cookies.jwt
+            const docodeToken = jwt.verify(token, process.env.JWT_SECRET)
+            if (docodeToken.role === 'admin') {
+                return res.redirect('/admin/dashboard')
+            } else {
+                return res.redirect("/")
+            }
         }
         return res.render("user/signup")
 
@@ -84,7 +90,7 @@ export const handleSignupPage = async (req, res, next) => {
 
             }
         }
-        
+
         req.session.temp = email //FOR RESEND OTP
         const otpResult = await sendOTP(email)
         console.log("Send Otp response :", otpResult)//DEBUG
@@ -126,7 +132,13 @@ export const renderLoginPage = async (req, res, next) => {
     try {
         //CHECK TOKEN AVAILABLE FOR SESSION MANAGMENT
         if (req.cookies.jwt) {
-            return res.redirect('/read-and-grow')
+            const token = req.cookies.jwt
+            const docodeToken = jwt.verify(token, process.env.JWT_SECRET)
+            if (docodeToken.role === 'admin') {
+                return res.redirect('/admin/dashboard')
+            } else {
+                return res.redirect("/")
+            }
         }
 
         return res.render("user/login")
@@ -141,7 +153,10 @@ export const handleLoginPage = async (req, res, next) => {
         let { username, password } = req.body
 
         console.log("userLoginPost", req.body)
-        const isUser = await User.findOne({ username })
+        const isUser = await User.findOne({
+            $or: [{ username: username }, { email: username }]
+        });
+
 
         if (!isUser) {
             return res.status(400).json({ success: false, message: "User not found!" })
@@ -149,7 +164,7 @@ export const handleLoginPage = async (req, res, next) => {
         console.log("isUser : ", isUser)
 
         //IGNORE IF USER IS ADMIN
-        if (isUser.role == 'admin') {
+        if (isUser.role === 'admin') {
             return res.status(400).json({ success: false, message: "User is not exist" })
         }
 
@@ -169,7 +184,7 @@ export const handleLoginPage = async (req, res, next) => {
         }
 
         //GENERATING JWT TOKEN
-        const token = jwt.sign({ id: isUser._id, username: isUser.username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
+        const token = jwt.sign({ id: isUser._id, username: isUser.username, role: isUser.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
         //STORE JWT IN COOKIES
         res.cookie('jwt', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
 
@@ -177,12 +192,12 @@ export const handleLoginPage = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "successfully logged",
-            redirect: "/read-and-grow"
+            redirect: "/"
         })
 
     } catch (error) {
         console.log(error)
-        return next(new AppError(error, 500))
+        return next(new AppError(`Login page error : ${error.message}`, 500))
     }
 }
 
@@ -215,8 +230,9 @@ export const requestPasswordReset = async (req, res, next) => {
         //JWT TOKEN CREATE
         const token = jwt.sign({ id: user._id, email: email }, secret, { expiresIn: '1h' });
 
+        const baseUrl = process.env.BASE_URL || `http://localhost:3999`
         //PASS WITH API LIKE QUERY
-        const resetURL = `http://localhost:3999/read-and-grow/resetPassword?id=${user._id}&token=${token}`;
+        const resetURL = `${baseUrl}/resetPassword?id=${user._id}&token=${token}`;
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -300,9 +316,9 @@ export const resetPassword = async (req, res, next) => {
 
 export const renderProfilePage = async (req, res, next) => {
     try {
-        const token = req.user
-        // console.log(req.user)
-        const user = await User.findOne({ _id: token.id })
+        const token = req.user 
+        console.log("req.user :",req.user)
+        const user = await User.findById(req.user.id) || await User.findById(req.user._id)
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -401,7 +417,7 @@ export const renderChangeEmail = async (req, res, next) => {
         if (req.session.update) {
             return res.render("user/editEmail", { id })
         } else {
-            return res.redirect(`/read-and-grow/profile/${id}`)
+            return res.redirect(`/profile/${id}`)
         }
 
     } catch (error) {
@@ -426,8 +442,9 @@ export const changeEmailRequest = async (req, res, next) => {
             })
         }
 
+        const baseUrl = process.env.BASE_URL
         //RESET URL IN A VARIBLE
-        const resetURL = `http://localhost:3999/read-and-grow/new-email/${id.id}`;
+        const resetURL = `${baseUrl}/new-email/${id.id}`;
 
         //SEND REQUEST TO MAILID
         const transporter = nodemailer.createTransport({
@@ -467,7 +484,7 @@ export const renderUpdateMail = async (req, res, next) => {
         if (req.session.update) {
             return res.render("user/updateNewMail", { user: req.user })
         }
-        return res.status(404).redirect('/read-and-grow/notFound')
+        return res.status(404).redirect('/notFound')
     } catch (error) {
         next(new AppError(`Update Mail failed : ${error}`, 500))
     }

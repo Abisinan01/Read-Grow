@@ -4,13 +4,10 @@ import AppError from "../../utils/errorHandler.js"
 import Product from "../../models/productSchema.js"
 import Category from "../../models/categorySchema.js"
 import Address from "../../models/addressSchema.js"
-import Cart from "../../models/cartSchema.js"
-import Wishlist from "../../models/wishListSchema.js"
 import Order from "../../models/orderSchema.js"
 import Wallet from "../../models/walletSchema.js"
-import PDFDocument from 'pdfkit'
-import fs from 'fs'
-import { successPage } from "./checkoutController.js"
+import { generateInvoice } from '../../services/invoiceService.js';
+import Coupon from "../../models/couponSchema.js"
 export const renderOrdersPage = async (req, res, next) => {
   try {
     let { page, limit } = req.query
@@ -87,7 +84,7 @@ export const renderOrderDetailsPage = async (req, res, next) => {
       .populate('coupon')
 
     if (!order) {
-      return res.status(400).redirect("/read-and-grow/orders")
+      return res.status(400).redirect("/orders")
     }
     const deliveryAddress = await Address.findById(order.addressId)
     console.log(deliveryAddress)
@@ -175,8 +172,10 @@ export const singleCancelOrder = async (req, res, next) => {
 
           if (orderItem.discountPrice > 0) {
             refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
+            orders.totalAmount -= refundAmount
           } else {
-            refundAmount += (orderItem.price * orderItem.quantity)//
+            refundAmount += (orderItem.price * orderItem.quantity)
+            orders.totalAmount -= refundAmount
           }
 
         } else {
@@ -184,7 +183,7 @@ export const singleCancelOrder = async (req, res, next) => {
             // remainingItemsTotal -= orders.coupon.discountValue
             refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUND ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
 
-            orderItem.isCouponAvailable = false//MAKE COUPON FALSE
+            orders.isCouponAvailable = false//MAKE COUPON FALSE
 
             //REMOVE APPLIED COUPON 
             await Coupon.findByIdAndUpdate(
@@ -198,8 +197,10 @@ export const singleCancelOrder = async (req, res, next) => {
           //REFUND SETTING
           if (orderItem.discountPrice > 0) {
             refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
+            orders.totalAmount -= refundAmount
           } else {
             refundAmount += (orderItem.price * orderItem.quantity)
+            orders.totalAmount -= refundAmount
           }
         }
 
@@ -322,11 +323,6 @@ export const payUsingWallet = async (req, res, next) => {
 }
 
 
-
-import pdf from 'html-pdf';
-import { generateInvoice } from '../../services/invoiceService.js';
-import Coupon from "../../models/couponSchema.js"
-import { count } from "console"
 
 export const downloadInvoice = async (req, res, next) => {
   try {

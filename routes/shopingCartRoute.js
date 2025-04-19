@@ -11,6 +11,8 @@ import {
     updateQuantity
 } from "../controllers/user/shopingCartController.js"
 import {
+    addReview,
+    rateProduct,
     renderHomePage,
     renderProductDetails,
     renderShopPage,
@@ -20,6 +22,7 @@ import {
 
 router.get('/', renderHomePage)
 router.get('/product-details/:id', userAuth, renderProductDetails)
+router.patch('/rate-product/:id',userAuth,rateProduct)
 router.get("/shop", userAuth, renderShopPage)
 router.get('/sort/:sort', userAuth, sortProducts)
 
@@ -32,6 +35,7 @@ router.post('/cart', userAuth, addToCart)
 router.delete('/cart/:id', userAuth, removeFromCart)
 router.put('/cart/:id', userAuth, updateQuantity)
 
+router.post('/add-review',userAuth , addReview)
 
 
 export default router

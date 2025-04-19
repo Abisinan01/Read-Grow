@@ -33,7 +33,7 @@ export const renderCheckoutPage = async (req, res, next) => {
 
         //CHECK CART HAVE DATA
         if (userCart.items.length <= 0) {
-            return res.status(400).redirect('/read-and-grow/shop')
+            return res.status(400).redirect('/shop')
         }
 
         const offers = await Offer.find()
@@ -79,7 +79,7 @@ export const renderCheckoutPage = async (req, res, next) => {
             //VALIDATE STOCK AVAILABILITY
             if (product.stock === 0 || product.stock < item.quantity) {
                 console.log('Out of stock')
-                return res.status(400).redirect('/read-and-grow/cart')
+                return res.status(400).redirect('/cart')
             }
 
             let discountValue = (product.bestOffer / 100) * product.price//CALCULATE EACH PRODUCT DISCOUNT
@@ -135,7 +135,7 @@ export const confirmOrder = async (req, res, next) => {
             discount,
             // currency,
             // receipt,
-            // notes 
+            // notes  
         } = req.body
         console.log(req.body, 'confimr order req.body')
 
@@ -148,7 +148,11 @@ export const confirmOrder = async (req, res, next) => {
 
         console.log("paymentMethod :", paymentMethod)
 
-        let address = await Address.findById(addressId)
+        let address = "";
+
+        if (addressId) {
+        address = await Address.findById(addressId) || "";
+        }
         console.log('Delivery Address :', address)
 
         if (!address) {
@@ -226,7 +230,7 @@ export const confirmOrder = async (req, res, next) => {
 
         req.session.applyCoupon = null //CLEAR COUPON FROM SESSOIN APPLIED ONE
 
-        const saveOrder = await newOrder.save()
+        const saveOrder = await newOrder.save() 
         console.log(`New order saved ${saveOrder}`)
 
         if (!saveOrder) {
@@ -240,7 +244,7 @@ export const confirmOrder = async (req, res, next) => {
         req.session.order = saveOrder
         return res.status(200).json({
             success: true, message: "Order confirmed"
-        })
+        }) 
     } catch (error) {
         next(new AppError(`Checkout Confirm order : ${error}`, 500))
     }
@@ -254,7 +258,7 @@ export const successPage = async (req, res, next) => {
         console.log("req.session.order", req.session.order)
 
         if (!req.session.order) {
-            return res.redirect('/read-and-grow')
+            return res.redirect('/')
         }
 
         const user = await User.findById(userId.id)

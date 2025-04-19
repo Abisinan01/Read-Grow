@@ -4,12 +4,13 @@
   "author": "Abisinan",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
+    "dev": "nodemon  app.js --ignore ./orders.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "cloudinary": "^2.6.0",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -20,7 +21,6 @@
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "googleapis": "^144.0.0",
-    "html-pdf": "^3.0.1",
     "init": "^0.1.2",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
@@ -36,6 +36,7 @@
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdf-creator-node": "^2.3.5",
     "pdfkit": "^0.16.0",
     "pdfkit-table": "^0.1.99",
     "razorpay": "^2.9.6",

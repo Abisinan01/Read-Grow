@@ -51,9 +51,112 @@
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
     <div class="container-fluid flex ">
         <!-- Sidebar -->
-        <%- include("../partials/admin/adminSideBar.ejs") %>
+        <div class="fixed md:sticky top-0 left-0 w-full md:w-[16%] h-auto md:h-screen bg-gray-400 py-5 shadow-lg flex flex-col" id="sidebar">
+            <div class="px-5 text-2xl font-bold text-gray-700 pb-6">REad & GroW</div>
+            <div class="flex flex-col flex-grow">
+                <button data-path="/admin/dashboard" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Dashboard
+                </button>
+                <button data-path="/admin/sales-report" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Sales Report
+                </button>
+                <button data-path="/admin/products" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Product
+                </button>
+                <button data-path="/admin/users" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    User
+                </button>
+                <button data-path="/admin/orders" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Orders
+                </button>
+                <button data-path="/admin/category" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Category
+                </button>
+                <button data-path="/admin/offers" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Offers
+                </button>
+                <button data-path="/admin/coupons" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Coupons
+                </button>
+                <button data-path="/admin/transactions?page=1&limit=10" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 transition duration-200">
+                    Transactions
+                </button>
+            </div>
+            <button id="logoutButton" class="nav-button w-full px-5 py-4 text-left text-base hover:bg-gray-300 mt-auto border-t border-gray-500 transition duration-200">
+                Logout
+            </button>
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const buttons = document.querySelectorAll('.nav-button');
+                const currentPath = window.location.pathname; // e.g., "/admin/products" or "/admin/users?page=1&limit=6"
+        
+                // Function to remove query parameters for cleaner comparison
+                const getBasePath = (path) => path.split('?')[0];
+        
+                // Set active button on page load
+                buttons.forEach(button => {
+                    const buttonPath = button.dataset.path ? getBasePath(button.dataset.path) : null;
+                    const currentBasePath = getBasePath(currentPath);
+        
+                    // Highlight the button if the current path matches the button's base path
+                    if (buttonPath && currentBasePath === buttonPath) {
+                        button.classList.add("bg-black", "text-white");
+                        button.classList.remove("hover:bg-gray-300");
+                    } else {
+                        // Ensure non-active buttons retain their hover effect
+                        button.classList.remove("bg-black", "text-white");
+                        button.classList.add("hover:bg-gray-300");
+                    }
+        
+                    // Attach click event to navigate (excluding logout button)
+                    if (button.dataset.path && button.id !== "logoutButton") {
+                        button.addEventListener('click', () => {
+                            window.location.href = button.dataset.path;
+                        });
+                    }
+                });
+        
+                // Logout functionality
+                document.getElementById("logoutButton").addEventListener('click', async () => {
+                    const { value: confirmed } = await Swal.fire({
+                        title: 'Are you sure you want to log out?',
+                        text: "You won't be able to log in again unless you provide credentials.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, log me out',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true
+                    });
+        
+                    if (confirmed) {
+                        try {
+                            const response = await fetch("http://localhost:3999/admin/logout", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" }
+                            });
+        
+                            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+                            const result = await response.json();
+        
+                            if (result.success) {
+                                Swal.fire("Logged out", "You are successfully logged out", "success");
+                                setTimeout(() => { window.location.href = "/admin/login"; }, 1500);
+                            } else {
+                                Swal.fire("Logout Failed", "There was a problem in logout. Please try again later", "error");
+                            }
+                        } catch (error) {
+                            console.error('Logout error:', error);
+                            Swal.fire("Error!", "An error occurred. Please try again later.", "error");
+                        }
+                    }
+                });
+            });
+        </script>
 
-            <div class="flex-1 main-content w-full" style="margin-left: calc(0% + 0px);">
+            <div class="flex-1 main-content w-full md:ml-[0%]">
                 <header class="bg-white shadow-sm sticky top-0 z-10">
                     <div class="flex justify-between items-center px-4 sm:px-6 py-4">
                         <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">Product Management</h1>
@@ -106,12 +209,12 @@
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <img src="<%= product.images[0] || '/default-image.jpg' %>"
+                                                    <img src="<%= product?.images[0] || '/default-image.jpg' %>"
                                                         alt="Book cover"
                                                         class="h-10 w-10 sm:h-14 sm:w-14 rounded-md object-cover shadow-sm">
                                                     <div class="ml-2 sm:ml-4">
                                                         <div class="text-xs sm:text-sm font-medium text-gray-900">
-                                                            <%= product.name %>
+                                                            <%= product?.name %>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -119,35 +222,35 @@
                                             <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                 <span
                                                     class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                    <%= product.category %>
+                                                    <%= product?.category %>
                                                 </span>
                                             </td>
                                             <td
                                                 class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                                                <%= product.stock %> copies
+                                                <%= product?.stock %> copies
                                             </td>
                                             <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                                <div class="text-xs sm:text-sm text-gray-900">Rs. <%= product.price %>
+                                                <div class="text-xs sm:text-sm text-gray-900">Rs. <%= product?.price %>
                                                 </div>
                                             </td>
                                             <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                 <span
-                                                    class="px-2 py-1 text-xs font-semibold rounded-full <%= product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %>">
-                                                    <%= product.stock===0 ? 'Out of Stock' : 'In Stock' %>
+                                                    class="px-2 py-1 text-xs font-semibold rounded-full <%= product?.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %>">
+                                                    <%= product?.stock===0 ? 'Out of Stock' : 'In Stock' %>
                                                 </span>
                                             </td>
                                             <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                                                 <div class="flex space-x-2 sm:space-x-3">
                                                     <button class="text-blue-600 hover:text-blue-800" title="Edit"><i
-                                                            onclick="window.location.href='/admin/product/<%= product._id %>'"
+                                                            onclick="window.location.href='/admin/product/<%= product?._id %>'"
                                                             class="fas fa-edit"></i></button>
                                                     <button class="text-red-600 hover:text-red-900" title="Delete"><i
-                                                            onclick="deleteConfirm('<%= product._id %>')"
+                                                            onclick="deleteConfirm('<%= product?._id %>')"
                                                             class="fas fa-trash-alt"></i></button>
                                                     <button class="text-gray-600 hover:text-gray-900 p-1 w-5 h-5 sm:w-6 sm:h-6 rounded"
                                                             title="View"
-                                                            onclick="isBlocked(event, '/admin/block-product/<%= product._id %>')">
-                                                            <i class="fas <%= product.isBlocked ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+                                                            onclick="isBlocked(event, '/admin/block-product/<%= product?._id %>')">
+                                                            <i class="fas <%= product?.isBlocked ? 'fa-eye-slash' : 'fa-eye' %>"></i>
                                                     </button>
                                                         
                                                 </div>
@@ -157,41 +260,71 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        <div
-                            class="px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
-                            <div class="flex space-x-2">
-                            <% if (page> 1) { %>
-                                    <a href="/admin/products/?page=<%= page - 1 %>&limit=<%= limit %><%= query ? '&query=' + query : '' %>"
-                                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Previous</a>
-                                <% } else { %>
-                                    <span
-                                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>
-                                <% } %>
-
-                                <% for (let i=1; i <=totalPages; i++) { %>
-                                    <a href="/admin/products/?page=<%= i %>&limit=<%= limit %><%= query ? '&query=' + query : '' %>"
-                                        class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm <%= i === page ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50' %>">
-                                        <%= i %>
-                                    </a>
-                                    <% } %>
-
-                                <% if (page < totalPages) { %>
-                                    <a href="/admin/products/?page=<%= page + 1 %>&limit=<%= limit %><%= query ? '&query=' + query : '' %>"
-                                        class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50">Next</a>
-                                    <% } else { %>
-                                        <span
-                                         class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>
-                             <% } %>
-                            </div>
-                        </div>
                     </div>
+                        <div class="flex justify-center mt-6">
+                            <nav class="flex justify-center mt-6">
+                                <ul class="inline-flex items-center -space-x-px text-sm">
+                                  <!-- Previous Page -->
+                                  <% if(page > 1){ %>
+                                    <li>
+                                      <a href="/admin/products?page=<%= page - 1 %>&limit=<%= limit %>" 
+                                         class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                      </a>
+                                    </li>
+                                  <% } else { %>
+                                    <li>
+                                      <span class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-l-lg cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                        </svg>
+                                      </span>
+                                    </li>
+                                  <% } %>
+                              
+                                  <!-- Page Numbers -->
+                                  <% for(let i = 1; i <= totalPages; i++) { %>
+                                    <li>
+                                      <a href="/admin/products?page=<%= i %>&limit=<%= limit %>" 
+                                         class="flex items-center justify-center px-3 h-10 leading-tight 
+                                                border border-gray-300 
+                                                <%= page === i ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100' %>">
+                                        <%= i %>
+                                      </a>
+                                    </li>
+                                  <% } %>
+                              
+                                  <!-- Next Page -->
+                                  <% if(page < totalPages){ %>
+                                    <li>
+                                      <a href="/admin/products?page=<%= page + 1 %>&limit=<%= limit %>" 
+                                         class="flex items-center justify-center px-3 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                      </a>
+                                    </li>
+                                  <% } else { %>
+                                    <li>
+                                      <span class="flex items-center justify-center px-3 h-10 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-r-lg cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                      </span>
+                                    </li>
+                                  <% } %>
+                                </ul>
+                              </nav>
+                              
+                        </div>
+                    
                 </main>
             </div>
     </div>
 
     <script>
-
         // Initialize Toastify
         const toastifyOptions = {
             duration: 3000,
@@ -266,10 +399,10 @@
         
                     if (data.success) {
                         // Get the button element from the event
-                        const button = event.target.closest('button'); // Ensure it selects the correct button
+                        const button = event.target.tagName === 'I' ? event.target.parentNode : event.target;
         
                         if (button) {
-                            const icon = button.querySelector('i'); // Find the <i> tag inside the button
+                            const icon = button.querySelector('i') || event.target;
         
                             if (icon) {
                                 icon.classList.toggle('fa-eye', !data.isBlocked);
@@ -288,6 +421,9 @@
                             timer: 1500,
                             showConfirmButton: false
                         });
+                        setTimeout(() => {
+                            location.reload()
+                        }, 1400);
                     } else {
                         Toastify({ text: "Failed to update status", ...toastifyOptions }).showToast();
                     }
@@ -310,7 +446,11 @@
            const urlParams = new URLSearchParams(window.location.search);
            currentQuery = urlParams.get('query') || '';
            currentPage = parseInt(urlParams.get('page')) || 1;
-           fetchData();
+       
+           // Set search input value from URL if present
+           if(currentQuery) {
+               document.querySelector('input[name="searchInput"]').value = currentQuery;
+           }
        
            // Handle search form submission
            form.addEventListener("submit", async function (event) {
@@ -348,7 +488,7 @@
                                    <tr class="hover:bg-gray-50 transition">
                                        <td class="px-6 py-4 whitespace-nowrap">
                                            <div class="flex items-center">
-                                               <img src="${product.images?.[0] || '/default-image.jpg'}" 
+                                               <img src="${product?.images?.[0] || '/default-image.jpg'}" 
                                                     alt="Book cover" 
                                                     class="h-14 w-14 rounded-md object-cover">
                                                <div class="ml-4">${product.name || 'Unnamed Product'}</div>
@@ -356,29 +496,29 @@
                                        </td>
                                        <td class="px-6 py-4 whitespace-nowrap">
                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                                               ${product.category || 'Uncategorized'}
+                                               ${product?.category || 'Uncategorized'}
                                            </span>
                                        </td>
-                                       <td class="px-6 py-4 whitespace-nowrap">${product.stock || 0} copies</td>
-                                       <td class="px-6 py-4 whitespace-nowrap">Rs. ${product.price || '0.00'}</td>
+                                       <td class="px-6 py-4 whitespace-nowrap">${product?.stock || 0} copies</td>
+                                       <td class="px-6 py-4 whitespace-nowrap">Rs. ${product?.price || '0.00'}</td>
                                        <td class="px-6 py-4 whitespace-nowrap">
-                                           <span class="px-2 py-1 rounded-full text-sm ${product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                                               ${product.stock === 0 ? 'Out of Stock' : 'In Stock'}
+                                           <span class="px-2 py-1 rounded-full text-sm ${product?.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                               ${product?.stock === 0 ? 'Out of Stock' : 'In Stock'}
                                            </span>
                                        </td>
                                        <td class="px-6 py-4 whitespace-nowrap">
                                            <div class="flex space-x-3">
                                                <button class="text-blue-600 hover:text-blue-800" 
-                                                       onclick="window.location.href='/admin/product/${product._id}'">
+                                                       onclick="window.location.href='/admin/product/${product?._id}'">
                                                    <i class="fas fa-edit"></i>
                                                </button>
                                                <button class="text-red-600 hover:text-red-900" 
-                                                       onclick="deleteConfirm('${product._id}')">
+                                                       onclick="deleteConfirm('${product?._id}')">
                                                    <i class="fas fa-trash-alt"></i>
                                                </button>
-                                               <button class="text-gray-600 hover:text-gray-900" 
-                                                       onclick="isBlocked(event, '/admin/block-product/${product._id}')">
-                                                   <i class="fas ${product.isBlocked ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                               <button class="text-gray-600 hover:text-gray-900 p-1 w-5 h-5 sm:w-6 sm:h-6 rounded" 
+                                                       onclick="isBlocked(event, '/admin/block-product/${product?._id}')">
+                                                   <i class="fas ${product?.isBlocked ? 'fa-eye-slash' : 'fa-eye'}"></i>
                                                </button>
                                            </div>
                                        </td>
@@ -387,37 +527,40 @@
                        }
        
                        // Update pagination
-                       paginationNav.innerHTML = '';
-                       const totalPages = data.totalPages || 1;
-                       if (currentPage > 1) {
-                           paginationNav.innerHTML += `
-                               <a href="#" 
-                                  class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50"
-                                  onclick="event.preventDefault(); currentPage--; fetchData();">Previous</a>`;
-                       } else {
-                           paginationNav.innerHTML += `
-                               <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>`;
-                       }
-       
-                       for (let i = 1; i <= totalPages; i++) {
-                           paginationNav.innerHTML += `
-                               <a href="#" 
-                                  class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm ${i === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50'}"
-                                  onclick="event.preventDefault(); currentPage = ${i}; fetchData();">${i}</a>`;
-                       }
-       
-                       if (currentPage < totalPages) {
-                           paginationNav.innerHTML += `
-                               <a href="#" 
-                                  class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50"
-                                  onclick="event.preventDefault(); currentPage++; fetchData();">Next</a>`;
-                       } else {
-                           paginationNav.innerHTML += `
-                               <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>`;
+                       if (paginationNav) {
+                           paginationNav.innerHTML = '';
+                           const totalPages = data.totalPages || 1;
+                           if (currentPage > 1) {
+                               paginationNav.innerHTML += `
+                                   <a href="#" 
+                                      class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50"
+                                      onclick="event.preventDefault(); currentPage = ${currentPage - 1}; fetchData();">Previous</a>`;
+                           } else {
+                               paginationNav.innerHTML += `
+                                   <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Previous</span>`;
+                           }
+           
+                           for (let i = 1; i <= totalPages; i++) {
+                               paginationNav.innerHTML += `
+                                   <a href="#" 
+                                      class="px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm ${i === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-500 hover:bg-gray-50'}"
+                                      onclick="event.preventDefault(); currentPage = ${i}; fetchData();">${i}</a>`;
+                           }
+           
+                           if (currentPage < totalPages) {
+                               paginationNav.innerHTML += `
+                                   <a href="#" 
+                                      class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-500 hover:bg-gray-50"
+                                      onclick="event.preventDefault(); currentPage = ${currentPage + 1}; fetchData();">Next</a>`;
+                           } else {
+                               paginationNav.innerHTML += `
+                                   <span class="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm text-gray-400 bg-gray-100 cursor-not-allowed">Next</span>`;
+                           }
                        }
        
                        // Update URL without reloading
-                       history.pushState({}, '', url);
+                       const newUrl = url.replace('/admin/products', window.location.pathname);
+                       history.pushState({}, '', newUrl);
                    } else {
                        tbody.innerHTML = `
                            <tr class="hover:bg-gray-50 transition">
@@ -427,7 +570,7 @@
                                    </div>
                                </td>
                            </tr>`;
-                       console.log('Server response error:', data.message || 'Unknown error');
+                       console.log('Server response error:', data?.message || 'Unknown error');
                    }
                } catch (error) {
                    console.error('Fetch error:', error);
@@ -439,7 +582,7 @@
                                </div>
                            </td>
                        </tr>`;
-                   // Optional: Add Toastify notification if you have it included
+                   // Add Toastify notification
                    if (typeof Toastify !== 'undefined') {
                        Toastify({
                            text: "Failed to load products",
@@ -451,6 +594,9 @@
                    }
                }
            }
+
+           // Call fetchData initially if needed
+           // fetchData();
        });
     </script>
 </body>

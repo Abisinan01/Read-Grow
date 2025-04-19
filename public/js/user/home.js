@@ -9,7 +9,7 @@ function pleaseLogin() {
         cancelButtonText: "Cancel",
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = "/read-and-grow/login"; // Redirect to login page
+            window.location.href = "/login"; // Redirect to login page
         }
     });
 
@@ -34,7 +34,7 @@ async function addToCart(data) {
     if (addToCartBtn) addToCartBtn.disabled = true
 
     try {
-        const response = await fetch(`/read-and-grow/cart`, {
+        const response = await fetch(`/cart`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ productId: data })

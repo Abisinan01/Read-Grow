@@ -28,7 +28,7 @@
                             e.preventDefault();
                             const searchInput = document.querySelector('input[name="query"]').value.trim();
                             if (searchInput) {
-                                window.location.href = `/read-and-grow/shop?category=${encodeURIComponent('<%= %>')}&search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
+                                window.location.href = `/shop?category=${encodeURIComponent('<%= %>')}&search=${encodeURIComponent(searchInput)}&page=1&limit=6`;
                             }
                         });
                     </script>
@@ -37,14 +37,14 @@
 
             <!-- Navigation Icons -->
             <div class="flex items-center space-x-4 sm:space-x-6">
-                <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Shop">
+                <a href="/shop" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Shop">
                     <i class="fas fa-store text-lg sm:text-xl"></i>
                 </a>
-                <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Wishlist">
+                <a href="/wishlist" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Wishlist">
                     <i class="fas fa-heart text-lg sm:text-xl"></i>
                 </a>
                 <div class="relative">
-                    <a href="/read-and-grow/cart"
+                    <a href="/cart"
                        class="text-gray-600 hover:text-gray-900 transition-colors duration-200"
                        aria-label="Shopping cart">
                         <i class="fas fa-shopping-cart text-lg sm:text-xl"></i>
@@ -54,7 +54,7 @@
                         </span> -->
                     </a>
                 </div>                
-                <a href="/read-and-grow/profile/<%= user.id || user._id %>" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Profile">
+                <a href="/profile/<%= user.id || user._id %>" class="text-gray-600 hover:text-gray-900 transition-colors duration-200" aria-label="Profile">
                     <i class="fas fa-user text-lg sm:text-xl"></i>
                 </a>
             </div>
