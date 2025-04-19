@@ -169,7 +169,7 @@
                 <!-- Search Bar - Hide on small screens -->
                 <div class="hidden md:flex flex-1 max-w-2xl px-6">
                     <div class="relative w-full">
-                        <form id="searchForm" action="/shop" method="GET" class="w-full">
+                        <form id="searchForm" action="/read-and-grow/shop" method="GET" class="w-full">
                             <input type="search" 
                                    name="search" 
                                    value="<%= search || '' %>" 
@@ -193,16 +193,16 @@
      
                 <!-- Navigation Icons -->
                 <div class="flex items-center space-x-3 md:space-x-6">
-                    <a href="/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+                    <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
                         <i class="fas fa-store text-lg md:text-xl"></i>
                     </a>
-                    <a href="/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+                    <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
                         <i class="fas fa-heart text-lg md:text-xl"></i>
                     </a>
-                    <a href="/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+                    <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
                         <i class="fas fa-shopping-cart text-lg md:text-xl"></i>
                     </a>
-                    <a href="/profile/<%= user._id || user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+                    <a href="/read-and-grow/profile/<%= user._id || user.id %>" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
                         <i class="fas fa-user text-lg md:text-xl"></i>
                     </a>
                     
@@ -215,7 +215,7 @@
             
             <!-- Mobile Search - Visible only on small screens -->
             <div class="md:hidden pb-3">
-                <form id="mobileSearchForm" action="/shop" method="GET" class="w-full">
+                <form id="mobileSearchForm" action="/read-and-grow/shop" method="GET" class="w-full">
                     <input type="search" 
                            name="search" 
                            value="<%= search || '' %>" 
@@ -251,11 +251,11 @@
                 <div class="sort-by relative">
                     <label for="sortOptions" class="text-lg font-semibold mr-2">Sort by:</label>
                     <select id="sortOptions" name="sortOptions" onchange="location = '<%= currentSort %>' " class="border border-gray-300 rounded px-3 py-1 text-gray-700">
-                        <option value="/sort/default" <%= currentSort === 'default' ? 'selected' : '' %>>Default</option>
-                        <option value="/sort/name_asc" <%= currentSort === 'name_asc' ? 'selected' : '' %>>A to Z</option>
-                        <option value="/sort/name_desc" <%= currentSort === 'name_desc' ? 'selected' : '' %>>Z to A</option>
-                        <option value="/sort/price_asc" <%= currentSort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
-                        <option value="/sort/price_desc" <%= currentSort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
+                        <option value="/read-and-grow/sort/default" <%= currentSort === 'default' ? 'selected' : '' %>>Default</option>
+                        <option value="/read-and-grow/sort/name_asc" <%= currentSort === 'name_asc' ? 'selected' : '' %>>A to Z</option>
+                        <option value="/read-and-grow/sort/name_desc" <%= currentSort === 'name_desc' ? 'selected' : '' %>>Z to A</option>
+                        <option value="/read-and-grow/sort/price_asc" <%= currentSort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
+                        <option value="/read-and-grow/sort/price_desc" <%= currentSort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
                     </select>                    
                 </div>
             </div>
@@ -277,14 +277,14 @@
                         <h2 class="text-lg font-semibold mb-3">Categories</h2>
                         <ul class="space-y-2">
                             <li>
-                                <a href="/shop?page=1&limit=6<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
                                     class="text-gray-600 hover:text-gray-900 <%= !category ? 'font-bold' : '' %>">
                                      All Categories
                                  </a>
                             </li>
                             <% categories.forEach(cat => { %>
                                 <li>
-                                    <a href="/shop?page=1&limit=6&category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
+                                    <a href="/read-and-grow/shop?page=1&limit=6&category=<%= encodeURIComponent(cat.categoryName) %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
                                        class="text-gray-600 hover:text-gray-900 <%= category === cat.categoryName ? 'font-bold' : '' %>">
                                         <%= cat.categoryName %>
                                     </a>
@@ -301,7 +301,7 @@
                                 <% let authorSet = new Set(allProducts.map(product => product.authorName)); %>
                                 <% Array.from(authorSet).forEach(auth => { %>
                                     <li>
-                                        <a href="/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&author=<%= encodeURIComponent(auth) %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
+                                        <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %>&author=<%= encodeURIComponent(auth) %><%= price ? '&price=' + encodeURIComponent(price) : '' %>" 
                                            class="text-gray-600 hover:text-gray-900 <%= author === auth ? 'font-bold' : '' %>">
                                             <%= auth %>
                                         </a>
@@ -316,19 +316,19 @@
                         <h2 class="text-lg font-semibold mb-3">Price</h2>
                         <ul class="space-y-2">
                             <li>
-                                <a href="/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=under-449" 
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=under-399" 
                                    class="text-gray-600 hover:text-gray-900 <%= price === 'under-20' ? 'font-bold' : '' %>">
-                                    Under Rs.449
+                                    Under Rs.399
                                 </a>
                             </li>
                             <li>
-                                <a href="/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=400-599" 
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=400-599" 
                                    class="text-gray-600 hover:text-gray-900 <%= price === '20-30' ? 'font-bold' : '' %>">
                                     Rs.400 - Rs.599
                                 </a>
                             </li>
                             <li>
-                                <a href="/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=above-600" 
+                                <a href="/read-and-grow/shop?page=1&limit=6<%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= author ? '&author=' + encodeURIComponent(author) : '' %>&price=above-600" 
                                    class="text-gray-600 hover:text-gray-900 <%= price === 'above-30' ? 'font-bold' : '' %>">
                                     Above Rs.600
                                 </a>
@@ -352,11 +352,11 @@
                     <div class="sort-by relative">
                         <label for="sortOptions" class="text-lg font-semibold mr-2">Sort by:</label>
                         <select id="sortOptions" name="sortOptions" onchange="location = this.value;" class="border border-gray-300 rounded px-3 py-1 text-gray-700">
-                            <option value="/shop"><%= (currentSort)? currentSort : 'Default' %></option>
-                            <option value="/sort/name_asc">A to Z</option>
-                            <option value="/sort/name_desc">Z to A</option>
-                            <option value="/sort/price_asc">Price: Low to High</option>
-                            <option value="/sort/price_desc">Price: High to Low</option>
+                            <option value="/read-and-grow/shop">Default</option>
+                            <option value="/read-and-grow/sort/name_asc">A to Z</option>
+                            <option value="/read-and-grow/sort/name_desc">Z to A</option>
+                            <option value="/read-and-grow/sort/price_asc">Price: Low to High</option>
+                            <option value="/read-and-grow/sort/price_desc">Price: High to Low</option>
                         </select>
                     </div>
                 </div>
@@ -372,7 +372,7 @@
                         <% allProducts.forEach(product => { %>
                             <article class="bg-white rounded-lg shadow-md hover:shadow-xl overflow-hidden transition-transform hover:scale-105">
                                 <div class="relative h-48 sm:h-56 md:h-64 bg-gray-50">
-                                    <a href="/product-details/<%= product._id %>" class="flex justify-center h-full">
+                                    <a href="/read-and-grow/product-details/<%= product._id %>" class="flex justify-center h-full">
                                         <img src="<%= product.images[0] %>" alt="<%= product.name %>"
                                             class="w-auto h-full object-cover rounded-t-md">
                                     </a>
@@ -417,7 +417,7 @@
                                             <%= product.stock > 0 ? "" : "disabled" %>
                                             class="<%= product.stock > 0 ? 'bg-black text-white px-3 py-1 sm:px-4 sm:py-2 text-sm rounded hover:bg-gray-800 transition w-full sm:w-auto text-center' : 'bg-gray-400 text-white px-3 py-1 sm:px-4 sm:py-2 text-sm rounded w-full sm:w-auto text-center' %>"
                                             aria-label="Add <%= product.name %> to cart">
-                                            <%= (product.stock > 0 )? 'ADD TO CART' : 'OUT OF STOCK' %>
+                                            ADD TO CART
                                         </button>
                                     </div>
                                 </div>
@@ -429,7 +429,7 @@
                 <!-- Pagination -->
                 <div class="flex justify-center mt-6 md:mt-8 space-x-1 sm:space-x-2">
                     <% if(page > 1) { %>
-                        <a href="/shop?page=<%= page-1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
+                        <a href="/read-and-grow/shop?page=<%= page-1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
                            class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-left"></i>
                         </a>
@@ -455,14 +455,14 @@
                     
                     for(let i=startPage; i<=endPage; i++) { 
                     %>
-                        <a href="/shop?page=<%= i %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
+                        <a href="/read-and-grow/shop?page=<%= i %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
                            class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded <%= i === page ? 'bg-black text-white' : 'border border-gray-300 hover:bg-gray-100' %>">
                             <%= i %>
                         </a>
                     <% } %>
                     
                     <% if(page < totalPages) { %>
-                        <a href="/shop?page=<%= page+1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
+                        <a href="/read-and-grow/shop?page=<%= page+1 %>&limit=<%= limit %><%= category ? '&category=' + encodeURIComponent(category) : '' %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= price ? '&price=' + encodeURIComponent(price) : '' %>"
                            class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-100">
                             <i class="fas fa-chevron-right"></i>
                         </a>

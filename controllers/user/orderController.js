@@ -87,7 +87,7 @@ export const renderOrderDetailsPage = async (req, res, next) => {
       .populate('coupon')
 
     if (!order) {
-      return res.status(400).redirect("/orders")
+      return res.status(400).redirect("/read-and-grow/orders")
     }
     const deliveryAddress = await Address.findById(order.addressId)
     console.log(deliveryAddress)
@@ -175,10 +175,8 @@ export const singleCancelOrder = async (req, res, next) => {
 
           if (orderItem.discountPrice > 0) {
             refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
-            orders.totalAmount -= refundAmount
           } else {
-            refundAmount += (orderItem.price * orderItem.quantity)
-            orders.totalAmount -= refundAmount
+            refundAmount += (orderItem.price * orderItem.quantity)//
           }
 
         } else {
@@ -186,7 +184,7 @@ export const singleCancelOrder = async (req, res, next) => {
             // remainingItemsTotal -= orders.coupon.discountValue
             refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUND ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
 
-            orders.isCouponAvailable = false//MAKE COUPON FALSE
+            orderItem.isCouponAvailable = false//MAKE COUPON FALSE
 
             //REMOVE APPLIED COUPON 
             await Coupon.findByIdAndUpdate(
@@ -200,10 +198,8 @@ export const singleCancelOrder = async (req, res, next) => {
           //REFUND SETTING
           if (orderItem.discountPrice > 0) {
             refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
-            orders.totalAmount -= refundAmount
           } else {
             refundAmount += (orderItem.price * orderItem.quantity)
-            orders.totalAmount -= refundAmount
           }
         }
 

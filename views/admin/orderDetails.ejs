@@ -23,132 +23,109 @@
 
         <div class="grid md:grid-cols-2 gap-4">
             <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Order Overview</h2>
-                <div class="space-y-4">
-              
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700">Order ID:</span>
-                    <p class="text-sm text-gray-800">#<%= order.orderId %></p>
-                  </div>
-              
-                  <div class="flex justify-between items-start">
-                    <span class="text-sm font-medium text-gray-700">Order Date:</span>
-                    <p class="text-sm text-gray-600 text-right">
-                      Placed on:<br />
-                      <%= new Date(order.createdAt).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: true
-                      }) %>
-                    </p>
-                  </div>
-              
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700">Status:</span>
-                    <%
-                      let statusClass = "";
-                      switch(order.status) {
-                        case "Pending":
-                          statusClass = "text-yellow-500 font-semibold";
-                          break;
-                        case "Delivered":
-                          statusClass = "text-green-600 font-semibold";
-                          break;
-                        case "Cancelled":
-                          statusClass = "text-red-600 font-semibold";
-                          break;
-                        case "Returned":
-                          statusClass = "text-purple-600 font-semibold";
-                          break;
-                        default:
-                          statusClass = "text-gray-500 font-semibold";
-                      }
-                    %>
-                    <span class="<%= statusClass %>"><%= order.status %></span>
-                  </div>
-              
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700">Payment Method:</span>
-                    <span class="text-sm text-gray-700"><%= order.payment %></span>
-                  </div>
-              
-                  <div class="flex justify-between items-center   pt-1 mt-1">
-                    <span class="text-sm text-gray-600">Shipping charge (Not be Refunded):</span>
-                    <span class="text-sm text-gray-700"><%= order.shippingCharge %></span>
-                  </div>
-              
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-gray-700">Total Quantity:</span>
-                    <span class="text-sm text-gray-700"><%= totalQty %></span>
-                  </div>
-              
-                  <div class="border border-gray-300 rounded-lg p-4 bg-gray-50 mt-2">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-sm font-medium text-gray-700">Total Items:</span>
-                      <span class="text-sm text-gray-700"><%= order.items.length %></span>
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Order Overview</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-gray-700 "><strong>Order ID :</strong></span>
+                        <p class="text-sm font-medium text-gray-700 "> #<%= order.orderId  %></p>
                     </div>
-              
-                    <% for(let i = 0; i < order.items.length; i++) { %>
-                      <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm text-gray-700">Item <%= i + 1 %>:</span>
-                        <span class="text-sm text-gray-700"><%= order.items[i].status %></span>
-                      </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-gray-700  "><strong>Order Date :</strong></span>
+                    <p class="text-sm text-gray-600">
+                        Placed on: <%= new Date(order.createdAt).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          hour12: true
+                        }) %>
+                      </p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-gray-600"><strong>Status:</strong> </span>
+                        <p class="text-sm text-gray-600">
+                            
+                            <% 
+                            let statusClass = "";
+                            switch(order.status) {
+                                case "Pending":
+                                    statusClass = "text-yellow-500 font-semibold";
+                                    break;
+                                case "Delivered":
+                                    statusClass = "text-green-500 font-semibold";
+                                    break;
+                                case "Cancelled":
+                                    statusClass = "text-red-500 font-semibold";
+                                    break;
+                                case "Returned":
+                                    statusClass = "text-purple-500 font-semibold";
+                                    break;
+                                default:
+                                    statusClass = "text-gray-500 font-semibold";
+                            }
+                            %>
+                            <span class="<%= statusClass %>"><%= order.status %></span>
+                        </p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700  ">Payment method :</span>
+                        <span class="text-sm text-gray-700"> <%= order.payment %></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700  ">Shipping charge:</span>
+                        <span class="text-sm text-gray-700"> <%= order.shippingCharge %></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700  ">Total items :</span>
+                        <span class="text-sm text-gray-700"> <%= order.items.length %></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700  ">Total quantity :</span>
+                        <span class="text-sm text-gray-700"> <%= totalQty %></span>
+                    </div>
+                    <% for(let i=0; i<order.items.length; i++){%>
+                    <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-700  ">Items <%= i+1 %>:</span>
+                            <span class="text-sm text-gray-700"> <%= order.items[i].status %></span>
+                        </div>
                     <% } %>
-                  </div>
-              
-                  <% if(order.discount) { %>
+                    <% if(order.discount) {%>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-700  ">Total discount:</span>
+                            <span class="text-sm text-gray-700"> -<%= order.discount %></span>
+                        </div>
+                    <% } %>
+                    <% if(order.coupon) {%>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-700  ">Applied Coupon amount:</span>
+                            <span class="text-sm text-gray-700"> -<%= order.coupon.discountValue %></span>
+                        </div>
+                    <% } %>
                     <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-700">Total Discount:</span>
-                      <span class="text-sm text-red-500">-<%= order.discount %></span>
+                        <span class="text-sm font-bold text-gray-600">Total:</span>
+                        <span class="text-sm font-bold text-green-700">Rs. <%= order.totalAmount %></span>
                     </div>
-                  <% } %>
-              
-                  <% if(order.coupon) { %>
-                    <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-700">Applied Coupon:</span>
-                      <span class="text-sm text-red-500">-<%= order.coupon.discountValue %></span>
-                    </div>
-                  <% } %>
-              
-                  <div class="flex justify-between items-center border-t pt-4 mt-4">
-                    <span class="text-sm font-bold text-gray-700">Total:</span>
-                    <span class="text-sm font-bold text-green-700">Rs. <%= (order?.totalAmount).toFixed(2) %></span>
-                  </div>
-              
                 </div>
-              </div>
-              
+            </div>
 
-              <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Customer Information</h2>
-                
-                <div class="space-y-3">
-                  <div class="flex justify-between">
-                    <span class="text-sm font-medium text-gray-700">Name:</span>
-                    <span class="text-sm text-gray-800"><%= user.username %></span>
-                  </div>
-              
-                  <div class="flex justify-between">
-                    <span class="text-sm font-medium text-gray-700">Email:</span>
-                    <span class="text-sm text-gray-800"><%= user.email %></span>
-                  </div>
-              
-                  <div class="border border-gray-300 rounded-md bg-gray-50 p-4">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Shipping Address:</h3>
-                    <div class="text-sm text-gray-700 space-y-1">
-                      <p><%= order.addressId.firstName %> <%= order.addressId.lastName %></p>
-                      <p><%= order.addressId.street %></p>
-                      <p><%= order.addressId.city %> - <%= order.addressId.pincode %></p>
-                      <p>Phone: <%= order.addressId.phoneNumber %></p>
-                    </div>
-                  </div>
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Customer Information</h2>
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-600"><strong>Name:</strong> <%= user.username %></p>
+                    <p class="text-sm text-gray-600"><strong>Email:</strong> <%= user.email %></p>
+                    <p class="text-sm text-gray-600">
+                        <strong>Shipping Address:</strong><br>
+                        <%= order.addressId.firstName %><br>
+                        <%= order.addressId.lastName %><br>
+                        <%= order.addressId.street  %><br>
+                        <%= order.addressId.city  %><br>
+                        <%= order.addressId.pincode  %><br>
+                        <%= order.addressId.phoneNumber  %>
+                    </p>
                 </div>
-              </div>
-              
+            </div>
         </div>
 
         <div class="bg-white shadow-md rounded-lg p-6 mt-4">
@@ -193,35 +170,21 @@
                     <% if(viewOrder.bestOffer){%>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-700  ">Discount of product:</span>
-                            <span class="text-sm text-red-600"><%= viewOrder.bestOffer %>%</span>
+                            <span class="text-sm text-gray-700"><%= viewOrder.bestOffer %>%</span>
                         </div>
                     <% } %>
-
                     <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600">Acctual price:</span>
-                        <span class="text-sm font-medium text-gray-700">Rs. <%= order.items[index].price %></span>
+                        <span class="text-sm font-bold text-gray-600">Price:</span>
+                        <span class="text-sm font-bold text-green-700">Rs. <%= order.items[index].price %></span>
                     </div>
                     
-                    <div class="flex justify-between items-center">
-                        <% if(order.items[index].status !== 'Returned' && order.items[index].status !== 'Cancelled'){ %>
-                            <span class="text-sm font-bold text-gray-600">Paid amount:</span>
-                        <% }else{%>
-                            <span class="text-sm font-bold text-gray-600">Refunded amount:</span>
-                        <% } %>
-                        <% let paidAmount =  (viewOrder?.bestOffer / 100) * order.items[index]?.price || 0 %>
-                        <span class="text-sm font-bold text-green-700">Rs. <%= (order.items[index].price - paidAmount).toFixed(2) %></span>
-                    </div>
-
                     <!-- Accept and Reject Buttons -->
-                    <% if(order.items[index].isRequested) { %>
-                        <div class="border border-red-400 bg-red-50 p-3 rounded-lg mt-3">
-                            <div class="flex justify-between items-center">
-                                <span class="font-semibold text-red-700">Reason:</span>
-                                <span class="font-semibold text-red-700"><%= order.items[index].reason %></span>
-                            </div>
+                    <% if(order.items[index].isRequested){ %>
+                        <div class="flex justify-between items-center">
+                            <span class="text-bold text-red-700  ">Reason:</span>
+                            <span class="text-bold text-red-700"><%= order.items[index].reason %></span>
                         </div>
                     <% } %>
-                    
                     <div class="flex justify-end space-x-4 mt-4">
                         <% if(order.items[index].isRequested) {%>
                         <button onclick="acceptRequest('<%= order.items[index].productId %>','<%= order._id %>')" class="px-4 py-2 bg-green-700 text-white text-sm font-semibold hover:bg-green-600">Accept</button>

@@ -13,14 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     function isRequired(value) {
-        const trimmed = value.trim();
-      
-        const isUsername = /[a-zA-Z]/.test(trimmed);
-        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
-      
-        return trimmed !== "" && (isUsername || isEmail);
-      }
-      
+        return value.trim() != "" && /[a-zA-Z]/.test(value)
+    }
 
     function isPassword(value) {
         return /[a-z]/.test(value) &&
@@ -54,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let isValid = true
         if (!isRequired(username.value)) {
             isValid = false
-            showError(username, "Please enter a valid username or email")
+            showError(username, "Please enter a valid username")
         }
 
         if(username.value.length < 3){
@@ -67,16 +61,16 @@ document.addEventListener('DOMContentLoaded', function () {
             showError(password, "Please enter a valid password")
         } else if (!isPassword(password.value)) {
             isValid = false
-            showError(password, "Password must be at least 6 characters long and will be securely protected.")
+            showError(password, 'Password must include at least 6 characters and a number')
         }
 
         if (!isValid) {
             return
         }
 
-        const url = "/login"
+        const url = "/read-and-grow/login"
         try {
-            const res = await fetch(url, {
+            const res = await fetch(`http://localhost:3999${url}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -95,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
             notyf.success(result.message || "Login successful");
     
             setTimeout(() => {
-                window.location.href = result.redirect || "/";
+                window.location.href = result.redirect || "/read-and-grow";
             }, 1000);
     
         } catch (error) {

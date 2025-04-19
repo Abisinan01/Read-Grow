@@ -1,11 +1,12 @@
 import express from "express"
 import connectDb from './db/dbConnection.js';
-import dotenv from "dotenv"
+import dotenv from "dotenv"//env file
 import path from "path";
 import session from "express-session";
 import cors from "cors"
-dotenv.config()//ENV FILE CONFIGURATION
+dotenv.config()//env file loading
 import morgan from "morgan";
+// import passport from "passport"; 
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import passport from "./utils/passportAuth.js";
 import MongoStore from "connect-mongo"
@@ -30,12 +31,15 @@ const __dirname = path.dirname(__filename);
 
 //========DATABASE===========
 const PORT = process.env.PORT || 3999 // PORT
-connectDb()//CALLING DB
+connectDb().catch((error) => {// CALLING DB
+    console.log(`Database connection failed : ${error.message}`)
+    process.exit(1)  // HANLDE ERROR WHEN ITS FAIELD
+})  
 
 const app = express()
-app.set("views", path.resolve("views"))//VIEW ENGIVE SETUP
+app.set("views", path.resolve("views"))//view engine set up
 app.set("view engine", "ejs")
-app.use(express.static(path.join(__dirname, "public")))  
+app.use(express.static(path.join(__dirname, "public"))) 
  
 app.use(cookieParser())
 app.use(express.json())//PARSE JSON DATAS
@@ -43,7 +47,7 @@ app.use(express.urlencoded({ extended: true }))//SUBMIT FORMS..
 app.use(nocache())
 
 //STORE SESSION IN DB FOR PERSISTENCE
-app.use(session({ 
+app.use(session({
     secret: process.env.SESSION_SCERET,
 resave: false,
     saveUninitialized: true,
@@ -54,7 +58,6 @@ resave: false,
         ttl: 1 * 60 * 60 // Session expiration time in seconds (14 days)
     }),
 })) 
-
 app.use(cors())
 app.use(morgan("dev"))//LOG EACH API CALLS
 app.use(passport.initialize())
@@ -62,9 +65,9 @@ app.use(passport.session())
 
 //ROUTERS
 app.use("/admin", adminRoutes)
-app.use("/", userRoute)
-app.use("/", ordersRoute)
-app.use("/", shopingCartRoute)
+app.use("/read-and-grow", userRoute)
+app.use("/read-and-grow", ordersRoute)
+app.use("/read-and-grow", shopingCartRoute)
 app.use("/otp",otpRoute)
 app.use(methodOverride('_method'))
 
@@ -80,7 +83,6 @@ app.use((err, req, res, next) => {
 }); 
    
 // console.log("PROCESS ID :",process.pid)//CURRENCT PROCESS ID
-
 //THIS FOR CLOSE SERVER CLEANLY INSTEAD OF FORCEFULLY QUITTING
 process.on('SIGINT', () => {
     console.log("Closing server..."); 
@@ -89,7 +91,7 @@ process.on('SIGINT', () => {
 
 
 app.get('/',(req,res)=>{
-    res.redirect('/')
+    res.redirect('/read-and-grow')
 })
 app.get('/notFound', (req, res) => {
     res.render('admin/notFound')

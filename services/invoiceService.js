@@ -61,7 +61,6 @@ export const generateInvoice = async (order, user) => {
             doc.fillColor("black").text("Item Description", startX + 5, startY + 6);
             doc.text("Qty", startX + colWidths[0] + 15, startY + 6);
             doc.text("Unit Price", startX + colWidths[0] + colWidths[1] + 5, startY + 6);
- 
             doc.text("Amount", startX + colWidths[0] + colWidths[1] + colWidths[2] + 20, startY + 6);
             startY += rowHeight;
 
@@ -78,7 +77,7 @@ export const generateInvoice = async (order, user) => {
                 doc.fillColor("black").text(item.productName, startX + 5, startY + 6);
                 doc.text(item.quantity.toString(), startX + colWidths[0] + 25, startY + 6);
                 doc.text(`${item.price.toFixed(2)}`, startX + colWidths[0] + colWidths[1] + 5, startY + 6);
-                doc.text(`${((item.price * item.quantity)-(item?.discountPrice || 0)).toFixed(2)}`, startX + colWidths[0] + colWidths[1] + colWidths[2] + 20, startY + 6);
+                doc.text(`${(item.price * item.quantity).toFixed(2)}`, startX + colWidths[0] + colWidths[1] + colWidths[2] + 20, startY + 6);
                 startY += rowHeight;
             });
 
@@ -100,7 +99,7 @@ export const generateInvoice = async (order, user) => {
             doc.font('Helvetica').fontSize(10).text("Discount:", summaryX, doc.y);
             doc.text(`${order.discount }`, valueX + 20, doc.y - 10, { align: "right" });
 
-            if (order.coupon && order.isCouponAvailable) {
+            if (order.coupon) {
                 doc.text("Coupon:", summaryX, doc.y);
                 doc.text(`${order.coupon.discountValue }`, valueX + 20, doc.y - 10, { align: "right" });
             }

@@ -72,12 +72,12 @@ document.addEventListener('DOMContentLoaded', function () {
         addForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             if (isProcessing) return;
-
+    
             // Reset previous errors
             document.querySelectorAll('.error').forEach(el => el.remove());
-
+    
             const formData = new FormData(this);
-
+    
             const addressData = {
                 firstName: formData.get('firstName').trim(),
                 lastName: formData.get('lastName').trim(),
@@ -88,16 +88,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 phone: formData.get('phone').trim(),
                 addressType: formData.get('addressType').trim()
             };
-
+    
             // Validation functions
             const isValidName = name => /^[A-Za-z]+$/.test(name);
             const isValidZip = zip => /^\d{5,6}$/.test(zip);
             const isValidPhone = phone => /^\d{10}$/.test(phone);
             const isValidAddressType = type => ['Home', 'Work'].includes(type);
-
+    
             // Check required fields
             let errors = [];
-
+    
             if (!isValidName(addressData.firstName)) errors.push({ field: 'firstName', message: 'Enter a valid first name' });
             if (!isValidName(addressData.lastName)) errors.push({ field: 'lastName', message: 'Enter a valid last name' });
             if (!addressData.street) errors.push({ field: 'street', message: 'Street is required' });
@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!addressData.state) errors.push({ field: 'state', message: 'State is required' });
             if (!isValidZip(addressData.zip)) errors.push({ field: 'zip', message: 'Enter a valid ZIP code (5-6 digits)' });
             if (!isValidPhone(addressData.phone)) errors.push({ field: 'phone', message: 'Enter a valid 10-digit phone number' });
-
-
+ 
+    
             // Display validation errors
             if (errors.length > 0) {
                 errors.forEach(error => {
@@ -120,22 +120,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
-
+    
             // If validation passes, proceed with form submission
             isProcessing = true;
             saveAddBtn.disabled = true;
             saveAddBtn.innerHTML = 'Saving...';
-
+    
             try {
-                const response = await fetch('/address', {
+                const response = await fetch('/read-and-grow/address', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(addressData)
                 });
-
+    
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message || 'Failed to add address');
-
+    
                 showToast('Address added successfully!', 'success');
                 addModal.classList.add('hidden');
                 setTimeout(() => {
@@ -151,22 +151,22 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
+    
     // Edit address form submission
     if (editForm) {
         editForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             if (isProcessing) return;
-
+    
             // Reset previous errors
             document.querySelectorAll('.error').forEach(el => el.remove());
-
+    
             const userIdElement = document.getElementById('userId');
             const userId = userIdElement ? userIdElement.textContent.trim() : '';
             const addressId = this.getAttribute('data-address-id');
-
+    
             const formData = new FormData(this);
-
+    
             const addressData = {
                 firstName: formData.get('firstName').trim(),
                 lastName: formData.get('lastName').trim(),
@@ -177,16 +177,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 phone: formData.get('phone').trim(),
                 addressType: formData.get('addressType').trim()
             };
-
+    
             // Validation functions
             const isValidName = name => /^[A-Za-z]+$/.test(name);
             const isValidZip = zip => /^\d{5,6}$/.test(zip);
             const isValidPhone = phone => /^\d{10}$/.test(phone);
             const isValidAddressType = type => ['Home', 'Work'].includes(type);
-
+    
             // Check required fields
             let errors = [];
-
+    
             if (!isValidName(addressData.firstName)) errors.push({ field: 'firstName', message: 'Enter a valid first name' });
             if (!isValidName(addressData.lastName)) errors.push({ field: 'lastName', message: 'Enter a valid last name' });
             if (!addressData.street) errors.push({ field: 'street', message: 'Street is required' });
@@ -194,8 +194,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!addressData.state) errors.push({ field: 'state', message: 'State is required' });
             if (!isValidZip(addressData.zip)) errors.push({ field: 'zip', message: 'Enter a valid ZIP code (5-6 digits)' });
             if (!isValidPhone(addressData.phone)) errors.push({ field: 'phone', message: 'Enter a valid 10-digit phone number' });
-
-
+ 
+    
             // Display validation errors
             if (errors.length > 0) {
                 errors.forEach(error => {
@@ -209,22 +209,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
-
+    
             // If validation passes, proceed with form submission
             isProcessing = true;
             saveEditBtn.disabled = true;
             saveEditBtn.innerHTML = 'Saving...';
-
+    
             try {
-                const response = await fetch(`/address/${userId}/${addressId}`, {
+                const response = await fetch(`/read-and-grow/address/${userId}/${addressId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(addressData)
                 });
-
+    
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message || 'Failed to update address');
-
+    
                 showToast('Address updated successfully!', 'success');
                 editModal.classList.add('hidden');
                 setTimeout(() => {
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
+    
 
     // Set default address functionality
     document.querySelectorAll('.setDefaultCheckbox').forEach(checkbox => {
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const originalState = !isChecked;
 
             try {
-                const response = await fetch(`/address/${addressId}/set-default`, {
+                const response = await fetch(`/read-and-grow/address/${addressId}/set-default`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isDefault: isChecked })
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         isProcessing = true;
 
         try {
-            const response = await fetch(`/address/${id}`, {
+            const response = await fetch(`/read-and-grow/address/${id}`, {
                 method: 'DELETE'
             });
             const result = await response.json();
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const isChecked = this.checked;
 
             try {
-                const response = await fetch(`/address/${addressId}/select-address`, {
+                const response = await fetch(`/read-and-grow/address/${addressId}/select-address`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isSelected: isChecked })
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (discountElement) {
                 discount = discountElement.textContent || 0;
             }
-
+            
             const shippingCharge = document.getElementById('shipping').textContent || 0;
             const finalPriceElement = document.querySelector('.text-xl.font-bold.text-red-500');
             let finalPrice;
@@ -456,46 +456,46 @@ document.addEventListener('DOMContentLoaded', function () {
             // }
 
             if (selectedPayment === 'COD') {
-                if (finalPrice > 1000) {
+                if(finalPrice > 1000){
                     showToast("COD you can't allowed over 1000/-")
                     return
                 }
                 placeOrder('pending')
             }
 
-            if (selectedPayment === 'Wallet') {
+            if(selectedPayment === 'Wallet'){
                 try {
-                    const response = await fetch('/wallet', {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ finalPrice })
+                    const response = await fetch('/read-and-grow/wallet',{
+                        method:"POST",
+                        headers:{"Content-Type":"application/json"},
+                        body: JSON.stringify({finalPrice})
                     })
 
                     const result = await response.json()
-
-                    if (!response.ok) {
-                        Swal.fire({
+                    
+                    if(!response.ok){
+                        Swal.fire({ 
                             icon: "error",
                             title: "Oops...",
                             text: result.message,
                             footer: '<a href="#">Why do I have this issue?</a>'
-                        });
-                        return
+                          });
+                          return
                     }
-
+             
                     Swal.fire({
-                        title: result.message,
-                        icon: "success",
-
+                    title: result.message,
+                    icon: "success",
+                    
                     })
 
                     placeOrder('paid')
                 } catch (error) {
                     console.log(error.message)
-                    showToast('Wallet is not working', 'error')
+                    showToast('Wallet is not working','error')
                 }
             }
-
+ 
             if (selectedPayment === 'Razorpay') {
                 isProcessing = true;
                 try {
@@ -512,15 +512,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     console.log('Submitting order:', orderData);
 
-                    const response = await fetch('/create-order', {
+                    const response = await fetch('/read-and-grow/create-order', {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(orderData)
                     });
 
-                    const order = await response.json();
-                    console.log(order, 'orders')
-                    if (!response.ok) {
+                    const order = await response.json();    
+                    console.log(order,'orders')
+                    if (!response.ok ) {
                         Swal.fire({
                             title: "Warning!",
                             text: order.message,
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         name: 'Read-and-grow',
                         description: 'Transaction',
                         order_id: order.id, // This is the order_id created in the backend
-                        callback_url: 'http://localhost:3999/success' || 'readandgrow.space/success', // Your success URL
+                        callback_url: 'http://localhost:3999/read-and-grow/success', // Your success URL
                         prefill: {
                             name: 'Abisinan',
                             email: 'abisinanabisinan9@gmail.com',
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         handler: function (response) {
 
-                            fetch('http://localhost:3999/verify-payment', {
+                            fetch('/read-and-grow/verify-payment', {
                                 method: "POST",
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -560,8 +560,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             }).then(res => res.json())
                                 .then(data => {
                                     if (data.status === 'Ok') {
-                                        placeOrder('paid')
-                                        // window.location.href = '/success';
+                                         placeOrder('paid')
+                                        // window.location.href = '/read-and-grow/success';
                                     } else {
                                         console.log(data.message);
                                         showToast('Payment verification failed', 'error');
@@ -575,24 +575,24 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     };
 
-                    console.log(options, "options")
+                    console.log(options,"options")
                     // Initialize Razorpay payment
-                    const rzp = new Razorpay(options);
-                    rzp.on('payment.failed', async function (response) {
-                        failedPayment()
-                        Swal.fire({
-                            title: "Payment Failed",
-                            text: "Your order is saved. You can retry the payment from your orders section.",
-                            icon: "error",
-                            confirmButtonText: "Go to order",
-                        }).then(() => {
-                            window.location.href = "/orders";
+                        const rzp = new Razorpay(options);
+                        rzp.on('payment.failed', async function (response) {
+                            failedPayment()
+                            Swal.fire({
+                                title: "Payment Failed",
+                                text: "Your order is saved. You can retry the payment from your orders section.",
+                                icon: "error",
+                                confirmButtonText: "Go to order",
+                            }).then(() => {
+                                window.location.href = "/read-and-grow/orders";  
+                            });
+                            
                         });
-
-                    });
-
-                    rzp.open();
-                    return;
+                        
+                        rzp.open();
+                        return;
 
                 } catch (err) {
                     showToast(err.message || 'Failed to process Razorpay payment', 'error');
@@ -612,23 +612,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     shippingCharge,
                     finalPrice,
                     discount,
-                    paymentStatus: "failed"
+                    paymentStatus :"failed"
                 }
                 try {
-                    const response = await fetch(`/failed-payment`, {
-                        method: "POST",
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
+                    const response = await fetch(`/read-and-grow/failed-payment`,{
+                        method:"POST",
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify(data)
                     })
-
+                    
                     const result = await response.json()
-                    if (!response.ok) {
-
+                    if(!response.ok){
+                        
                         return
                     }
 
-                    showToast(result.message, 'success')
-                    window.location.href = '/success'
+                    showToast(result.message,'success')
+                    window.location.href='/read-and-grow/success'
 
                 } catch (error) {
                     console.log(error.message)
@@ -639,7 +639,8 @@ document.addEventListener('DOMContentLoaded', function () {
             async function placeOrder(paymentStatus) {
                 console.log("razopaya")
                 const orderData = {
-                    addressId: selectedAddress || "",
+                    addressId: selectedAddress,
+                    paymentMethod: selectedPayment,
                     paymentMethod: selectedPayment,
                     paymentStatus,
                     subTotal,
@@ -648,97 +649,84 @@ document.addEventListener('DOMContentLoaded', function () {
                     discount,
                 };
 
-                console.log("orderData", orderData)
-
                 try {
-                    const response = await fetch("http://localhost:3999/confirm-order", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(orderData),
+                    const response = await fetch("/read-and-grow/confirm-order", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(orderData),
                     });
-
-                    const result = await response.json();
-
-                    console.log('result', result)
-                    if (!result.success) {
+                    const result = await response.json()
+                    if (!response.ok) {
                         const confirmOrderBtn = document.getElementById('confirmOrderBtn');
                         confirmOrderBtn.style.background = 'red';
                         confirmOrderBtn.disabled = true;
-
+                        showToast(result.message)
                         Swal.fire({
                             icon: "error",
                             title: "Oops...",
-                            text: result.message || "Failed to place order",
-                            footer: '<a href="/shop">Continue shopping</a>',
-                            confirmButtonText: "OK",
+                            text: result.message,
+                            footer: '<a href="/read-and-grow/shop">Continue shop</a>',
+                            confirmButtonText: "OK"
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = "/shop"; // Redirect to shop after error
+                                // window.location.href = "/read-and-grow/";  // Redirect after clicking "OK"
                             }
                         });
+
                         return;
                     }
 
-                    // Success case
                     Swal.fire({
-                        title: 'Order Placed!',
-                        text: 'Your order is being processed.',
-                        icon: 'success',
+                        title: 'Loading...',
+                        text: 'Please wait while we fetch your orders',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         didOpen: () => {
+                            Swal.showLoading();
                             setTimeout(() => {
-                                window.location.href = '/success';
-                            }, 1000);
-                        },
+                                window.location.href = '/read-and-grow/success';
+                            }, 2000);
+                        }
                     });
-
-                } catch (error) {
-                    console.error("Error placing order:", error);
-                    console.log("error message is: ",error.message)
-                    Swal.fire({
-                        icon: "error",
-                        title: "Network Error",
-                        text: "Unable to connect to the server. Please try again later.",
-                        confirmButtonText: "OK",
-                    });
-                }
+                  } catch (err) {
+                    console.log("error", err);
+                  }
             }
 
         });
     }
 
-    document.getElementById('applyCoupon').addEventListener('submit', async function (e) {
+    document.getElementById('applyCoupon').addEventListener('submit', async function (e){
         e.preventDefault()
         const couponCode = document.getElementById('couponCode').value
         const totalAmount = document.getElementById('totalAmount').value
         // const orderId  = document.getElementById('orderId').value
+        
 
-
-        if (!couponCode) {
-            showToast('Please add available coupon', 'error')
+        if(!couponCode){
+            showToast('Please add available coupon','error')
         }
 
-        const response = await fetch('/apply-coupon', {
-            method: "POST",
-            headers: { 'Content-Type': "application/json" },
-            body: JSON.stringify({ couponCode, totalAmount })
+        const response = await fetch('/read-and-grow/apply-coupon',{
+            method:"POST",
+            headers:{'Content-Type':"application/json"},
+            body:JSON.stringify({couponCode,totalAmount})
         })
 
         const result = await response.json()
-        location.reload()
-        if (!response.ok) {
+        if(!response.ok){
             showToast(result.message)
             return
         }
         showToast(result.message, 'success')
         const coupon = document.getElementById('coupon')
-        coupon.innerHTML = totalAmount.toFixed(2)
-        // setTimeout(() => {
-        // }, 1200);
-    })
+        coupon.innerHTML=totalAmount.toFixed(2)
+        setTimeout(() => {
+            location.reload()
+        }, 1200);
+    })  
 
 
 
@@ -756,21 +744,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-async function removeCoupon(couponId) {
+async function removeCoupon(couponId){
     try {
-        const response = await fetch('/remove-coupon', {
-            method: "PUT",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ couponId })
+        const response = await fetch('/read-and-grow/remove-coupon',{
+            method:"PUT",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({couponId})
         })
         const result = await response.json()
 
-        if (!response.ok) {
+        if(!response.ok){
             showToast(result.message)
             return
         }
 
-        showToast(result.message, 'success')
+        showToast(result.message,'success')
         setTimeout(() => {
             location.reload()
         }, 1000);

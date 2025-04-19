@@ -20,7 +20,6 @@ const __dirname = path.dirname(__filename);
 
 export const adminDashboardGet = async (req, res, next) => {
     try {
-        //RENDER DASHBOARD
         res.render("admin/dashboard")
     } catch (error) {
         console.error(error);
@@ -33,17 +32,17 @@ export const updateDashboard = async (req, res, next) => {
     try {
         const { filter, startDate, endDate } = req.query;
 
-        const filterDate = dateFilter(filter, startDate, endDate);//FILTER DATES
+        const dateFilter = buildDateFilter(filter, startDate, endDate);
 
-        //TAKEING ALL DATA ACCORDING TO FILTER DATA
-        const topProduct = await getTopProducts(filterDate);
-        const totalSales = await getTotalSales(filterDate);
-        const countProducts = await getTotalProductsSold(filterDate);
-        const totalCoupons = await getActiveCouponsCount();
-        const deliveredOrdersCount = await getDeliveredOrdersCount(filterDate);
-        const dailySales = await getDailySales(filterDate);
-        const categoryBasedSales = await getCategoryBasedSales(filterDate);
-        const topSellingBooks = await getTopSelledItems(filterDate)
+        const topProduct = await getTopProducts(dateFilter);
+        const totalSales = await getTotalSales(dateFilter);
+        const countProducts = await getTotalProductsSold(dateFilter);
+        const totalCoupons = await getActiveCouponsCount(); // Coupons not time-bound
+        const deliveredOrdersCount = await getDeliveredOrdersCount(dateFilter);
+        const dailySales = await getDailySales(dateFilter);
+        const categoryBasedSales = await getCategoryBasedSales(dateFilter);
+        const topSellingBooks = await getTopSelledItems(dateFilter)
+        // Response
 
         return res.json({
             dailySales,
@@ -61,8 +60,8 @@ export const updateDashboard = async (req, res, next) => {
     }
 };
 
-// FILTER FUNCTION
-const dateFilter = (filter, startDate, endDate) => {
+// Helper Functions
+const buildDateFilter = (filter, startDate, endDate) => {
     const now = new Date();
     let start;
 
@@ -100,18 +99,17 @@ const dateFilter = (filter, startDate, endDate) => {
 
 const getTopProducts = async (dateFilter) => {
     return Order.aggregate([
-        { $match: dateFilter },//MATCH FILTER DATE
-        { $unwind: "$items" },//TAKE EACH ITEMS SEPERATELY
-        { $match: { "items.status": "Delivered" } },//MATCH DELIVERED ITEMS
+        { $match: dateFilter },
+        { $unwind: "$items" },
+        { $match: { "items.status": "Delivered" } },
         {
             $group: {
                 _id: "$items.productId",
                 quantity: { $sum: "$items.quantity" },
-                totalSales: { $sum: { $multiply: ["$items.quantity", "$items.price"] } }//FIND SALES PRICE 
+                totalSales: { $sum: { $multiply: ["$items.quantity", "$items.price"] } }
             }
         },
         {
-            //LOOKUP PRODUCT DETAILS
             $lookup: {
                 from: "products",
                 localField: "_id",
@@ -119,12 +117,11 @@ const getTopProducts = async (dateFilter) => {
                 as: "productDetails"
             }
         },
-        { $sort: { totalSales: -1 } }//SORT WITH ASCENDING
+        { $sort: { totalSales: -1 } }
     ]);
 };
 
 const getTotalSales = async (dateFilter) => {
-    //ALL DELIVERED PRODUCTS PRICES
     return Order.aggregate([
         { $match: dateFilter },
         { $unwind: "$items" },
@@ -134,7 +131,6 @@ const getTotalSales = async (dateFilter) => {
 };
 
 const getTotalProductsSold = async (dateFilter) => {
-    //FIND TOTAL PRODUCT SOLD USING THEIR QTY
     return Order.aggregate([
         { $match: dateFilter },
         { $unwind: "$items" },
@@ -165,12 +161,10 @@ const getTotalProductsSold = async (dateFilter) => {
 };
 
 const getActiveCouponsCount = async () => {
-    //GET ACTIVE COUPONS COUNTS
     return Coupon.countDocuments({ isActive: true });
 };
 
 const getDeliveredOrdersCount = async (dateFilter) => {
-    //FIND DELIVERED ORDER COUNTS
     return Order.aggregate([
         { $match: dateFilter },
         { $unwind: "$items" },

@@ -103,7 +103,7 @@ export const viewOrder = async (req, res, next) => {
         })
 
     } catch (error) {
-
+        
         next(new AppError(` viewOrder detials : ${error}`, 500))
     }
 }
@@ -226,22 +226,19 @@ export const acceptReturn = async (req, res, next) => {
                 }
                 console.log("remainingItemsTotal", remainingItemsTotal);//DEBUG
 
-                //PAID AMOUNT GREATER THAN MINIMUM PURCHASE
+                //REDUCE APPLIED COUPON AMOUNT
                 if (orders.coupon && remainingItemsTotal >= orders.coupon?.minPurchase) {
 
                     if (orderItem.discountPrice > 0) {
                         refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
-                        orders.totalAmount -= refundAmount
                     } else {
                         refundAmount += (orderItem.price * orderItem.quantity)
-                        orders.totalAmount -= refundAmount
                     }
 
                 } else {
                     if (orders.coupon) {
                         // remainingItemsTotal -= orders.coupon.discountValue
-                        refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUNDAMOUNT ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
-                        orders.isCouponAvailable = false//MAKE COUPON FALSE
+                        refundAmount -= orders.coupon.discountValue//KEEP -VE COUPON VALUE REFUND ITS WILL SOLVE WHEN PRODUCT AMOUNT ADDED
 
                         //REMOVE APPLIED COUPON 
                         await Coupon.findByIdAndUpdate(
@@ -255,10 +252,8 @@ export const acceptReturn = async (req, res, next) => {
                     //REFUND SETTING
                     if (orderItem.discountPrice > 0) {
                         refundAmount += (orderItem.price * orderItem.quantity) - orderItem.discountPrice
-                        orders.totalAmount -= refundAmount
                     } else {
                         refundAmount += (orderItem.price * orderItem.quantity)
-                        orders.totalAmount -= refundAmount
                     }
                 }
 

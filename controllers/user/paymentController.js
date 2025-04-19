@@ -14,25 +14,25 @@ const app = express()
 
 export const createOrder = async (req, res) => {
     try {
-        console.log("createOrder", req.body)
+        console.log("createOrder",req.body)
         const user = req.user
         const {
-            finalPrice,   
+            finalPrice,
             currency,
             receipt,
             notes
-        } = req.body
-
+        } = req.body 
+        
         const options = {
-            amount: Math.round(finalPrice * 100),
+            amount:Math.round(finalPrice * 100),
             currency,
             receipt,
             notes
-        }
-
-        console.log(options, 'options')
+        } 
+ 
+        console.log(options,'options')
         const order = await razorpay.orders.create(options);
-
+ 
         const orders = readData();
         orders.push({
             order_id: order.id,
@@ -49,8 +49,8 @@ export const createOrder = async (req, res) => {
         console.log(error.message)
         res.status(500).send("Error on creating order")
     }
-} 
-
+}    
+  
 export const verifyPayment = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
     console.log('verify payment', req.body)
@@ -67,7 +67,7 @@ export const verifyPayment = async (req, res) => {
                     order.payment_id = razorpay_payment_id,
                     writeData(orders)
             }
- 
+
             res.status(200).json({ status: "Ok" })
 
         } else {
@@ -81,98 +81,105 @@ export const verifyPayment = async (req, res) => {
 }
 
 
-export const failedPayment = async (req, res) => {
+export const failedPayment = async (req,res)=>{
     try {
-      const {
-        addressId,
-        paymentMethod,
-        subTotal,
-        shippingCharge,
-        finalPrice,
-        discount
-      } = req.body;
-  
-      console.log("Failed Payment Order:", req.session.order);
-  
-      const user = req.user;
-  
-      let address = await Address.findById(addressId) || await Address.findOne({ userId: user.id, isDefault: true });
-      if (!address) {
+        const {
+            addressId,
+            paymentMethod,
+            subTotal,
+            shippingCharge,
+            finalPrice,
+            discount, 
+            paymentStatus
+        } = req.body
+        console.log("failed",req.session.order)
+         
+        const user = req.user
+        let address = await Address.findById(addressId)
+        console.log('Delivery Address :', address)
+
+        if (!address) {
+            address = await Address.findOne({ userId: user.id, isDefault: true });
+            console.log(2, address)
+            if (!address) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Please select address"
+                })
+            }
+        }
+
+        const totalAmount = req.session.orderDetails
+        console.log("totalAmount : ", totalAmount)
+
+        const orderID = `ORD-${Date.now()}`;
+        console.log("orderID :", orderID)
+
+        const cart = await Cart.findOne({ userId: user.id })
+
+        let items = []
+        for (let item of cart.items) {
+            const product = await Product.findById(item.productId)
+
+            if (!product) {
+                console.log(`Not product found in this cart`)
+                throw new Error('Product not found in cart')
+            }
+
+            if (product.stock === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Out of stock`
+                })
+            }
+
+            console.log(items,'items')
+            items.push({
+                productId: product._id,
+                productName: product.name,
+                price: product.price,
+                quantity: item.quantity,
+            })
+
+
+        }
+        
+        const newOrder = new Order({
+            userId: user.id,
+            orderId: orderID,
+            addressId: address._id,
+            payment: paymentMethod,
+            items,
+            shippingCharge: parseInt(shippingCharge),
+            discount: parseInt(discount),
+            subTotal: parseInt(subTotal),
+            totalAmount: parseInt(finalPrice),
+            paymentStatus : "failed"
+        })
+
+
+        const saveOrder = await newOrder.save()
+        console.log(`New order saved ${saveOrder}`)
+        
+        if (!saveOrder) {
+            return res.json({
+                success: false, message: "Order failed"
+            })
+        } 
+
+        //CART ITEMS REMOVE
+        await Cart.findByIdAndUpdate(cart._id,{$set:{items:[]}})
+        req.session.order = saveOrder 
         return res.status(400).json({
-          success: false,
-          message: "Please select an address"
-        });
-      }
-  
-      console.log('Delivery Address:', address);
-  
-      const totalAmount = req.session?.orderDetails || 0;
-  
-      const orderID = `ORD-${Date.now()}`;
-  
-      const cart = await Cart.findOne({ userId: user.id });
-  
-      let items = [];
-      for (let item of cart.items) {
-        const product = await Product.findById(item.productId);
-        if (!product) {
-          console.log(`Product not found in cart: ${item.productId}`);
-          return res.status(400).json({ success: false, message: "Product not found" });
-        }
-  
-        if (product.stock === 0) {
-          return res.status(400).json({ success: false, message: `Product ${product.name} is out of stock` });
-        }
-  
-        items.push({
-          productId: product._id,
-          productName: product.name,
-          price: product.price,
-          quantity: item.quantity,
-          image: product.images?.[0] || ""
-        });
-      }
-  
-      console.log("Constructed Items:", items);
-      if (items.length === 0) {
-        return res.status(400).json({ success: false, message: "No valid items in cart" });
-      }
-  
-      const newOrder = new Order({
-        userId: user.id,
-        orderId: orderID,
-        addressId: address._id,
-        payment: paymentMethod,
-        items: items,
-        shippingCharge: Number(shippingCharge),
-        discount: Number(discount),
-        subTotal: Number(subTotal),
-        totalAmount: Number(finalPrice),
-        paymentStatus: "failed"
-      });
-  
-      console.log("New Order before save:", newOrder);
-  
-      const saveOrder = await newOrder.save();
-      console.log("Saved Order:", saveOrder);
-      console.log("Saved Order Items:", saveOrder.items);
-  
-      // REMOVE CART ITEMS
-      await Cart.findByIdAndUpdate(cart._id, { $set: { items: [] } });
-  
-      req.session.order = saveOrder;
-      return res.status(402).json({
-        success: false,
-        message: "Payment failed"
-      });
-  
+            success: true, message: "Payment failed"
+        })
+         
     } catch (error) {
-      console.error("Error in failedPayment:", error);
-      return res.status(500).json({ success: false, message: "Something went wrong in failed payment" });
+        console.log(error.message)
+        res.status(500).json({success:false,message:"Failed payment something went wrong"})
     }
-  };
-
-
+} 
+ 
 
 export const retryPayment = async (req, res) => {
     try {

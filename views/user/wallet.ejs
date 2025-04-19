@@ -40,16 +40,16 @@
         </div>
         <!-- Navigation Icons -->
         <div class="flex items-center space-x-6">
-          <a href="/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
+          <a href="/read-and-grow/shop" class="text-gray-600 hover:text-gray-900" aria-label="Shop">
             <i class="fas fa-store text-xl"></i>
           </a>
-          <a href="/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
+          <a href="/read-and-grow/wishlist" class="text-gray-600 hover:text-gray-900" aria-label="Wishlist">
             <i class="fas fa-heart text-xl"></i>
           </a>
-          <a href="/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
+          <a href="/read-and-grow/cart" class="text-gray-600 hover:text-gray-900" aria-label="Shopping cart">
             <i class="fas fa-shopping-cart text-xl"></i>
           </a>
-          <a href="/profile/user123" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
+          <a href="/read-and-grow/profile/user123" class="text-gray-600 hover:text-gray-900" aria-label="Profile">
             <i class="fas fa-user text-xl"></i>
           </a>
         </div>
@@ -62,7 +62,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Your Wallet</h1>
-      <a href="/profile/user123" class="text-blue-600 hover:text-blue-800 font-medium transition duration-200">
+      <a href="/read-and-grow/profile/user123" class="text-blue-600 hover:text-blue-800 font-medium transition duration-200">
         Go Back
       </a>
     </div>
@@ -73,7 +73,7 @@
       <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
         <div>
           <h2 class="text-lg font-semibold text-gray-900">Wallet Balance</h2>
-          <% if(wallet && wallet[0]?.balance){ %>
+          <% if(wallet && wallet?.balance){ %>
           <p class="text-3xl font-bold text-blue-700 mt-2">Rs. <%= (wallet[0]?.balance).toFixed(2) %></p>
           <% }else{ %>
           <p class="text-3xl font-bold text-blue-700 mt-2">Rs. 0.00</p>
@@ -150,7 +150,7 @@
             <!-- Previous Page -->
             <% if(page > 1){ %>
               <li>
-                <a href="/wallet/<%= wallet[0].userId %>?page=<%= page - 1 %>&limit=<%= limit %>" 
+                <a href="/read-and-grow/wallet/<%= wallet[0].userId %>?page=<%= page - 1 %>&limit=<%= limit %>" 
                    class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -170,7 +170,7 @@
             <!-- Page Numbers -->
             <% for(let i = 1; i <= totalPages; i++) { %>
               <li>
-                <a href="/wallet/<%= wallet[0].userId %>?page=<%= i %>&limit=<%= limit %>" 
+                <a href="/read-and-grow/wallet/<%= wallet[0].userId %>?page=<%= i %>&limit=<%= limit %>" 
                    class="flex items-center justify-center px-3 h-10 leading-tight 
                           border border-gray-300 
                           <%= page === i ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100' %>">
@@ -182,7 +182,7 @@
             <!-- Next Page -->
             <% if(page < totalPages){ %>
               <li>
-                <a href="/wallet/<%= wallet[0].userId %>?page=<%= page + 1 %>&limit=<%= limit %>" 
+                <a href="/read-and-grow/wallet/<%= wallet[0].userId %>?page=<%= page + 1 %>&limit=<%= limit %>" 
                    class="flex items-center justify-center px-3 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

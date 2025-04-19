@@ -27,7 +27,7 @@
   <div class="text-center mb-10">
     <h1 class="text-3xl font-bold">Sales Report</h1>
     <p class="text-sm mt-1">REad & GroW</p>
-    <p class="text-xs text-gray-700">Date Range: <%= new Date().toLocaleDateString() %></p>
+    <p class="text-xs text-gray-700">Date Range: 01-Apr-2025 to 07-Apr-2025</p>
   </div>
 
 
@@ -49,22 +49,18 @@
         </tr>
       </thead>
       <tbody>
-        <% if(orders.length>0){%>
-            <% orders.forEach(orders=>{%>
-            <tr>
-            <td class="p-2 border"></td>
-            <td class="p-2 border"><%= orders.orderId %></td>
-            <td class="p-2 border"><%= orders.userId?.username %></td>
-            <td class="p-2 border"><%= new Date(orders.createdAt).toLocaleDateString() %></td>
-            <td class="p-2 border">₹<%= orders.subTotal %></td>
-            <td class="p-2 border">₹<%= orders.discount %></td>
-            <td class="p-2 border">₹<%= orders.shippingCharge %></td>
-            <td class="p-2 border">₹<%= orders.totalAmount %></td>
-            <td class="p-2 border"><%= orders.status %></td>
-            <td class="p-2 border"><%= orders.payment %></td>
-            </tr>
-            <% })  %>
-        <% } %>
+        <tr>
+          <td class="p-2 border">1</td>
+          <td class="p-2 border">ORD-1744053743207</td>
+          <td class="p-2 border">John Doe</td>
+          <td class="p-2 border">07-Apr-2025</td>
+          <td class="p-2 border">₹399</td>
+          <td class="p-2 border">₹119</td>
+          <td class="p-2 border">₹99</td>
+          <td class="p-2 border">₹378</td>
+          <td class="p-2 border">Pending</td>
+          <td class="p-2 border">Wallet</td>
+        </tr>
         <!-- Add more rows as needed -->
       </tbody>
     </table>

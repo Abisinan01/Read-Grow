@@ -383,19 +383,6 @@
                         formData.append('images', input.files[0]);
                         hasImages = true;
                     }
-
-                    const fileType=['jpeg','jpg','png','webp']  
-                    const extension = input.value.split('.').pop().toLowerCase();
-                    if(!fileType.includes(extension)){
-                        Toastify({
-                                text: `${extension} is invalid file type,`,
-                                duration: 3000,
-                                gravity: "top",
-                                position: "right",
-                                backgroundColor: "#f44336"
-                            }).showToast();
-                            return;
-                    }
                 }
     
                 if (!hasImages) {
@@ -408,14 +395,7 @@
                     }).showToast();
                     return;
                 }
-                
-                // if(hasImages){
-                //     for(let i=1; i<=3; i++){
-                //         const input = document.getElementById(`image${i}`).value;
-                //         if(input)
-                //     }
-                // }
-         
+    
                 try {
                     Swal.fire({
                         title: 'Saving...',

@@ -38,7 +38,7 @@
       </div>
 
       <div class="flex space-x-4 py-2">
-        <a type="button" onclick="window.location.href='/profile/<%= user.id %>'"
+        <a type="button" onclick="window.location.href='/read-and-grow/profile/<%= user.id %>'"
           class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-200">
           Cancel
         </a>
@@ -83,7 +83,7 @@
       }
 
       try {
-        const response = await fetch('/new-email', {
+        const response = await fetch('/read-and-grow/new-email', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email })

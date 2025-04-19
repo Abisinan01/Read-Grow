@@ -14,23 +14,14 @@ import { promises } from 'fs';
 import { setTimeout } from 'timers/promises';
 import { content_v2_1 } from "googleapis";
 import { redis } from "googleapis/build/src/apis/redis/index.js";
-import { imageUploadToCloud } from "../../utils/cloudinary.js";
-import Order from "../../models/orderSchema.js";
 
 
 //=====================admin login get ==================
 export const adminLoginGet = async (req, res) => {
     try {
         if (req.cookies.jwt) {
-            const token = req.cookies.jwt
-            const docodeToken = jwt.verify(token, process.env.JWT_SECRET)
-            if (docodeToken.role == 'admin') {
-                return res.redirect('/admin/dashboard')
-            } else {
-                return res.redirect("/")
-            }
+            return res.redirect('/admin/dashboard')
         }
-
         return res.render("admin/login")
 
     } catch (error) {
@@ -55,7 +46,7 @@ export const adminLoginPost = async (req, res, next) => {
         }
 
         //CREATE JWT TOKEN
-        const token = jwt.sign({ id: admin._id, name: admin.username, role: admin.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
+        const token = jwt.sign({ id: admin._id, name: admin.username }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES })
 
         //STORE JWT TOKEN IN COOKIES
         res.cookie('jwt', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
@@ -79,31 +70,10 @@ export const renderUserPanel = async (req, res, next) => {
 
         const filter = query ? { username: { $regex: query, $options: 'i' } } : {};
 
-        let users = await User.find(filter)
+        const allUsers = await User.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
-
-        let allUsers = []
-        for (let user of users) {
-            let orderCount = 0
-            const orders = await Order.find()
-            for (let order of orders) {
-                if (user._id.toString() === order.userId.toString()) {
-                    orderCount += order.items.length
-                }
-            }
-            allUsers.push({
-                username: user.username,
-                email: user.email,
-                orderCount,
-                status: user.isBlocked,
-                role: user.role,
-                _id:user._id
-            })
-
-        }
-
 
         if (!allUsers || allUsers.length === 0) {
             return res.status(404).json({
@@ -116,7 +86,7 @@ export const renderUserPanel = async (req, res, next) => {
         const totalPages = Math.ceil(totalUsers / limit);
 
         if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
-            return res.status(200).json({
+            return res.json({
                 success: true,
                 allUsers,
                 totalUsers,
@@ -147,7 +117,7 @@ export const blockUser = async (req, res, next) => {
     try {
         const id = req.params.id
         console.log(id)
-        const user = await User.findById(id)
+        const user = await User.findOne({ _id: id })
 
         if (!user) {
             return res.status(400).json({
@@ -156,7 +126,7 @@ export const blockUser = async (req, res, next) => {
             })
         }
 
-        const newStatus = !user.isBlocked//CHECK TRUE OR FALSE
+        const newStatus = !user.isBlocked
 
         await User.updateOne({ _id: id }, { $set: { isBlocked: newStatus } })
         return res.status(200).redirect("/admin/users")
@@ -167,8 +137,14 @@ export const blockUser = async (req, res, next) => {
     }
 }
 
-//CATEGORY
+//====================category=======================
+
 export const categoryManagment = async (req, res, next) => {
+
+    // if(!req.session.admin){
+    //     return res.redirect('/admin/login')
+    // }
+
     let { page, limit } = req.query
     page = parseInt(page) || 1
     limit = parseInt(limit) || 5
@@ -182,7 +158,7 @@ export const categoryManagment = async (req, res, next) => {
         const total = await Category.find().countDocuments()
         const totalPages = Math.ceil(total / limit)
 
-        const products = await Product.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }])
+        const products = await Product.aggregate([{$group:{_id:"$category", count:{$sum:1}}}])
         // console.log("category count :",products)
         return res.render('admin/category', {
             categories,
@@ -198,6 +174,8 @@ export const categoryManagment = async (req, res, next) => {
     }
 }
 
+
+
 //===================Add category====================
 export const addCategoryGet = async (req, res, next) => {
     try {
@@ -208,19 +186,19 @@ export const addCategoryGet = async (req, res, next) => {
     }
 }
 
+//====POST
 
 export const addCategory = async (req, res, next) => {
     try {
-        let { categoryId, categoryName, categoryDescription, status } = req.body
+        const { categoryId, categoryName, categoryDescription, status } = req.body
         console.log("addCategroy", req.body)
-
-        categoryName = categoryName.trim()
-        const existCategory = await Category.findOne({ categoryName: { $regex: categoryName, $options: "i" } })
-        console.log("existCategory :", existCategory)
-        if (existCategory) {
+        
+        const existCategory = await Category.findOne({categoryName})
+        console.log(existCategory)
+        if(existCategory){
             return res.status(400).json({
-                success: false,
-                message: "category already exists"
+                success:false,
+                message:"category already exists"
             })
         }
         const newCatogory = new Category({
@@ -230,7 +208,7 @@ export const addCategory = async (req, res, next) => {
             status: status
         })
 
-
+        
         await newCatogory.save()
 
         return res.status(201).json({
@@ -285,21 +263,12 @@ export const editCategory = async (req, res, next) => {
     }
 }
 
-//Edit category patch method      
+//=====Patch      
 export const editCategoryPatch = async (req, res, next) => {
     try {
-        let { categoryName, categoryDescription, status } = req.body
+        const { categoryName, categoryDescription, status } = req.body
         const id = req.params
         console.log("editCategory Patch :", req.body)
-
-        categoryName = categoryName.trim()
-        const existCategory = await Category.findOne({ categoryName: { $regex: categoryName, $options: "i" } })
-        if (existCategory) {
-            return res.status(400).json({
-                success: false,
-                message: "category already exists"
-            })
-        }
 
         const updatedCategory = await Category.findByIdAndUpdate(
             id.id,
@@ -307,11 +276,10 @@ export const editCategoryPatch = async (req, res, next) => {
                 $set: {
                     categoryName,
                     description: categoryDescription,
-                    status: status,
+                    status:status,
                 },
             })
-
-        console.log(updatedCategory)
+            console.log(updatedCategory)
         return res.status(200).json({
             success: true,
             message: "Category updated"
@@ -325,9 +293,9 @@ export const editCategoryPatch = async (req, res, next) => {
 }
 
 //==search category
-export const searchCategory = async (req, res, next) => {
+export const searchCategory = async (req,res,next) =>{
     try {
-        const { q } = req.query
+        const { q } = req.query 
         // console.log("category",q)
 
         if (q?.length === 0 || !q) {
@@ -376,17 +344,21 @@ export const renderProductPage = async (req, res, next) => {
         limit = parseInt(limit) || 5
         let skip = (page - 1) * limit
 
-        const filter = query ? { name: { $regex: query, $options: "i" } } : {};
+        const filter = query ? { name: { $regex: query, $options: "i" }} : {};
 
         const allProducts = await Product.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
+        if(!allProducts || allProducts.length === 0){ 
+            console.log("searched query ::::",allProducts)
 
-        if (!allProducts || allProducts.length === 0) {
-            console.error("Product not found ")
+            return res.status(404).json({ 
+                success:false,
+                message:"Products not found"
+            })
         }
-
+ 
         const totalProducts = await Product.countDocuments(filter)
         const totalPages = Math.ceil(totalProducts / limit)
 
@@ -400,7 +372,7 @@ export const renderProductPage = async (req, res, next) => {
                 page
             })
         }
-
+        
         return res.render("admin/product", {
             allProducts,
             totalProducts,
@@ -409,7 +381,7 @@ export const renderProductPage = async (req, res, next) => {
             page,
             query
         })
-
+ 
 
     } catch (error) {
         console.log(`Product management failed: ${error.message}`)
@@ -420,10 +392,11 @@ export const renderProductPage = async (req, res, next) => {
 
 export const addProducts = async (req, res, next) => {
     try {
-        const category = await Category.find()
-        res.render("admin/addProducts", { category })
+        const category =await Category.find()
+        res.render("admin/addProducts",{category})
     } catch (error) {
         console.log("Product adding failed ", error.message)
+
     }
 }
 
@@ -433,7 +406,7 @@ export const addProductsPost = async (req, res, next) => {
         console.log("body", req.body)
         console.log("files", req.files)
         const {
-            name,
+            name,  
             description,
             author,
             price,
@@ -442,19 +415,15 @@ export const addProductsPost = async (req, res, next) => {
             productId
         } = req.body
 
-        
-        const files = req.files//IMAGE FILES INCLUDES IN HERE
-        let imagesPaths = []//STORING IMAGE PATHS
+        const basePath = `${req.protocol}://${req.get("host")}/temp/uploads`;// this for getting image file path
+        const files = req.files
+        let imagesPaths = []
 
         if (files && files.length > 0) {
-            imagesPaths = await Promise.all(
-                files.map(async (file) => await imageUploadToCloud(file))//UPLOAD IMAGE TO CLOUD ONE BY ONE
-            )
+            imagesPaths = files.map(file => `${basePath}/${path.basename(file.path)}`);
         } else {
             return res.status(400).json({ success: false, message: "At least one image is required." });
         }
-
-        console.log("imagesPaths is: ", imagesPaths)
 
         let newProduct = new Product({
             name: name,
@@ -489,7 +458,7 @@ export const editProductsGet = async (req, res, next) => {
         const product = await Product.findById(req.params.id);
         // console.log("Product:", product);
         const categories = await Category.find()
-        return res.render('admin/editProduct', { product, categories })
+        return res.render('admin/editProduct', { product , categories })
 
     } catch (error) {
         return next(new AppError(`Product editing page loadng failed ${error}`, 500))
@@ -501,7 +470,7 @@ export const editProduct = async (req, res, next) => {
         // console.log("body", req.body)
         // console.log("files",req.files)
         const id = req.params.id
-        console.log('productId', id)
+        console.log('productId',id)
 
         const {
             name,
@@ -512,22 +481,20 @@ export const editProduct = async (req, res, next) => {
             category
         } = req.body
 
-        const files = req.files//IMAGES FILE CAME FROM MULTER
+        const basePath = `${req.protocol}://${req.get("host")}/temp/uploads`;// this for getting image file path
+        const files = req.files
 
         let existProduct = await Product.findById(id)
         let imagesPaths = existProduct.images
 
         if (files && files.length > 0) {
-            // imagesPaths = files.map(file => `${basePath}/${path.basename(file.path)}`);
-            imagesPaths = await Promise.all(
-                files.map(async (file) => await imageUploadToCloud(file))//UPLOAD IMAGE TO CLOUD ONE BY ONE
-            )
+            imagesPaths = files.map(file => `${basePath}/${path.basename(file.path)}`);
         }
 
         // console.log(imagesPaths,"images path") 
 
-        await Product.findOneAndUpdate(
-            { _id: id },
+         await Product.findOneAndUpdate(
+            { _id : id },
             {
                 $set: {
                     name: name,
@@ -556,8 +523,8 @@ export const deleteProduct = async (req, res, next) => {
     try {
         const productId = req.params.id
         console.log(productId)
-        const deleteProduct = await Product.findByIdAndDelete(productId)
-        if (!deleteProduct) {
+        const deletePro = await Product.findByIdAndDelete(productId)
+        if (!deletePro) {
             return res.json({
                 success: false,
                 message: "Product deleted failed"
@@ -602,7 +569,7 @@ export const blockProduct = async (req, res, next) => {
 }
 
 
-
+ 
 //===================Logout button================================
 export const adminLogout = async (req, res, next) => {
     try {

@@ -14,11 +14,8 @@ import jwt from "jsonwebtoken"
             return res.status(403).json({success:false, message:"Access denied : Admin"})
         }
         
-        if(decodeToken.role === 'admin'){
-            req.admin = decodeToken
-        }
-        
-        console.log(req.admin)
+        req.admin = decodeToken
+        // console.log(req.admin)
         next()
 
     } catch (error) {
