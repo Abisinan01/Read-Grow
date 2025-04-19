@@ -52,12 +52,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Wishlist Items -->
-            <% if(wishlist && wishlist?.items.length > 0) {%>
+            <% if(wishlist && wishlist?.items?.length > 0) {%>
                 <% wishlistItems.forEach(item => { %>
                     <article class="wishlist-card bg-white rounded-lg shadow-md overflow-hidden">
                         <div class="image-container h-48 sm:h-56 lg:h-64 bg-gray-50">
                             <!-- Product Image -->
-                            <a href="/read-and-grow/product-details/<%= item._id %>" class="flex justify-center h-full">
+                            <a href="/product-details/<%= item._id %>" class="flex justify-center h-full">
                                 <img src="<%= item.images[0] %>" alt="<%= item.name %>"
                                     class="w-auto h-full object-cover rounded-t-md">
                             </a>
@@ -92,7 +92,7 @@
                         <i class="far fa-heart text-3xl sm:text-4xl text-gray-400"></i>
                     </div>
                     <p class="text-gray-600 text-base sm:text-lg mb-4 sm:mb-6">Your wishlist is empty.</p>
-                    <a href="/read-and-grow/shop"
+                    <a href="/shop"
                        class="inline-block bg-black text-white px-5 sm:px-6 py-2 rounded-md hover:bg-gray-800 transition-colors text-base">
                         Browse Books
                     </a>

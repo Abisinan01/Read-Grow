@@ -176,7 +176,7 @@ export const renderCartManagment = async (req, res, next) => {
 
             if (!product) {
                 console.log(`Not product found in this cart`)
-                return res.status(400).redirect('/read-and-grow/shop')
+                return res.status(400).redirect('/shop')
             }
 
             //REMOVE BLOCKED PRODUCTS FROM CART 

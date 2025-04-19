@@ -89,7 +89,7 @@
                 };
 
                 try {
-                    const response = await fetch(`/read-and-grow/resetPassword?id=${userId}&token=${token}`, {
+                    const response = await fetch(`/resetPassword?id=${userId}&token=${token}`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -114,7 +114,7 @@
                     }).showToast();
 
                     setTimeout(() => {
-                        window.location.href='/read-and-grow/login'
+                        window.location.href='/login'
                     }, 2000);
 
                 } catch (error) {

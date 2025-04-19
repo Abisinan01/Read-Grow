@@ -104,6 +104,64 @@
                         <% } %>
                     </tbody>
                 </table>
+                <div class="flex justify-center mt-6">
+                    <nav class="flex justify-center mt-6">
+                        <ul class="inline-flex items-center -space-x-px text-sm">
+                          <!-- Previous Page -->
+                          <% if(page > 1){ %>
+                            <li>
+                              <a href="/admin/sales-report?page=<%= page - 1 %>&limit=<%= limit %>" 
+                                 class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                              </a>
+                            </li>
+                          <% } else { %>
+                            <li>
+                              <span class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-l-lg cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                              </span>
+                            </li>
+                          <% } %>
+                      
+                          <!-- Page Numbers -->
+                          <% for(let i = 1; i <= totalPages; i++) { %>
+                            <li>
+                              <a href="/admin/sales-report?page=<%= i %>&limit=<%= limit %>" 
+                                 class="flex items-center justify-center px-3 h-10 leading-tight 
+                                        border border-gray-300 
+                                        <%= page === i ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100' %>">
+                                <%= i %>
+                              </a>
+                            </li>
+                          <% } %>
+                      
+                          <!-- Next Page -->
+                          <% if(page < totalPages){ %>
+                            <li>
+                              <a href="/admin/sales-report?page=<%= page + 1 %>&limit=<%= limit %>" 
+                                 class="flex items-center justify-center px-3 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                              </a>
+                            </li>
+                          <% } else { %>
+                            <li>
+                              <span class="flex items-center justify-center px-3 h-10 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-r-lg cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                              </span>
+                            </li>
+                          <% } %>
+                        </ul>
+                      </nav>
+                      
+                </div>
             </div>
         </main>
     </div>

@@ -10,47 +10,47 @@ function showToast(message, type = 'error') {
     }).showToast();
 }
 
-async function addToWishlist(button,data) {
-        // const wishlistBtn = document.getElementById('wishlistBtn')
+async function addToWishlist(button, data) {
+    // const wishlistBtn = document.getElementById('wishlistBtn')
 
-        // console.log(wishlistBtn)
- 
-        try {
-            const response = await fetch('/read-and-grow/wishlist/add', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId: data })
-            })
+    // console.log(wishlistBtn)
 
-            const result = await response.json()
-            console.log(result)
-            if (!response.ok) {
-                throw Error(result.message || 'Product not added to wishlist')
-                return
-            }
+    try {
+        const response = await fetch('/wishlist/add', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: data })
+        })
 
-            showToast(result.message || 'Product added to wishlist', 'success')
-            const icon = button.querySelector('i');
-            if (icon) {
-                icon.classList.toggle('fas');
-                icon.classList.toggle('far');
-                icon.classList.toggle('text-red-500');
-                icon.classList.toggle('text-gray-600');
-            }
-
-            setTimeout(() => {
-                location.reload()
-            }, 1000);
-        } catch (error) {
-            console.log('Add to Wishlist ', error.message)
-            showToast(error.message || 'Something went wrong', 'error')
+        const result = await response.json()
+        console.log(result)
+        if (!response.ok) {
+            throw Error(result.message || 'Product not added to wishlist')
+            return
         }
-} 
 
-async function removeWishlist(data){
+        showToast(result.message || 'Product added to wishlist', 'success')
+        const icon = button.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fas');
+            icon.classList.toggle('far');
+            icon.classList.toggle('text-red-500');
+            icon.classList.toggle('text-gray-600');
+        }
+
+        setTimeout(() => {
+            location.reload()
+        }, 1000);
+    } catch (error) {
+        console.log('Add to Wishlist ', error.message)
+        showToast(error.message || 'Something went wrong', 'error')
+    }
+}
+
+async function removeWishlist(data) {
     console.log(data)
     try {
-        const response = await fetch(`/read-and-grow/wishlist/remove/${data}`, {
+        const response = await fetch(`/wishlist/remove/${data}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ productId: data })
@@ -70,5 +70,53 @@ async function removeWishlist(data){
     } catch (error) {
         console.log('Remove from Wishlist ', error.message)
         showToast(error.message || 'Something went wrong', 'error')
+    }
+}
+
+
+// Add to Cart function
+let isAddToCart = false;
+async function addToCart(productId) {
+    if (isAddToCart) return;
+    isAddToCart = true;
+
+    try {
+        const button = document.querySelector(`button[onclick="addToCart('${productId}')"]`);
+        const originalText = button.innerHTML;
+        // button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.disabled = true;
+
+        const response = await fetch(`/cart`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId })
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            showToast(result.message || 'Something went wrong');
+        }
+
+        if (result.success) {
+            showToast(result.message, 'success');
+
+            setTimeout(() => {
+                location.reload()
+            }, 1200);
+        }
+
+    } catch (error) {
+        console.error('Add to cart error:', error);
+        showToast('Something went wrong');
+    } finally {
+        // Restore button state
+        const button = document.querySelector(`button[onclick="addToCart('${productId}')"]`);
+        if (button) {
+            button.innerHTML = 'ADD TO CART';
+            button.disabled = false;
+        }
+
+        // Reset flag after delay
+        setTimeout(() => { isAddToCart = false; }, 1000);
     }
 }

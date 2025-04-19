@@ -19,7 +19,7 @@
     <div class="container mx-auto px-6 py-10">
       <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Order Details</h1>
-        <a href="/read-and-grow/orders"
+        <a href="/orders"
           class="text-blue-600 hover:text-blue-800 font-medium transition duration-200 flex items-center">
           <i class="fas fa-arrow-left mr-2"></i> Go Back
         </a>
@@ -60,7 +60,7 @@
 
             </div>
             <div class="flex justify-between items-center">
-              <span class="font-medium text-gray-800">Shipping charge</span>
+              <span class="font-medium text-gray-800">Shipping charge (Not be Refunded)</span>
               <span class="text-gray-900 font-semibold"><%= order.shippingCharge %></span>
             </div>
             <% if(order.discount){%>
@@ -69,20 +69,18 @@
                 <span class="text-gray-900 font-semibold">-<%= order.discount %></span>
               </div>
             <% } %>
-            <% if(order.coupon && order.isCouponAvailable){%>
+            <% if (order.coupon) { %>
               <div class="flex justify-between items-center">
                 <span class="font-medium text-gray-800">Applied coupon</span>
-                <span class="text-gray-900 font-semibold">-<%= order.coupon.discountValue %></span>
-              </div>
-            <% }else if(order.coupon && !order.isCouponAvailable){ %>
-              <div class="flex justify-between items-center">
-                <span class="font-medium text-gray-800">Applied coupon</span>
-                <span class="text-gray-900 font-semibold line-through">-<%= order.coupon.discountValue %></span>
+                <span class="text-gray-900 font-semibold <%= order.isCouponAvailable ? '' : 'line-through' %>">
+                  -<%= order.coupon.discountValue %>
+                </span>
               </div>
             <% } %>
+            
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800 ">Total Amount:</span>
-              <span style="font-size: 18px; font-weight: bold;" id="x">Rs. <%= order.totalAmount %></span>
+              <span style="font-size: 18px; font-weight: bold;" id="x">Rs. <%= (order?.totalAmount).toFixed(2) %></span>
             </div>
           </div>
         </div>
@@ -136,7 +134,7 @@
                       Cancel
                     </button>
                     <% } %>
-                    <% if (item.status==='Delivered' ) { %>
+                    <% if (item.status==='Delivered' && !item.isRequested) { %>
                         <button id="returnOrder" data-product-id="<%= item.productId %>" data-order-id="<%= order._id %>"
                           class="return-btn text-xs font-medium text-white bg-gray-600 hover:bg-green-600 px-2 py-1 rounded transition duration-200">
                           Return
@@ -182,13 +180,13 @@
 
            <div class="flex space-x-6">
           
+          <% if(order.status === "Delivered") {%>
             <button id="invoice"
               class="invoice-btn bg-gray-400 align-end hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
-              data-order-id="<%= order._id %>" onclick="invoice('<%= order._id %>')"
-              <% if(order.status !== "Delivered") { %>hidden<% } %>>
+              data-order-id="<%= order._id %>" onclick="invoice('<%= order._id %>')">
               Invoice
             </button>
-            
+          <% } %>
             <% if(order.paymentStatus === 'failed'){ %>
               <button id="retryPayment" data-order-id="<%= order._id %>"
                 class="return-btn bg-green-400 align-end hover:bg-red-400 text-white font-semibold py-3 px-6 shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
@@ -263,7 +261,7 @@
         if (!confirm.isConfirmed) return;
 
         try {
-          const response = await fetch(`/read-and-grow/single-cancel-order/${orderId}/${productId}`, {
+          const response = await fetch(`/single-cancel-order/${orderId}/${productId}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ reason })
@@ -276,17 +274,17 @@
               icon: "error",
               title: "Oops...",
               text: result.message || "Something went wrong.",
-              footer: '<a href="/read-and-grow/shop">Continue shopping</a>'
+              footer: '<a href="/shop">Continue shopping</a>'
             });
           }
 
-          // ✅ SUCCESS
+          //SUCCESS
           Swal.fire({
             title: result.message,
             text: "Your order item has been cancelled.",
             icon: "success"
           }).then(() => {
-            window.location.href = "/read-and-grow/orders";
+            location.reload()
           });
 
         } catch (error) {
@@ -322,7 +320,7 @@
 
               console.log('Submitting order:', orderData);
 
-              const response = await fetch(`/read-and-grow/create-order`, {
+              const response = await fetch(`/create-order`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(orderData)
@@ -347,7 +345,7 @@
                 name: 'Read-and-grow',
                 description: 'Transaction',
                 order_id: order.id,
-                callback_url: 'http://localhost:3999/read-and-grow/success',
+                callback_url: 'readandgrow.space/success' || 'http://localhost:3999/success',
                 prefill: {
                   name: 'Abisinan',
                   email: 'abisinanabisinan9@gmail.com',
@@ -357,7 +355,7 @@
                   color: '#F37254'
                 },
                 handler: function (response) {
-                  fetch('/read-and-grow/verify-payment', {
+                  fetch('/verify-payment', {
                     method: "POST",
                     headers: {
                       'Content-Type': 'application/json'
@@ -394,7 +392,7 @@
                   icon: "error",
                   confirmButtonText: "Go to order",
                 }).then(() => {
-                  window.location.href = "/read-and-grow/orders";
+                  window.location.href = "/orders";
                 });
               });
 
@@ -411,7 +409,7 @@
             // retry payment function
             async function retryPayment(orderId) {
             try {
-              const response = await fetch('/read-and-grow/retry-payment',{
+              const response = await fetch('/retry-payment',{
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({orderId})
@@ -474,7 +472,7 @@
           if (!confirm.isConfirmed) return;
 
           try {
-            const response = await fetch(`/read-and-grow/return-order/${orderId}/${productId}`, {
+            const response = await fetch(`/return-order/${orderId}/${productId}`, {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ reason })
@@ -487,7 +485,7 @@
                 icon: "error",
                 title: "Oops...",
                 text: result.message || "Something went wrong.",
-                footer: '<a href="/read-and-grow/shop">Continue shopping</a>'
+                footer: '<a href="/shop">Continue shopping</a>'
               });
               return;
             }
@@ -498,7 +496,8 @@
               icon: "success"
             });
 
-            window.location.href = "/read-and-grow/orders";
+            location.reload()
+            // window.location.href = "/orders";
 
           } catch (error) {
             console.error("Return error:", error);
@@ -524,7 +523,7 @@
       });
 
       setTimeout(() => {
-        window.open(`/read-and-grow/invoice/${orderId}`);
+        window.open(`/invoice/${orderId}`);
         Swal.close();
       }, 1500);
     }

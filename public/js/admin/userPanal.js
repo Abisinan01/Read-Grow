@@ -1,8 +1,14 @@
 
-const notyf = new Notyf({
-    duration: 2000,
-    position: { x: 'right', y: 'top' }
-});
+function showToast(message, type = 'error') {
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "center",
+        backgroundColor: type === 'success' ? "#16a34a" : "#dc2626",
+        stopOnFocus: true,
+    }).showToast();
+}
 
 async function isBlock(url) {
     try {
@@ -25,11 +31,12 @@ async function isBlock(url) {
             if (response.redirected) {
                 window.location.href = response.url;
             } else {
-                notyf.error('Failed to update user status');
+                showToast('Failed to update user status');
             }
         }
     } catch (error) {
-        notyf.error('Something went wrong');
+        console.log("User panal : ",error.message)
+        showToast('Something went wrong');
     }
 }
 

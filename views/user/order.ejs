@@ -20,7 +20,7 @@
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Your Orders</h1>
-      <a href="/read-and-grow/profile/<%= user.id %>" class="text-blue-600 hover:text-blue-800 font-medium transition duration-200">
+      <a href="/profile/<%= user.id %>" class="text-blue-600 hover:text-blue-800 font-medium transition duration-200">
         Go Back
       </a>
     </div>
@@ -32,9 +32,15 @@
           <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition">
             <!-- Order Header -->
             <div class="flex justify-between items-center mb-2">
-              <a href="/read-and-grow/order-details/<%= order.orderId %>" class="font-medium text-gray-800 text-lg hover:text-blue-600">
-                Order #<%= order.orderId %>
-              </a>
+              <div class="flex items-center justify-between px-4 py-2 bg-gray-50 shadow-sm">
+                <a href="/order-details/<%= order.orderId %>" class="text-lg font-medium text-gray-800 hover:text-blue-600 transition-colors">
+                  Order #<%= order.orderId %>
+                </a>
+                <a href="/order-details/<%= order.orderId %>" class="text-sm text-blue-600 font-semibold px-3 py-1 cursor-pointer transition-all ml-2">
+                  View
+                </a>
+              </div>                     
+              
               <p class="text-gray-600 text-sm">
                 Placed on: <%= new Date(order.createdAt).toLocaleString('en-US', {
                   year: 'numeric',
@@ -94,51 +100,75 @@
 
             <!-- Order Total -->
             <div class="mt-3 text-right">
-              <p class="text-gray-800 font-semibold">Total: Rs. <%= order.totalAmount %></p>
+              <p class="text-gray-800 font-semibold">Total: Rs. <%= (order.totalAmount).toFixed(2) %></p>
             </div>
           </div>
         <% }) %>
 
         <!-- Pagination -->
-        <div class="mt-8 flex justify-center items-center space-x-2">
-          <% if(page>1) {%>
-          <!-- Previous Button -->
-          <a href="/read-and-grow/orders?page=<%= page > 1 ? page - 1 : 1 %>" 
-             class="px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 <%= page === 1 ? 'opacity-50 cursor-not-allowed' : '' %>">
-            <i class="fas fa-chevron-left"></i>  
-          </a>
-          <% }else{ %>
-            <button href="/read-and-grow/orders?page=<%= page > 1 ? page - 1 : 1 %>" disabled
-              class="px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-600">
-             <i class="fas fa-chevron-left"></i>  
-           </button>
-            <% } %>
-          <!-- Page Numbers -->
-          <% for(let i = 1; i <= totalPages; i++) { %>
-            <a href="/read-and-grow/orders?page=<%= i %>& limit=<%= limit %>"
-               class="px-3 py-2 border border-gray-300 rounded-md <%= page === i ? 'bg-black text-white' : 'bg-white text-gray-600 hover:bg-gray-100' %>">
-              <%= i %>
-            </a>
-          <% } %>
-
-          <!-- Next Button -->
-           <% if(page<totalPages) {%>
-          <a href="/read-and-grow/orders?page=<%= page < totalPages ? page + 1 : totalPages %>"
-             class="px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 <%= page === totalPages ? 'opacity-50 cursor-not-allowed' : '' %>">
-              <i class="fas fa-chevron-right"></i>
-          </a>
-          <% }else{ %>
-            <button href="/read-and-grow/orders?page=<%= page < totalPages ? page + 1 : totalPages %>"
-              class="px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-600 " disabled>
-              <i class="fas fa-chevron-right"></i>
-           </button>
-            <% } %>
-        </div>
+        <div class="flex justify-center mt-6">
+          <nav class="flex justify-center mt-6">
+              <ul class="inline-flex items-center -space-x-px text-sm">
+                <!-- Previous Page -->
+                <% if(page > 1){ %>
+                  <li>
+                    <a href="/orders?page=<%= page - 1 %>&limit=<%= limit %>" 
+                       class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                      </svg>
+                    </a>
+                  </li>
+                <% } else { %>
+                  <li>
+                    <span class="flex items-center justify-center px-3 h-10 ml-0 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-l-lg cursor-not-allowed">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                      </svg>
+                    </span>
+                  </li>
+                <% } %>
+            
+                <!-- Page Numbers -->
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                  <li>
+                    <a href="/orders?page=<%= i %>&limit=<%= limit %>" 
+                       class="flex items-center justify-center px-3 h-10 leading-tight 
+                              border border-gray-300 
+                              <%= page === i ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 hover:bg-gray-100' %>">
+                      <%= i %>
+                    </a>
+                  </li>
+                <% } %>
+            
+                <!-- Next Page -->
+                <% if(page < totalPages){ %>
+                  <li>
+                    <a href="/orders?page=<%= page + 1 %>&limit=<%= limit %>" 
+                       class="flex items-center justify-center px-3 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </a>
+                  </li>
+                <% } else { %>
+                  <li>
+                    <span class="flex items-center justify-center px-3 h-10 leading-tight text-gray-300 bg-gray-100 border border-gray-200 rounded-r-lg cursor-not-allowed">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </span>
+                  </li>
+                <% } %>
+              </ul>
+            </nav>
+            
+      </div>
       </div>
     <% } else { %>
       <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 text-center">
         <p class="text-gray-600">You have no orders.</p>
-        <a href="/read-and-grow/shop" class="text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block">
+        <a href="/shop" class="text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block">
           Browse books
         </a>
       </div>

@@ -15,6 +15,7 @@ import Wishlist from "../../models/wishListSchema.js"
 import { status } from "init"
 import Order from "../../models/orderSchema.js"
 import Offer from "../../models/offersSchema.js"
+import Review from "../../models/reviewSchema.js"
 
 
 
@@ -23,8 +24,6 @@ export const renderHomePage = async (req, res, next) => {
         const token = req.cookies.jwt // TOKEN
         let user = null
         if (req.session.order) req.session.order = null//ORDER CONFIRMATION PAGE SESSION MANAGE
-
-        // console.log("token data : ",token)
 
         // THIS FOR FORCEFULLY REMOVING USER WHEN ITS BLOCKED OR UNAVAILABLE
         if (token) {
@@ -35,7 +34,7 @@ export const renderHomePage = async (req, res, next) => {
                 const isUser = await User.findById(user.id, { role: "user" })
                 if (!isUser) {
                     res.clearCookie("jwt")
-                    return res.redirect('/read-and-grow')
+                    return res.redirect('/')
                 }
 
             } catch (error) {
@@ -44,7 +43,7 @@ export const renderHomePage = async (req, res, next) => {
         }
 
         //FOR SHOWING MOST SELLED PRODUCTS 
-        const orders = await Order.aggregate([
+        const orders = await Order?.aggregate([
             { $match: { isBlocked: { $ne: true } } },
             { $unwind: "$items" },
             { $group: { _id: "$items.productId", totalQty: { $sum: "$items.quantity" } } },
@@ -52,10 +51,9 @@ export const renderHomePage = async (req, res, next) => {
             { $limit: 3 }
         ])
 
-
         const products = []
         for (let order of orders) {
-            const product = await Product.findById(order._id)
+            const product = await Product?.findById(order?._id)
             products.push(product)
         }
 
@@ -70,7 +68,7 @@ export const renderHomePage = async (req, res, next) => {
 
 export const renderProductDetails = async (req, res, next) => {
     try {
-        const { id } = req.params;// 
+        const { id } = req.params;
         const user = req.user
 
         const product = await Product.findById(id)
@@ -130,6 +128,8 @@ export const renderProductDetails = async (req, res, next) => {
         console.log(cartItems, 'cartItems')//DEBUG
         const date = new Date(product.createdAt).toDateString();// SHOWING UPDATED DATE OF PRODUCT
 
+        //FETCH BEST REIVIEWS
+        const reviews = await Review.find({product:id}).populate('user').sort({createdAt:-1})
 
         res.render("user/product", {
             product,
@@ -138,7 +138,8 @@ export const renderProductDetails = async (req, res, next) => {
             relatedProducts,
             wishlistItems,
             // bestOffer,
-            cartItems
+            cartItems,
+            reviews
         });
 
     } catch (error) {
@@ -181,8 +182,8 @@ export const renderShopPage = async (req, res, next) => {
 
         if (price) { // FILTER PRICE RANGES
             switch (price) {
-                case 'under-399':
-                    query.price = { $lt: 399 };
+                case 'under-449':
+                    query.price = { $lt: 449 };
                     break;
                 case '400-599':
                     query.price = { $gte: 400, $lte: 599 };
@@ -251,7 +252,8 @@ export const renderShopPage = async (req, res, next) => {
             user: req.user,
             wishlistItems,
             cartItems,
-            currentSort: ""
+            currentSort: "",
+
         };
 
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {//FETCH WITHOUT RENDERING
@@ -273,7 +275,7 @@ export const sortProducts = async (req, res, next) => {
         const limit = 6;
         const skip = (page - 1) * limit;
 
-        const sort = req.params.sort;//SORT TYPE
+        let sort = req.params.sort || "";//SORT TYPE
         console.log("Order sort:", sort);
 
         let sortCondition = {};
@@ -281,15 +283,19 @@ export const sortProducts = async (req, res, next) => {
         switch (sort) {
             case "name_asc":
                 sortCondition = { name: 1 };
+                sort = 'A to Z'
                 break;
             case "name_desc":
                 sortCondition = { name: -1 };
+                sort = 'Z to A'
                 break;
             case "price_asc":
                 sortCondition = { price: 1 };
+                sort = 'Price: Low to High'
                 break;
             case "price_desc":
                 sortCondition = { price: -1 };
+                sort = 'Price: High to Low'
                 break;
             default:
                 sortCondition = { createdAt: -1 };
@@ -317,9 +323,50 @@ export const sortProducts = async (req, res, next) => {
             errorMessage: products.length === 0 ? "No products found." : null,
             user: req.user,
             wishlistItems: [],
-            currentSort: sort || ''
+            currentSort: sort || '',
         });
     } catch (error) {
         next(new AppError(`Product sorting failed: ${error.message}`, 500));
     }
 };
+
+
+export const rateProduct = async (req,res)=>{
+    try {
+        const {rating} = req.body
+        const productId = req.params.id
+        console.log("rating ", rating)
+
+        const product = await Product.findByIdAndUpdate(
+            productId,
+            {
+                $set:{rating :Number(rating) }
+            }
+        )
+        return res.status(200).json({success:true,message:"Rated"})
+    } catch (error) {
+        console.log(error.message)
+    }
+}
+
+
+export const addReview = async (req,res,next)=>{
+    try {
+        const {review,productId,rating} = req.body
+        const user = req.user
+        const product = await Product.findById(productId)
+
+        const add = new Review({
+            user:user.id,
+            product:productId,
+            rating:Number(product.rating),
+            comment:review,
+        })
+
+        await add.save()
+        console.log('Rivew added')
+        return res.status(200).json({success:true})
+    } catch (error) {
+        console.log(error.message)
+    }
+}
