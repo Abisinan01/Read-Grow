@@ -26,20 +26,29 @@ const elements = {
     totalProductSold: document.getElementById('totalProductSold'),
     topSellingBooks: document.getElementById('topSellingBooks')
 };
-console.log(elements)
- 
-// Toggle dropdown menu
-// elements.downloadReportDropdown.addEventListener('click', (e) => {
-//     e.stopPropagation();
-//     const dropdownMenu = e.target.nextElementSibling;
-//     dropdownMenu.classList.toggle('hidden');
-// });
+// Debug the elements object to check for null
+console.log('Elements at initialization:', elements);
+
+// Toggle dropdown menu using event delegation
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('downloadReportDropdown');
+    if (e.target.id === 'downloadReportDropdown' && dropdown && dropdown.nextElementSibling) {
+        e.stopPropagation();
+        const dropdownMenu = dropdown.nextElementSibling;
+        dropdownMenu.classList.toggle('hidden');
+        console.log('Dropdown toggled:', dropdownMenu);
+    }
+});
 
 // Close dropdown on outside click
 document.addEventListener('click', (event) => {
-    const dropdownMenu = elements.downloadReportDropdown.nextElementSibling;
-    if (!elements.downloadReportDropdown.contains(event.target)) {
-        dropdownMenu.classList.add('hidden');
+    const dropdown = document.getElementById('downloadReportDropdown');
+    if (dropdown && dropdown.nextElementSibling) {
+        const dropdownMenu = dropdown.nextElementSibling;
+        if (!dropdown.contains(event.target)) {
+            dropdownMenu.classList.add('hidden');
+            console.log('Dropdown closed:', dropdownMenu);
+        }
     }
 });
 
@@ -53,29 +62,23 @@ elements.filterSelect.addEventListener('change', () => {
 // Form submission handler
 elements.filterForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-
     const filter = elements.filterSelect.value;
     resetErrors();
-
     if (filter === 'custom' && !validateCustomDates()) {
         return;
     }
-
     const queryParams = new URLSearchParams({ filter });
     if (filter === 'custom') {
         queryParams.append('startDate', elements.startDate.value);
         queryParams.append('endDate', elements.endDate.value);
     }
-
     try {
         const response = await fetch(`/admin/update-dashboard?${queryParams.toString()}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
-
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Filter operation failed');
-
         updateChartData(data);
         updateSummaryCards(data);
         updateCharts();

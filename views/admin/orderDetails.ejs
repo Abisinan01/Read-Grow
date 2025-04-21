@@ -213,7 +213,7 @@
                     </div>
 
                     <!-- Accept and Reject Buttons -->
-                    <% if(order.items[index].isRequested) { %>
+                    <% if(order.items[index].isRequested || order.items[index].isReturned || order.items[index].isCancelled) { %>
                         <div class="border border-red-400 bg-red-50 p-3 rounded-lg mt-3">
                             <div class="flex justify-between items-center">
                                 <span class="font-semibold text-red-700">Reason:</span>
