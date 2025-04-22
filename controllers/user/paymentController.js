@@ -40,9 +40,9 @@ export const createOrder = async (req, res) => {
             currency: order.currency,
             receipt: order.receipt,
             status: 'created'
-        })
+        }) 
 
-        writeData(orders)
+        writeData(orders) 
         res.json(order)
 
     } catch (error) {
@@ -183,7 +183,7 @@ export const retryPayment = async (req, res) => {
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
-
+ 
         for (let item of order.items) {
             const product = await Product.findById(item.productId);
             if (!product) {

@@ -162,6 +162,10 @@
                         <span class="text-sm font-medium text-gray-600">Product Name:</span>
                         <span class="text-sm text-gray-700 font-semibold"><%= viewOrder.name %></span>
                     </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm font-medium text-gray-600">Product category:</span>
+                      <span class="text-sm text-gray-700 font-semibold"><%= viewOrder.category %></span>
+                    </div>  
 
                     <div class="flex justify-between items-center">
                         <span class="text-sm font-medium text-gray-600">Status: </span>
@@ -191,16 +195,16 @@
                     </div>
 
                     <% if(viewOrder.bestOffer){%>
-                        <div class="flex justify-between items-center">
+                        <!-- <div class="flex justify-between items-center">
                             <span class="text-sm font-medium text-gray-700  ">Discount of product:</span>
                             <span class="text-sm text-red-600"><%= viewOrder.bestOffer %>%</span>
-                        </div>
+                        </div> -->
                     <% } %>
 
-                    <div class="flex justify-between items-center">
+                    <!-- <div class="flex justify-between items-center">
                         <span class="text-sm font-medium text-gray-600">Acctual price:</span>
                         <span class="text-sm font-medium text-gray-700">Rs. <%= order.items[index].price %></span>
-                    </div>
+                    </div> -->
                     
                     <div class="flex justify-between items-center">
                         <% if(order.items[index].status !== 'Returned' && order.items[index].status !== 'Cancelled'){ %>
@@ -209,7 +213,7 @@
                             <span class="text-sm font-bold text-gray-600">Refunded amount:</span>
                         <% } %>
                         <% let paidAmount =  (viewOrder?.bestOffer / 100) * order.items[index]?.price || 0 %>
-                        <span class="text-sm font-bold text-green-700">Rs. <%= (order.items[index].price - paidAmount).toFixed(2) %></span>
+                        <span class="text-sm font-bold text-green-700">Rs. <%= order.items[index].price %> </span>
                     </div>
 
                     <!-- Accept and Reject Buttons -->

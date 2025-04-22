@@ -80,7 +80,7 @@
             
             <div class="flex justify-between items-center">
               <span class="font-medium text-gray-800 ">Total Amount:</span>
-              <span style="font-size: 18px; font-weight: bold;" id="x">Rs. <%= (order?.totalAmount).toFixed(2) %></span>
+              <span style="font-size: 18px; font-weight: bold;">Rs. <span id="x"><%= (order?.totalAmount).toFixed(2) %></span></span>
             </div>
           </div>
         </div>
@@ -301,15 +301,14 @@
         
         
         const retryPaymentBtn = document.getElementById('retryPayment');
+        const finalPrice = parseFloat(document.getElementById("x").textContent);
+        console.log(finalPrice, 'Final price in paise');
+
         if (retryPaymentBtn) {
           retryPaymentBtn.addEventListener('click', async function(e) {
             const orderId = this.getAttribute('data-order-id');
             console.log(orderId);
-
-            const finalPrice = document.getElementById('x').textContent.replace(/\D/g, "");
-            console.log(finalPrice, 'finalprice');
-            isProcessing = true;
-
+            
             try {
               const orderData = {
                 finalPrice: Number(finalPrice),
@@ -345,7 +344,7 @@
                 name: 'Read-and-grow',
                 description: 'Transaction',
                 order_id: order.id,
-                callback_url: 'readandgrow.space/success' || 'http://localhost:3999/success',
+                callback_url: 'readandgrow.space/success',
                 prefill: {
                   name: 'Abisinan',
                   email: 'abisinanabisinan9@gmail.com',
@@ -367,13 +366,9 @@
                     })
                   }).then(res => res.json())
                     .then(data => {
-                      if (data.status === 'Ok') {
+                     
                         retryPayment(orderId);
-                      } else {
-                        console.log(data.message);
-                        showToast('Payment verification failed', 'error');
-                        failedPayment();
-                      }
+                     
                     })
                     .catch((error) => {
                       console.error("Error:", error);
@@ -385,10 +380,10 @@
               console.log(options, "options");
               const rzp = new Razorpay(options);
               rzp.on('payment.failed', async function (response) {
-                failedPayment();
+                // failedPayment();
                 Swal.fire({
                   title: "Payment Failed",
-                  text: "Your order is saved. You can retry the payment from your orders section.",
+                  text: "You can retry the payment from your orders section.",
                   icon: "error",
                   confirmButtonText: "Go to order",
                 }).then(() => {
@@ -510,6 +505,38 @@
         });
 
   })
+        // async function failedPayment() {
+        //         const data = {
+        //             addressId: selectedAddress || "",
+        //             paymentMethod: selectedPayment,
+        //             subTotal,
+        //             shippingCharge,
+        //             finalPrice,
+        //             discount,
+        //             paymentStatus: "failed"
+        //         }
+        //         try {
+        //             const response = await fetch(`/failed-payment`, {
+        //                 method: "POST",
+        //                 headers: { 'Content-Type': 'application/json' },
+        //                 body: JSON.stringify(data)
+        //             })
+
+        //             const result = await response.json()
+        //             if (!response.ok) {
+
+        //                 return
+        //             }
+
+        //             showToast(result.message, 'success')
+        //             // window.location.href = '/success'
+
+        //         } catch (error) {
+        //             console.log(error.message)
+        //             showToast(`Failed payment ${error.message}`)
+        //         }
+        //     }
+
   function invoice(orderId) {
       Swal.fire({
         title: 'Generating Invoice...',

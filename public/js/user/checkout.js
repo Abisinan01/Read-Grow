@@ -728,7 +728,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
 
         const result = await response.json()
-        location.reload()
+       
         if (!response.ok) {
             showToast(result.message)
             return
@@ -736,8 +736,9 @@ document.addEventListener('DOMContentLoaded', function () {
         showToast(result.message, 'success')
         const coupon = document.getElementById('coupon')
         coupon.innerHTML = totalAmount.toFixed(2)
-        // setTimeout(() => {
-        // }, 1200);
+        setTimeout(() => {
+         location.reload()
+        }, 1200);
     })
 
 
